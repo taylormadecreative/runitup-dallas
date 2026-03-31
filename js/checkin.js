@@ -15,7 +15,7 @@ async function checkIn(eventType, eventId = null) {
     .maybeSingle();
 
   if (existing) {
-    showToast('You already checked in for this run!', 'info');
+    showToast("You're already locked in for this one! See you out there.", 'info');
     return null;
   }
 

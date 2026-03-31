@@ -1,6 +1,10 @@
 // ===== RUN BUDDY FEATURE =====
+let buddyChannel = null;
 
 async function openBuddyBoard(runDay, runDate) {
+  if (buddyChannel) {
+    supabase.removeChannel(buddyChannel);
+  }
   const container = document.getElementById('screen-buddy-board');
 
   // Get buddy requests for this run
@@ -72,7 +76,7 @@ async function openBuddyBoard(runDay, runDate) {
 
       ${sorted.filter(r => r.user_id !== currentProfile.id).length === 0 ? `
         <div class="empty-state">
-          <p>No one else is looking for a buddy yet. Be the first!</p>
+          <p>You'd be the first on the board. Drop your name and someone will match with you before the run.</p>
         </div>
       ` : ''}
     </div>
@@ -81,7 +85,7 @@ async function openBuddyBoard(runDay, runDate) {
   navigateToSub('buddy-board');
 
   // Subscribe to realtime updates
-  supabase
+  buddyChannel = supabase
     .channel(`buddy-${runDay}-${runDate}`)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'buddy_requests',
       filter: `run_day=eq.${runDay}` }, () => {
@@ -109,10 +113,20 @@ async function createBuddyRequest(runDay, runDate) {
 
 async function matchWithBuddy(requestId, otherUserId, runDay, runDate) {
   try {
-    // Update the other person's request
-    await supabase.from('buddy_requests').update({
-      matched_with: currentProfile.id
-    }).eq('id', requestId);
+    // Update the other person's request (only if not already matched — race condition guard)
+    const { data, error } = await supabase
+      .from('buddy_requests')
+      .update({ matched_with: currentProfile.id })
+      .eq('id', requestId)
+      .is('matched_with', null)
+      .select()
+      .single();
+
+    if (!data) {
+      showToast('Someone else already matched with them!', 'info');
+      openBuddyBoard(runDay, runDate);
+      return;
+    }
 
     // Create our own request if we don't have one, and mark matched
     const { data: myRequest } = await supabase

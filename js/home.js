@@ -146,10 +146,15 @@ function updateCountdown(targetDate) {
 }
 
 async function handleCheckIn(eventType) {
+  const btn = document.querySelector('.btn-checkin');
+  if (btn) { btn.disabled = true; btn.textContent = 'Checking in...'; }
   const result = await checkIn(eventType);
   if (result) {
     showMilesSlider(result.id);
     await refreshHome();
+  } else if (btn) {
+    btn.disabled = false;
+    btn.textContent = 'CHECK IN';
   }
 }
 

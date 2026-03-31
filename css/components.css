@@ -44,6 +44,8 @@
   inset: 0;
   padding: var(--space-md);
   padding-bottom: var(--space-lg);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ===== TAB BAR ===== */

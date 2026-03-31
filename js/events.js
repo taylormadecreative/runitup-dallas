@@ -85,7 +85,7 @@ async function refreshEvents() {
         <div class="special-events">
           ${upcoming.length === 0 && past.length === 0 ? `
             <div class="empty-state">
-              <p>No events yet. Stay tuned!</p>
+              <p>No special events on the calendar yet. Weekly runs are still going strong — pull up Tuesday or Saturday!</p>
             </div>
           ` : ''}
           ${upcoming.map(e => renderSpecialEventCard(e, rsvpCounts[e.id] || 0, false)).join('')}
@@ -230,7 +230,7 @@ async function toggleRSVP(eventId) {
       event_id: eventId,
       user_id: currentProfile.id
     });
-    showToast("You're going! See you there!", 'success');
+    showToast("Locked in! See you out there — let's run it up!", 'success');
   }
 
   refreshEvents();

@@ -83,8 +83,8 @@
 }
 
 .buddy-count {
-  font-size: 0.625rem;
-  color: var(--color-text-muted);
+  font-size: 0.75rem;
+  color: var(--color-secondary);
   margin-top: var(--space-xs);
 }
 
@@ -240,9 +240,10 @@
 .calendar-day .cal-dot {
   position: absolute;
   bottom: 2px;
-  width: 4px;
-  height: 4px;
+  width: 6px;
+  height: 6px;
   border-radius: 50%;
+  box-shadow: 0 0 2px currentColor;
 }
 
 .cal-dot.weekly { background: var(--color-primary); }
