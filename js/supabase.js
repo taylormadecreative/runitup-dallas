@@ -5,8 +5,8 @@ const DEMO_MODE = true;
 const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23252525'/%3E%3Ctext x='50' y='55' text-anchor='middle' dominant-baseline='middle' font-family='Inter,sans-serif' font-size='40' font-weight='600' fill='%239A9A9A'%3E%3F%3C/text%3E%3C/svg%3E";
 
 // Replace these with your Supabase project credentials
-const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
+const SUPABASE_URL = 'https://rouvbfejsyfcmswlsezd.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvdXZiZmVqc3lmY21zd2xzZXpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5OTIzOTgsImV4cCI6MjA5MDU2ODM5OH0.Mvwj05OpyjtIrEO3pF86bm0JPFk4m1cLjKIwKSEMHWU';
 
 const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
