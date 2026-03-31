@@ -21,10 +21,7 @@ const STATIC_ASSETS = [
   '/js/community.js',
   '/js/stats.js',
   '/js/profile.js',
-  '/js/checkin.js',
-  '/assets/logo.svg',
-  '/assets/logo-192.png',
-  '/assets/logo-512.png'
+  '/js/checkin.js'
 ];
 
 self.addEventListener('install', (event) => {

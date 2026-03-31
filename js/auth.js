@@ -8,7 +8,7 @@ function renderSplash() {
     <img src="/assets/logo.svg" alt="Run It UP!" class="splash-logo">
     <p class="splash-tagline">Built By the Community, Powered by Purpose</p>
     <div class="splash-buttons">
-      <button class="btn-primary" onclick="showScreen('signup')">Get Started</button>
+      <button class="btn-primary" onclick="showScreen('signup')">JOIN THE CREW</button>
       <p class="splash-login-link">Already have an account? <a href="#" onclick="showScreen('login'); return false;">Log In</a></p>
     </div>
   `;
@@ -119,6 +119,10 @@ function renderOnboarding() {
 
     <!-- Step 2: Pace Group -->
     <div class="onboarding-step" id="onboarding-step-2">
+      <button class="auth-back" onclick="prevOnboardingStep()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        Back
+      </button>
       <h2>Your Pace</h2>
       <p>No wrong answers — every level is welcome</p>
       <div class="option-grid">
@@ -158,6 +162,10 @@ function renderOnboarding() {
 
     <!-- Step 3: Run Days -->
     <div class="onboarding-step" id="onboarding-step-3">
+      <button class="auth-back" onclick="prevOnboardingStep()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+        Back
+      </button>
       <h2>When Do You Run?</h2>
       <p>Pick your days — you can always change this later</p>
       <div class="option-grid">
@@ -183,6 +191,16 @@ function renderOnboarding() {
   `;
 }
 
+// ===== FRIENDLY ERROR MESSAGES =====
+function friendlyError(err) {
+  const msg = err?.message || String(err);
+  if (msg.includes('Invalid login credentials')) return "That didn't match. Double-check your email and password.";
+  if (msg.includes('already registered') || msg.includes('already been registered')) return "Looks like you already have an account. Try logging in!";
+  if (msg.includes('Password should be')) return "Password needs to be at least 6 characters.";
+  if (msg.includes('valid email')) return "Please enter a valid email address.";
+  return "Something went wrong. Try again in a sec.";
+}
+
 // ===== AUTH HANDLERS =====
 async function handleLogin(event) {
   event.preventDefault();
@@ -199,7 +217,7 @@ async function handleLogin(event) {
     await signIn(email, password);
     await loadUserAndEnterApp();
   } catch (err) {
-    errorEl.textContent = err.message || 'Login failed. Check your credentials.';
+    errorEl.textContent = friendlyError(err);
     errorEl.classList.remove('hidden');
     btn.disabled = false;
     btn.textContent = 'Log In';
@@ -223,7 +241,7 @@ async function handleSignup(event) {
     renderOnboarding();
     showScreen('onboarding');
   } catch (err) {
-    errorEl.textContent = err.message || 'Signup failed. Try again.';
+    errorEl.textContent = friendlyError(err);
     errorEl.classList.remove('hidden');
     btn.disabled = false;
     btn.textContent = 'Create Account';
@@ -283,6 +301,17 @@ function nextOnboardingStep() {
   onboardingStep++;
 
   document.getElementById(`onboarding-step-${onboardingStep}`).classList.add('active');
+  document.getElementById(`progress-${onboardingStep}`).classList.add('active');
+}
+
+function prevOnboardingStep() {
+  document.getElementById(`onboarding-step-${onboardingStep}`).classList.remove('active');
+  document.getElementById(`progress-${onboardingStep}`).classList.remove('active');
+
+  onboardingStep--;
+
+  document.getElementById(`onboarding-step-${onboardingStep}`).classList.add('active');
+  document.getElementById(`progress-${onboardingStep}`).classList.remove('done');
   document.getElementById(`progress-${onboardingStep}`).classList.add('active');
 }
 

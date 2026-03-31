@@ -92,6 +92,13 @@ async function uploadFile(bucket, path, file) {
   return publicUrl;
 }
 
+// ===== SANITIZATION HELPER =====
+function sanitizeHTML(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
 // ===== TOAST HELPER =====
 function showToast(message, type = 'info') {
   let container = document.getElementById('toast-container');

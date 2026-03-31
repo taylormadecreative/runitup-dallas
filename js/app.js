@@ -5,16 +5,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {});
   }
 
-  // Render auth screens
-  renderSplash();
+  // Render login/signup screens ahead of time
   renderLogin();
   renderSignup();
+
+  // Show loading spinner while checking session
+  document.getElementById('screen-splash').innerHTML = '<div class="loading-screen"><div class="spinner"></div></div>';
+  document.getElementById('screen-splash').classList.add('active');
 
   // Check for existing session
   const session = await getSession();
   if (session) {
     await loadUserAndEnterApp();
   } else {
+    renderSplash();
     showScreen('splash');
   }
 

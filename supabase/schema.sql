@@ -53,9 +53,18 @@ CREATE TABLE public.special_events (
 
 ALTER TABLE public.special_events ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Anyone can read events" ON public.special_events FOR SELECT USING (true);
-CREATE POLICY "Admins can manage events" ON public.special_events FOR ALL USING (
-  EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role IN ('admin', 'captain'))
-);
+CREATE POLICY "Admins can insert events" ON public.special_events
+  FOR INSERT WITH CHECK (
+    EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role IN ('admin', 'captain'))
+  );
+CREATE POLICY "Admins can update events" ON public.special_events
+  FOR UPDATE USING (
+    EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role IN ('admin', 'captain'))
+  );
+CREATE POLICY "Admins can delete events" ON public.special_events
+  FOR DELETE USING (
+    EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role IN ('admin', 'captain'))
+  );
 
 -- ===== EVENT RSVPs =====
 CREATE TABLE public.event_rsvps (
