@@ -1,4 +1,4 @@
-#screen-stats {
+#screen-stats.active {
   display: flex;
   flex-direction: column;
   gap: var(--space-lg);

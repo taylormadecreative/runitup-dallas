@@ -1,5 +1,5 @@
 /* ===== CHANNEL LIST ===== */
-#screen-community {
+#screen-community.active {
   padding: 0 !important;
 }
 
@@ -84,7 +84,7 @@
 }
 
 /* ===== CHAT VIEW ===== */
-#screen-chat {
+#screen-chat.active {
   display: flex;
   flex-direction: column;
   padding: 0 !important;

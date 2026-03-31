@@ -5,7 +5,7 @@ let currentProfile = null;
 // ===== RENDER SPLASH =====
 function renderSplash() {
   document.getElementById('screen-splash').innerHTML = `
-    <img src="/assets/logo.svg" alt="Run It UP!" class="splash-logo">
+    <img src="/assets/logo.png" alt="Run It UP!" class="splash-logo">
     <p class="splash-tagline">Built By the Community, Powered by Purpose</p>
     <div class="splash-buttons">
       <button class="btn-primary" onclick="showScreen('signup')">JOIN THE CREW</button>

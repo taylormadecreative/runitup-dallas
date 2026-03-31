@@ -1,5 +1,5 @@
 /* ===== SPLASH SCREEN ===== */
-#screen-splash {
+#screen-splash.active {
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -53,8 +53,8 @@
 }
 
 /* ===== LOGIN / SIGNUP SCREENS ===== */
-#screen-login,
-#screen-signup {
+#screen-login.active,
+#screen-signup.active {
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -146,7 +146,7 @@
 }
 
 /* ===== ONBOARDING ===== */
-#screen-onboarding {
+#screen-onboarding.active {
   display: flex;
   flex-direction: column;
   height: 100vh;

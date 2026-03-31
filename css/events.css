@@ -1,4 +1,4 @@
-#screen-events {
+#screen-events.active {
   display: flex;
   flex-direction: column;
   gap: var(--space-lg);
