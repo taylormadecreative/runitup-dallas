@@ -56,7 +56,7 @@ async function openBuddyBoard(runDay, runDate) {
     <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
       ${sorted.filter(r => r.user_id !== currentProfile.id).map(r => `
         <div class="card" style="display: flex; align-items: flex-start; gap: var(--space-md); ${r.matched_with ? 'opacity: 0.5;' : ''}">
-          <img src="${r.users?.avatar_url || ''}" class="avatar-md" alt="${r.users?.display_name}">
+          <img src="${r.users?.avatar_url || DEFAULT_AVATAR}" class="avatar-md" alt="${r.users?.display_name}">
           <div style="flex: 1;">
             <div style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: 2px;">
               <strong style="font-size: 0.875rem;">${r.users?.display_name || 'Member'}</strong>

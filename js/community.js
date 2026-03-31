@@ -210,7 +210,7 @@ function renderMessage(msg) {
 
   return `
     <div class="message-row ${isMine ? 'mine' : ''}">
-      <img src="${msg.users?.avatar_url || ''}" class="avatar-sm message-avatar" alt="">
+      <img src="${msg.users?.avatar_url || DEFAULT_AVATAR}" class="avatar-sm message-avatar" alt="">
       <div>
         <div class="message-sender">
           ${msg.users?.display_name || 'Member'}

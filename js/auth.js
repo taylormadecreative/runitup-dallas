@@ -408,7 +408,7 @@ function enterApp() {
 
   // Set header avatar
   const headerAvatar = document.getElementById('header-avatar');
-  headerAvatar.src = currentProfile.avatar_url || '';
+  headerAvatar.src = currentProfile.avatar_url || DEFAULT_AVATAR;
   headerAvatar.alt = currentProfile.display_name;
 
   // Initialize screens

@@ -37,6 +37,7 @@ CREATE INDEX idx_checkins_date ON public.check_ins(checked_in_at);
 ALTER TABLE public.check_ins ENABLE ROW LEVEL SECURITY;
 CREATE POLICY "Anyone can read check-ins" ON public.check_ins FOR SELECT USING (true);
 CREATE POLICY "Users can create own check-ins" ON public.check_ins FOR INSERT WITH CHECK (auth.uid() = user_id);
+CREATE POLICY "Users can update own check-ins" ON public.check_ins FOR UPDATE USING (auth.uid() = user_id);
 
 -- ===== SPECIAL EVENTS =====
 CREATE TABLE public.special_events (

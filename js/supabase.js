@@ -1,3 +1,9 @@
+// Demo mode: set to true to enable check-in at any time
+const DEMO_MODE = true;
+
+// Default avatar for users without a profile photo
+const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23252525'/%3E%3Ctext x='50' y='55' text-anchor='middle' dominant-baseline='middle' font-family='Inter,sans-serif' font-size='40' font-weight='600' fill='%239A9A9A'%3E%3F%3C/text%3E%3C/svg%3E";
+
 // Replace these with your Supabase project credentials
 const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
 const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
@@ -147,9 +153,10 @@ function formatCountdown(targetDate) {
 }
 
 function isCheckInWindow(targetDate) {
+  if (typeof DEMO_MODE !== 'undefined' && DEMO_MODE) return true;
   const now = new Date();
-  const windowStart = new Date(targetDate.getTime() - 30 * 60 * 1000); // 30 min before
-  const windowEnd = new Date(targetDate.getTime() + 60 * 60 * 1000); // 1 hour after
+  const windowStart = new Date(targetDate.getTime() - 30 * 60 * 1000);
+  const windowEnd = new Date(targetDate.getTime() + 60 * 60 * 1000);
   return now >= windowStart && now <= windowEnd;
 }
 

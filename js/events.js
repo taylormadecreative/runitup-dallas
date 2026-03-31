@@ -287,7 +287,7 @@ async function viewEventDetail(eventId) {
       <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm);">
         ${(rsvps || []).map(r => `
           <div style="display: flex; align-items: center; gap: var(--space-xs); background: var(--color-surface); padding: 4px 8px; border-radius: var(--radius-full); font-size: 0.75rem;">
-            <img src="${r.users?.avatar_url || ''}" class="avatar-sm" style="width: 20px; height: 20px;" alt="">
+            <img src="${r.users?.avatar_url || DEFAULT_AVATAR}" class="avatar-sm" style="width: 20px; height: 20px;" alt="">
             ${r.users?.display_name || 'Member'}
           </div>
         `).join('')}
