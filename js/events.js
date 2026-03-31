@@ -223,10 +223,10 @@ async function toggleRSVP(eventId) {
     .maybeSingle();
 
   if (existing) {
-    await supabase.from('event_rsvps').delete().eq('id', existing.id);
+    await supabaseClient.from('event_rsvps').delete().eq('id', existing.id);
     showToast('RSVP removed', 'info');
   } else {
-    await supabase.from('event_rsvps').insert({
+    await supabaseClient.from('event_rsvps').insert({
       event_id: eventId,
       user_id: currentProfile.id
     });

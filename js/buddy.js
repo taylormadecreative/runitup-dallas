@@ -3,7 +3,7 @@ let buddyChannel = null;
 
 async function openBuddyBoard(runDay, runDate) {
   if (buddyChannel) {
-    supabase.removeChannel(buddyChannel);
+    supabaseClient.removeChannel(buddyChannel);
   }
   const container = document.getElementById('screen-buddy-board');
 
@@ -85,7 +85,7 @@ async function openBuddyBoard(runDay, runDate) {
   navigateToSub('buddy-board');
 
   // Subscribe to realtime updates
-  buddyChannel = supabase
+  buddyChannel = supabaseClient
     .channel(`buddy-${runDay}-${runDate}`)
     .on('postgres_changes', { event: '*', schema: 'public', table: 'buddy_requests',
       filter: `run_day=eq.${runDay}` }, () => {
@@ -98,7 +98,7 @@ async function createBuddyRequest(runDay, runDate) {
   const introLine = document.getElementById('buddy-intro')?.value.trim() || null;
 
   try {
-    await supabase.from('buddy_requests').insert({
+    await supabaseClient.from('buddy_requests').insert({
       user_id: currentProfile.id,
       run_day: runDay,
       run_date: runDate,
@@ -138,11 +138,11 @@ async function matchWithBuddy(requestId, otherUserId, runDay, runDate) {
       .maybeSingle();
 
     if (myRequest) {
-      await supabase.from('buddy_requests').update({
+      await supabaseClient.from('buddy_requests').update({
         matched_with: otherUserId
       }).eq('id', myRequest.id);
     } else {
-      await supabase.from('buddy_requests').insert({
+      await supabaseClient.from('buddy_requests').insert({
         user_id: currentProfile.id,
         run_day: runDay,
         run_date: runDate,

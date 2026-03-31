@@ -8,23 +8,23 @@ const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/
 const SUPABASE_URL = 'https://rouvbfejsyfcmswlsezd.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InJvdXZiZmVqc3lmY21zd2xzZXpkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ5OTIzOTgsImV4cCI6MjA5MDU2ODM5OH0.Mvwj05OpyjtIrEO3pF86bm0JPFk4m1cLjKIwKSEMHWU';
 
-const supabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ===== AUTH HELPERS =====
 async function signUp(email, password) {
-  const { data, error } = await supabase.auth.signUp({ email, password });
+  const { data, error } = await supabaseClient.auth.signUp({ email, password });
   if (error) throw error;
   return data;
 }
 
 async function signIn(email, password) {
-  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
   if (error) throw error;
   return data;
 }
 
 async function signInWithGoogle() {
-  const { data, error } = await supabase.auth.signInWithOAuth({
+  const { data, error } = await supabaseClient.auth.signInWithOAuth({
     provider: 'google',
     options: { redirectTo: window.location.origin }
   });
@@ -33,19 +33,19 @@ async function signInWithGoogle() {
 }
 
 async function signOut() {
-  const { error } = await supabase.auth.signOut();
+  const { error } = await supabaseClient.auth.signOut();
   if (error) throw error;
 }
 
 async function getSession() {
-  const { data: { session } } = await supabase.auth.getSession();
+  const { data: { session } } = await supabaseClient.auth.getSession();
   return session;
 }
 
 async function getCurrentUser() {
   const session = await getSession();
   if (!session) return null;
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from('users')
     .select('*')
     .eq('id', session.user.id)
@@ -56,7 +56,7 @@ async function getCurrentUser() {
 
 // ===== PROFILE HELPERS =====
 async function createUserProfile(profile) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from('users')
     .insert(profile)
     .select()
@@ -66,7 +66,7 @@ async function createUserProfile(profile) {
 }
 
 async function updateUserProfile(id, updates) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from('users')
     .update(updates)
     .eq('id', id)
@@ -77,7 +77,7 @@ async function updateUserProfile(id, updates) {
 }
 
 async function getUserProfile(id) {
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from('users')
     .select('*')
     .eq('id', id)
@@ -88,11 +88,11 @@ async function getUserProfile(id) {
 
 // ===== UPLOAD HELPER =====
 async function uploadFile(bucket, path, file) {
-  const { data, error } = await supabase.storage
+  const { data, error } = await supabaseClient.storage
     .from(bucket)
     .upload(path, file, { upsert: true });
   if (error) throw error;
-  const { data: { publicUrl } } = supabase.storage
+  const { data: { publicUrl } } = supabaseClient.storage
     .from(bucket)
     .getPublicUrl(path);
   return publicUrl;

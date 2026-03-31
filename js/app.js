@@ -23,7 +23,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   }
 
   // Listen for auth state changes (e.g., Google OAuth redirect)
-  supabase.auth.onAuthStateChange(async (event, session) => {
+  supabaseClient.auth.onAuthStateChange(async (event, session) => {
     if (event === 'SIGNED_IN' && session) {
       await loadUserAndEnterApp();
     }

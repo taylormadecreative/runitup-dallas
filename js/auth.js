@@ -356,7 +356,7 @@ async function completeOnboarding() {
 
 async function autoJoinChannels(profile) {
   // Get all channels
-  const { data: channels } = await supabase.from('channels').select('id, name, type');
+  const { data: channels } = await supabaseClient.from('channels').select('id, name, type');
   if (!channels) return;
 
   const toJoin = [];
@@ -381,7 +381,7 @@ async function autoJoinChannels(profile) {
   }
 
   if (toJoin.length > 0) {
-    await supabase.from('channel_members').insert(toJoin);
+    await supabaseClient.from('channel_members').insert(toJoin);
   }
 }
 

@@ -143,10 +143,10 @@ async function openChat(channelId, channelName) {
 
   // Subscribe to realtime
   if (chatSubscription) {
-    supabase.removeChannel(chatSubscription);
+    supabaseClient.removeChannel(chatSubscription);
   }
 
-  chatSubscription = supabase
+  chatSubscription = supabaseClient
     .channel(`chat-${channelId}`)
     .on('postgres_changes', {
       event: 'INSERT',
@@ -246,7 +246,7 @@ async function sendMessage() {
   input.value = '';
 
   try {
-    await supabase.from('messages').insert({
+    await supabaseClient.from('messages').insert({
       channel_id: activeChannelId,
       user_id: currentProfile.id,
       content: content
@@ -266,7 +266,7 @@ async function handleChatPhoto(event) {
     const path = `${activeChannelId}/${Date.now()}.${ext}`;
     const url = await uploadFile('chat-images', path, file);
 
-    await supabase.from('messages').insert({
+    await supabaseClient.from('messages').insert({
       channel_id: activeChannelId,
       user_id: currentProfile.id,
       content: '\u{1F4F7} Photo',
@@ -281,7 +281,7 @@ async function handleChatPhoto(event) {
 
 function closeChat() {
   if (chatSubscription) {
-    supabase.removeChannel(chatSubscription);
+    supabaseClient.removeChannel(chatSubscription);
     chatSubscription = null;
   }
   activeChannelId = null;

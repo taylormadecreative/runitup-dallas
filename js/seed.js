@@ -58,7 +58,7 @@ ON CONFLICT (id) DO NOTHING;\n`;
   sql += '\n-- Channel memberships\n';
 
   // Get channel IDs
-  const { data: channels } = await supabase.from('channels').select('id, name');
+  const { data: channels } = await supabaseClient.from('channels').select('id, name');
   const channelMap = {};
   (channels || []).forEach(c => { channelMap[c.name] = c.id; });
 

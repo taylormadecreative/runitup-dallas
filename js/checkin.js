@@ -277,7 +277,7 @@ async function checkAndAwardBadges() {
   if (!earned.has('social_butterfly') && (msgCount || 0) >= 50) toAward.push('social_butterfly');
 
   for (const badgeType of toAward) {
-    await supabase.from('badges').insert({ user_id: userId, badge_type: badgeType });
+    await supabaseClient.from('badges').insert({ user_id: userId, badge_type: badgeType });
     const def = BADGE_DEFINITIONS.find(b => b.type === badgeType);
     if (def) showToast(`Badge earned: ${def.icon} ${def.label}!`, 'success');
   }

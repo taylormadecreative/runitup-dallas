@@ -88,7 +88,7 @@ async function refreshStats() {
 
 async function getLeaderboard(metric, period) {
   // Get all users with check-ins
-  const { data: users } = await supabase.from('users').select('id, display_name, avatar_url, pace_group, created_at');
+  const { data: users } = await supabaseClient.from('users').select('id, display_name, avatar_url, pace_group, created_at');
   if (!users) return [];
 
   let sinceDate = null;
@@ -97,7 +97,7 @@ async function getLeaderboard(metric, period) {
   }
 
   // Get all check-ins (filtered by period)
-  let query = supabase.from('check_ins').select('user_id, miles, checked_in_at, event_type');
+  let query = supabaseClient.from('check_ins').select('user_id, miles, checked_in_at, event_type');
   if (sinceDate) query = query.gte('checked_in_at', sinceDate);
   const { data: allCheckIns } = await query;
 
