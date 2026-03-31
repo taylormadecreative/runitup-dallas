@@ -1,0 +1,117 @@
+#screen-profile,
+#screen-member-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--space-lg);
+  padding-top: var(--space-xl) !important;
+}
+
+.profile-avatar-wrapper {
+  position: relative;
+}
+
+.profile-edit-avatar {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 32px;
+  height: 32px;
+  background: var(--color-primary);
+  border-radius: var(--radius-full);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+.profile-edit-avatar svg {
+  width: 16px;
+  height: 16px;
+  fill: var(--color-bg);
+}
+
+.profile-name {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 800;
+  text-align: center;
+}
+
+.profile-meta {
+  display: flex;
+  align-items: center;
+  gap: var(--space-sm);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.profile-meta .detail {
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.profile-stats-row {
+  display: flex;
+  gap: var(--space-xl);
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-xl);
+}
+
+.profile-stat {
+  text-align: center;
+}
+
+.profile-stat .value {
+  font-family: var(--font-display);
+  font-size: 1.25rem;
+  font-weight: 800;
+}
+
+.profile-stat .label {
+  font-size: 0.625rem;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+}
+
+.profile-badges {
+  display: flex;
+  gap: var(--space-sm);
+}
+
+.profile-badge-slot {
+  width: 56px;
+  height: 56px;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+}
+
+.profile-badge-slot.empty {
+  border: 2px dashed var(--color-surface-hover);
+  font-size: 0.75rem;
+  color: var(--color-text-muted);
+}
+
+.profile-actions {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  margin-top: auto;
+  padding-bottom: var(--space-lg);
+}
+
+.btn-logout {
+  width: 100%;
+  padding: var(--space-md);
+  color: var(--color-error);
+  font-weight: 600;
+  text-align: center;
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+}
