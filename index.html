@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="theme-color" content="#0A0A0A">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="description" content="Run It UP! Dallas — Built By the Community, Powered by Purpose">
+  <meta property="og:title" content="Run It UP! Dallas">
+  <meta property="og:description" content="The official app for Dallas's run club. Check in, connect, run together.">
+  <meta property="og:image" content="/assets/og-image.png">
+  <title>Run It UP! | Dallas Run Club</title>
+  <link rel="manifest" href="/manifest.json">
+  <link rel="icon" href="/assets/logo-192.png">
+  <link rel="apple-touch-icon" href="/assets/logo-192.png">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/css/variables.css">
+  <link rel="stylesheet" href="/css/base.css">
+  <link rel="stylesheet" href="/css/components.css">
+  <link rel="stylesheet" href="/css/auth.css">
+  <link rel="stylesheet" href="/css/home.css">
+  <link rel="stylesheet" href="/css/events.css">
+  <link rel="stylesheet" href="/css/community.css">
+  <link rel="stylesheet" href="/css/stats.css">
+  <link rel="stylesheet" href="/css/profile.css">
+</head>
+<body>
+  <!-- Auth Screens -->
+  <div id="screen-splash" class="screen active">
+    <!-- Splash content rendered by auth.js -->
+  </div>
+  <div id="screen-login" class="screen">
+    <!-- Login form rendered by auth.js -->
+  </div>
+  <div id="screen-signup" class="screen">
+    <!-- Signup form rendered by auth.js -->
+  </div>
+  <div id="screen-onboarding" class="screen">
+    <!-- Onboarding steps rendered by auth.js -->
+  </div>
+
+  <!-- App Shell (visible after auth) -->
+  <div id="app-shell" class="hidden">
+    <!-- Header -->
+    <header id="app-header">
+      <img src="/assets/logo.svg" alt="Run It UP!" class="header-logo">
+      <div class="header-right">
+        <button id="btn-notifications" class="icon-btn" aria-label="Notifications">
+          <svg class="icon" viewBox="0 0 24 24"><path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.9 2 2 2zm6-6v-5c0-3.07-1.63-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.64 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/></svg>
+          <span id="notification-badge" class="badge hidden">0</span>
+        </button>
+        <button id="btn-header-profile" class="avatar-btn" aria-label="Profile">
+          <img id="header-avatar" src="" alt="" class="avatar-sm">
+        </button>
+      </div>
+    </header>
+
+    <!-- Screen Containers -->
+    <main id="app-main">
+      <div id="screen-home" class="screen active"></div>
+      <div id="screen-events" class="screen"></div>
+      <div id="screen-community" class="screen"></div>
+      <div id="screen-stats" class="screen"></div>
+      <div id="screen-profile" class="screen"></div>
+      <div id="screen-member-profile" class="screen"></div>
+      <div id="screen-chat" class="screen"></div>
+      <div id="screen-buddy-board" class="screen"></div>
+      <div id="screen-event-detail" class="screen"></div>
+    </main>
+
+    <!-- Bottom Tab Bar -->
+    <nav id="tab-bar">
+      <button class="tab active" data-screen="home" aria-label="Home">
+        <svg class="tab-icon" viewBox="0 0 24 24"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/></svg>
+        <span class="tab-label">Home</span>
+      </button>
+      <button class="tab" data-screen="events" aria-label="Events">
+        <svg class="tab-icon" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
+        <span class="tab-label">Events</span>
+      </button>
+      <button class="tab" data-screen="community" aria-label="Community">
+        <svg class="tab-icon" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
+        <span class="tab-label">Community</span>
+        <span id="community-badge" class="badge hidden">0</span>
+      </button>
+      <button class="tab" data-screen="stats" aria-label="Stats">
+        <svg class="tab-icon" viewBox="0 0 24 24"><path d="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z"/></svg>
+        <span class="tab-label">Stats</span>
+      </button>
+      <button class="tab" data-screen="profile" aria-label="Profile">
+        <svg class="tab-icon" viewBox="0 0 24 24"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+        <span class="tab-label">Profile</span>
+      </button>
+    </nav>
+  </div>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/js/supabase.js"></script>
+  <script src="/js/auth.js"></script>
+  <script src="/js/checkin.js"></script>
+  <script src="/js/home.js"></script>
+  <script src="/js/events.js"></script>
+  <script src="/js/buddy.js"></script>
+  <script src="/js/community.js"></script>
+  <script src="/js/stats.js"></script>
+  <script src="/js/profile.js"></script>
+  <script src="/js/app.js"></script>
+</body>
+</html>

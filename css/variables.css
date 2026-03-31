@@ -1,0 +1,37 @@
+:root {
+  /* Colors */
+  --color-bg: #0A0A0A;
+  --color-surface: #1A1A1A;
+  --color-surface-hover: #252525;
+  --color-primary: #BFFF00;
+  --color-primary-dark: #99CC00;
+  --color-secondary: #FF6B2B;
+  --color-text: #FFFFFF;
+  --color-text-muted: #8A8A8A;
+  --color-success: #00C853;
+  --color-error: #FF3B30;
+  --color-badge-bg: #FF3B30;
+
+  /* Typography */
+  --font-display: 'Big Shoulders Display', sans-serif;
+  --font-body: 'Inter', sans-serif;
+
+  /* Spacing */
+  --space-xs: 4px;
+  --space-sm: 8px;
+  --space-md: 16px;
+  --space-lg: 24px;
+  --space-xl: 32px;
+  --space-2xl: 48px;
+
+  /* Radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-full: 9999px;
+
+  /* Layout */
+  --header-height: 56px;
+  --tab-bar-height: 72px;
+  --safe-area-bottom: env(safe-area-inset-bottom, 0px);
+}
