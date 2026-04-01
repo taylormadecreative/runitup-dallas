@@ -267,7 +267,7 @@ async function handleGoogleAuth() {
   try {
     await signInWithGoogle();
   } catch (err) {
-    showToast(err.message || 'Google sign-in failed', 'error');
+    showToast("Google didn't connect — try again.", 'error');
   }
 }
 

@@ -166,7 +166,7 @@ async function handleCheckIn(eventType) {
       btn.textContent = 'CHECK IN';
     }
   } catch (err) {
-    showToast('Check-in failed. Try again.', 'error');
+    showToast("Check-in didn't go through — give it one more try.", 'error');
     if (btn) { btn.disabled = false; btn.textContent = 'CHECK IN'; }
   }
 }
