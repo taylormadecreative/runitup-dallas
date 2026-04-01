@@ -5,7 +5,7 @@ let currentProfile = null;
 // ===== RENDER SPLASH =====
 function renderSplash() {
   document.getElementById('screen-splash').innerHTML = `
-    <img src="/assets/logo.png" alt="Run It UP!" class="splash-logo">
+    <img src="./assets/logo.png" alt="Run It UP!" class="splash-logo">
     <p class="splash-tagline">Built By the Community, Powered by Purpose</p>
     <p style="font-size: 0.75rem; color: var(--color-primary); font-weight: 600; margin-bottom: var(--space-md);">82K+ runners. Dallas's biggest run club.</p>
     <div class="splash-buttons">

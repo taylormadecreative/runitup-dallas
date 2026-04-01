@@ -75,8 +75,8 @@ async function refreshProfile() {
     </div>
 
     <div style="width: 100%; display: flex; flex-direction: column; gap: var(--space-xs);">
-      <a href="#" onclick="window.open('/privacy.html', '_blank'); return false;" style="font-size: 0.75rem; color: var(--color-text-muted); padding: var(--space-sm) 0;">Privacy Policy</a>
-      <a href="#" onclick="window.open('/terms.html', '_blank'); return false;" style="font-size: 0.75rem; color: var(--color-text-muted); padding: var(--space-sm) 0;">Terms of Service</a>
+      <a href="#" onclick="window.open('./privacy.html', '_blank'); return false;" style="font-size: 0.75rem; color: var(--color-text-muted); padding: var(--space-sm) 0;">Privacy Policy</a>
+      <a href="#" onclick="window.open('./terms.html', '_blank'); return false;" style="font-size: 0.75rem; color: var(--color-text-muted); padding: var(--space-sm) 0;">Terms of Service</a>
     </div>
 
     <div class="profile-actions">

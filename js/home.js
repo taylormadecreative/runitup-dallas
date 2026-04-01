@@ -64,7 +64,7 @@ async function refreshHome() {
 
   container.innerHTML = `
     <!-- Hero Banner -->
-    <div class="home-hero" style="background-image: url('/assets/photos/hero-group.jpg');">
+    <div class="home-hero" style="background-image: url('./assets/photos/hero-group.jpg');">
       <div class="home-hero-overlay">
         <div class="next-run-label">Next Run</div>
         <div class="next-run-title">${nextRun.label} \u2014 <span>${nextRun.location}</span></div>
@@ -110,12 +110,12 @@ async function refreshHome() {
     <div class="home-gallery-section">
       <h3 class="section-header">The Crew</h3>
       <div class="home-gallery-scroll">
-        <img src="/assets/photos/community-vibes.jpg" class="home-gallery-img" alt="Community vibes">
-        <img src="/assets/photos/deep-ellum-night.jpg" class="home-gallery-img" alt="Deep Ellum night run">
-        <img src="/assets/photos/warmup-stretch.jpg" class="home-gallery-img" alt="Pre-run warmup">
-        <img src="/assets/photos/urban-run.jpg" class="home-gallery-img" alt="Urban run">
-        <img src="/assets/photos/group-run-city.jpg" class="home-gallery-img" alt="Group run">
-        <img src="/assets/photos/fair-oaks-morning.jpg" class="home-gallery-img" alt="Fair Oaks morning">
+        <img src="./assets/photos/community-vibes.jpg" class="home-gallery-img" alt="Community vibes">
+        <img src="./assets/photos/deep-ellum-night.jpg" class="home-gallery-img" alt="Deep Ellum night run">
+        <img src="./assets/photos/warmup-stretch.jpg" class="home-gallery-img" alt="Pre-run warmup">
+        <img src="./assets/photos/urban-run.jpg" class="home-gallery-img" alt="Urban run">
+        <img src="./assets/photos/group-run-city.jpg" class="home-gallery-img" alt="Group run">
+        <img src="./assets/photos/fair-oaks-morning.jpg" class="home-gallery-img" alt="Fair Oaks morning">
       </div>
     </div>
 
