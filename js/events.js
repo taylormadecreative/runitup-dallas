@@ -19,14 +19,14 @@ async function refreshEvents() {
   const nextTuesdayDate = getNextRunDate(2).toISOString().split('T')[0];
   const nextSaturdayDate = getNextRunDate(6).toISOString().split('T')[0];
 
-  const { count: tuesdayBuddies } = await supabase
+  const { count: tuesdayBuddies } = await supabaseClient
     .from('buddy_requests')
     .select('*', { count: 'exact', head: true })
     .eq('run_day', 'tuesday')
     .eq('run_date', nextTuesdayDate)
     .is('matched_with', null);
 
-  const { count: saturdayBuddies } = await supabase
+  const { count: saturdayBuddies } = await supabaseClient
     .from('buddy_requests')
     .select('*', { count: 'exact', head: true })
     .eq('run_day', 'saturday')
@@ -38,7 +38,7 @@ async function refreshEvents() {
   const saturdayChecked = await hasCheckedInToday('weekly_saturday');
 
   // Get special events
-  const { data: specialEvents } = await supabase
+  const { data: specialEvents } = await supabaseClient
     .from('special_events')
     .select('*')
     .order('event_date');
@@ -50,7 +50,7 @@ async function refreshEvents() {
   // Get RSVP counts
   const rsvpCounts = {};
   if (specialEvents?.length) {
-    const { data: rsvps } = await supabase
+    const { data: rsvps } = await supabaseClient
       .from('event_rsvps')
       .select('event_id')
       .in('event_id', specialEvents.map(e => e.id));
@@ -224,7 +224,7 @@ async function toggleRSVP(eventId) {
 
   if (existing) {
     await supabaseClient.from('event_rsvps').delete().eq('id', existing.id);
-    showToast('RSVP removed', 'info');
+    showToast('No worries — maybe next time!', 'info');
   } else {
     await supabaseClient.from('event_rsvps').insert({
       event_id: eventId,

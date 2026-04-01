@@ -1,6 +1,13 @@
 // ===== HOME SCREEN =====
 let countdownInterval = null;
 
+function cleanupHome() {
+  if (countdownInterval) {
+    clearInterval(countdownInterval);
+    countdownInterval = null;
+  }
+}
+
 async function initHome() {
   await refreshHome();
 }
@@ -26,7 +33,7 @@ async function refreshHome() {
   const lastCount = await getCheckInCountForEvent(nextRun.eventType, 7);
 
   // Get upcoming special event
-  const { data: upcomingEvents } = await supabase
+  const { data: upcomingEvents } = await supabaseClient
     .from('special_events')
     .select('*, event_rsvps(count)')
     .gte('event_date', new Date().toISOString())
@@ -112,7 +119,7 @@ async function refreshHome() {
   // Start countdown timer
   if (countdownInterval) clearInterval(countdownInterval);
   updateCountdown(nextRunDate);
-  countdownInterval = setInterval(() => updateCountdown(nextRunDate), 60000);
+  countdownInterval = setInterval(() => updateCountdown(nextRunDate), 10000);
 }
 
 function updateCountdown(targetDate) {
@@ -180,7 +187,7 @@ async function getCommunityHighlights() {
   }
 
   // Recent badges earned (by anyone)
-  const { data: recentBadges } = await supabase
+  const { data: recentBadges } = await supabaseClient
     .from('badges')
     .select('badge_type, users(display_name)')
     .order('earned_at', { ascending: false })

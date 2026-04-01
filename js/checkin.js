@@ -35,7 +35,7 @@ async function checkIn(eventType, eventId = null) {
     throw error;
   }
 
-  showToast("You're checked in! Let's run!", 'success');
+  showToast("YOU'RE LOCKED IN! Time to run it up!", 'success');
 
   // Check for new badges after check-in
   await checkAndAwardBadges();
@@ -53,7 +53,7 @@ async function logMiles(checkInId, miles) {
     showToast('Failed to log miles', 'error');
     return;
   }
-  showToast(`${miles} miles logged!`, 'success');
+  showToast(`${miles} miles in the books! Keep stacking!`, 'success');
 
   // Re-check badges (Century Club depends on miles)
   await checkAndAwardBadges();
@@ -279,7 +279,7 @@ async function checkAndAwardBadges() {
   for (const badgeType of toAward) {
     await supabaseClient.from('badges').insert({ user_id: userId, badge_type: badgeType });
     const def = BADGE_DEFINITIONS.find(b => b.type === badgeType);
-    if (def) showToast(`Badge earned: ${def.icon} ${def.label}!`, 'success');
+    if (def) showToast(`NEW BADGE UNLOCKED: ${def.icon} ${def.label}!`, 'success');
   }
 }
 

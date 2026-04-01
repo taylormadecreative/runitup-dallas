@@ -80,7 +80,7 @@ async function refreshStats() {
             <span class="lb-stat">${entry.statValue}${leaderboardMetric === 'miles' ? ' mi' : ''}</span>
           </div>
         `).join('')}
-        ${leaderboard.length === 0 ? '<div class="empty-state"><p>No data yet. Check in to get on the board!</p></div>' : ''}
+        ${leaderboard.length === 0 ? '<div class="empty-state"><p>Your journey starts now. Check in at your next run and watch this light up.</p></div>' : ''}
       </div>
     </div>
   `;

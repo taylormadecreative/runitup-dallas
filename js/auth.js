@@ -34,6 +34,9 @@ function renderLogin() {
         <label class="form-label" for="login-password">Password</label>
         <input class="form-input" type="password" id="login-password" placeholder="Enter your password" required autocomplete="current-password">
       </div>
+      <div style="text-align: right; margin-top: -8px; margin-bottom: var(--space-md);">
+        <a href="#" onclick="handleForgotPassword(); return false;" style="font-size: 0.75rem; color: var(--color-text-muted);">Forgot password?</a>
+      </div>
       <div id="login-error" class="form-error hidden"></div>
       <div class="auth-actions">
         <button type="submit" class="btn-primary" id="btn-login">Log In</button>
@@ -46,6 +49,17 @@ function renderLogin() {
       </div>
     </form>
   `;
+}
+
+async function handleForgotPassword() {
+  const email = document.getElementById('login-email').value;
+  if (!email) { showToast('Enter your email first, then tap forgot password.', 'info'); return; }
+  try {
+    await supabaseClient.auth.resetPasswordForEmail(email);
+    showToast('Password reset email sent! Check your inbox.', 'success');
+  } catch (err) {
+    showToast('Could not send reset email. Try again.', 'error');
+  }
 }
 
 // ===== RENDER SIGNUP =====

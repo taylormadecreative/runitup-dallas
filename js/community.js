@@ -252,7 +252,7 @@ async function sendMessage() {
       content: content
     });
   } catch (err) {
-    showToast('Failed to send message', 'error');
+    showToast("That message didn't go through — try one more time.", 'error');
     input.value = content;
   }
 }
@@ -273,7 +273,7 @@ async function handleChatPhoto(event) {
       image_url: url
     });
   } catch (err) {
-    showToast('Failed to upload photo', 'error');
+    showToast("Photo didn't upload — try again.", 'error');
   }
 
   event.target.value = '';

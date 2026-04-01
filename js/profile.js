@@ -180,6 +180,8 @@ async function updateProfileAvatar(event) {
 }
 
 function showEditProfile() {
+  editPaceGroup = currentProfile.pace_group;
+  editRunDays = [...currentProfile.run_days];
   const container = document.getElementById('screen-profile');
 
   container.innerHTML = `

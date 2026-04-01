@@ -96,7 +96,7 @@
 }
 
 .badge-label {
-  font-size: 0.5rem;
+  font-size: 0.625rem;
   font-weight: 600;
   color: var(--color-text-muted);
   text-transform: uppercase;

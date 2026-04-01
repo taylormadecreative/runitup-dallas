@@ -107,7 +107,7 @@ async function createBuddyRequest(runDay, runDate) {
     showToast("You're on the board! We'll notify you when someone matches.", 'success');
     openBuddyBoard(runDay, runDate);
   } catch (err) {
-    showToast('Failed to add buddy request', 'error');
+    showToast("Couldn't add you to the board — try again.", 'error');
   }
 }
 
@@ -157,7 +157,7 @@ async function matchWithBuddy(requestId, otherUserId, runDay, runDate) {
 
     openBuddyBoard(runDay, runDate);
   } catch (err) {
-    showToast('Match failed. Try again.', 'error');
+    showToast("Match didn't go through — give it one more shot.", 'error');
   }
 }
 
