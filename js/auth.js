@@ -251,7 +251,9 @@ async function handleSignup(event) {
   errorEl.classList.add('hidden');
 
   try {
-    await signUp(email, password);
+    const { session } = await signUp(email, password);
+    // Store session for onboarding to use
+    window._pendingSession = session;
     // After signup, go to onboarding
     renderOnboarding();
     showScreen('onboarding');
@@ -336,8 +338,13 @@ async function completeOnboarding() {
   btn.textContent = 'Setting up...';
 
   try {
-    const session = await getSession();
-    if (!session) throw new Error('No session');
+    let session = await getSession();
+    // Fallback: use session from signup if getSession returns null (email confirmation enabled)
+    if (!session && window._pendingSession) {
+      session = window._pendingSession;
+      window._pendingSession = null;
+    }
+    if (!session) throw new Error('No session — please try signing up again.');
 
     // Upload avatar if selected
     let avatarUrl = null;
