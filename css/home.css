@@ -120,7 +120,7 @@
 
 .streak-dots {
   display: flex;
-  gap: 6px;
+  gap: var(--space-xs); /* 4px — use 6px if too tight */
   margin-left: auto;
 }
 

@@ -7,6 +7,7 @@ async function initProfile() {
 async function refreshProfile() {
   const container = document.getElementById('screen-profile');
   if (!currentProfile) return;
+  container.innerHTML = '<div class="loading-screen"><div class="spinner"></div></div>';
 
   const stats = await getUserStats(currentProfile.id);
   const badges = await getUserBadges(currentProfile.id);
@@ -26,7 +27,7 @@ async function refreshProfile() {
 
   container.innerHTML = `
     <div class="profile-avatar-wrapper">
-      <img src="${currentProfile.avatar_url || DEFAULT_AVATAR}" class="avatar-xl" alt="${currentProfile.display_name}">
+      <img src="${safeAvatarUrl(currentProfile.avatar_url)}" class="avatar-xl" alt="${escapeHtml(currentProfile.display_name)}">
       <label class="profile-edit-avatar" for="profile-avatar-input">
         <svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04c.39-.39.39-1.02 0-1.41l-2.34-2.34c-.39-.39-1.02-.39-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z"/></svg>
       </label>
@@ -68,8 +69,8 @@ async function refreshProfile() {
     </div>
 
     <div style="width: 100%; display: flex; flex-direction: column; gap: var(--space-xs);">
-      <a href="#" onclick="showToast('Privacy Policy coming soon', 'info'); return false;" style="font-size: 0.75rem; color: var(--color-text-muted); padding: var(--space-sm) 0;">Privacy Policy</a>
-      <a href="#" onclick="showToast('Terms of Service coming soon', 'info'); return false;" style="font-size: 0.75rem; color: var(--color-text-muted); padding: var(--space-sm) 0;">Terms of Service</a>
+      <a href="#" onclick="window.open('/privacy.html', '_blank'); return false;" style="font-size: 0.75rem; color: var(--color-text-muted); padding: var(--space-sm) 0;">Privacy Policy</a>
+      <a href="#" onclick="window.open('/terms.html', '_blank'); return false;" style="font-size: 0.75rem; color: var(--color-text-muted); padding: var(--space-sm) 0;">Terms of Service</a>
     </div>
 
     <div class="profile-actions">
@@ -112,7 +113,7 @@ async function viewMemberProfile(userId) {
       Back
     </button>
 
-    <img src="${profile.avatar_url || DEFAULT_AVATAR}" class="avatar-xl" alt="${profile.display_name}">
+    <img src="${safeAvatarUrl(profile.avatar_url)}" class="avatar-xl" alt="${escapeHtml(profile.display_name)}">
 
     <div>
       <div class="profile-name">${profile.display_name}</div>
@@ -178,10 +179,10 @@ async function updateProfileAvatar(event) {
     // Update header avatar too
     document.getElementById('header-avatar').src = url;
 
-    showToast('Avatar updated!', 'success');
+    showToast('New pic, who dis?', 'success');
     refreshProfile();
   } catch (err) {
-    showToast('Failed to update avatar', 'error');
+    showToast('Photo didn\'t save — try again.', 'error');
   }
 }
 
@@ -260,7 +261,7 @@ function toggleEditRunDay(el, day) {
 
 async function saveProfile() {
   const name = document.getElementById('edit-name')?.value.trim();
-  if (!name) { showToast('Name cannot be empty', 'error'); return; }
+  if (!name) { showToast('We need a name for the leaderboard!', 'error'); return; }
 
   const updates = { display_name: name };
   if (editPaceGroup) updates.pace_group = editPaceGroup;
@@ -268,12 +269,12 @@ async function saveProfile() {
 
   try {
     currentProfile = await updateUserProfile(currentProfile.id, updates);
-    showToast('Profile updated!', 'success');
+    showToast('Profile updated — looking good!', 'success');
     editPaceGroup = null;
     editRunDays = [];
     refreshProfile();
   } catch (err) {
-    showToast('Update failed', 'error');
+    showToast('That didn\'t save — give it another shot.', 'error');
   }
 }
 
@@ -290,8 +291,8 @@ async function handleDeleteAccount() {
     // Delete user profile data (cascades will handle related data)
     await supabaseClient.from('users').delete().eq('id', currentProfile.id);
     await signOut();
-    showToast('Account deleted. We hope to see you on the pavement again someday.', 'info');
+    showToast('Account deleted. We hope to see you on the pavement again.', 'info');
   } catch (err) {
-    showToast('Could not delete account. Contact support.', 'error');
+    showToast('Couldn\'t delete right now — reach out to contactus@runitupdallas.com', 'error');
   }
 }

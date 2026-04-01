@@ -65,7 +65,15 @@ input, textarea {
   -webkit-overflow-scrolling: touch;
 }
 
-.screen.active { display: block; }
+.screen.active {
+  display: block;
+  animation: fadeIn 0.15s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
 
 /* Scrollbar styling */
 .screen::-webkit-scrollbar { width: 0; }

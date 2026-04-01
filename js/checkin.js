@@ -5,7 +5,7 @@ async function checkIn(eventType, eventId = null) {
 
   // Check if already checked in today for this event type
   const today = new Date().toISOString().split('T')[0];
-  const { data: existing } = await supabase
+  const { data: existing } = await supabaseClient
     .from('check_ins')
     .select('id')
     .eq('user_id', currentProfile.id)
@@ -19,7 +19,7 @@ async function checkIn(eventType, eventId = null) {
     return null;
   }
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from('check_ins')
     .insert({
       user_id: currentProfile.id,
@@ -31,7 +31,7 @@ async function checkIn(eventType, eventId = null) {
     .single();
 
   if (error) {
-    showToast('Check-in failed. Try again.', 'error');
+    showToast('Check-in didn\'t go through — try again.', 'error');
     throw error;
   }
 
@@ -44,13 +44,13 @@ async function checkIn(eventType, eventId = null) {
 }
 
 async function logMiles(checkInId, miles) {
-  const { error } = await supabase
+  const { error } = await supabaseClient
     .from('check_ins')
     .update({ miles })
     .eq('id', checkInId);
 
   if (error) {
-    showToast('Failed to log miles', 'error');
+    showToast('Miles didn\'t save — try again.', 'error');
     return;
   }
   showToast(`${miles} miles in the books! Keep stacking!`, 'success');
@@ -63,7 +63,7 @@ async function getCheckInCountForEvent(eventType, daysBack = 7) {
   const since = new Date();
   since.setDate(since.getDate() - daysBack);
 
-  const { count } = await supabase
+  const { count } = await supabaseClient
     .from('check_ins')
     .select('*', { count: 'exact', head: true })
     .eq('event_type', eventType)
@@ -75,7 +75,7 @@ async function getCheckInCountForEvent(eventType, daysBack = 7) {
 async function hasCheckedInToday(eventType) {
   if (!currentProfile) return false;
   const today = new Date().toISOString().split('T')[0];
-  const { data } = await supabase
+  const { data } = await supabaseClient
     .from('check_ins')
     .select('id')
     .eq('user_id', currentProfile.id)
@@ -87,7 +87,7 @@ async function hasCheckedInToday(eventType) {
 }
 
 async function getUserCheckIns(userId) {
-  const { data } = await supabase
+  const { data } = await supabaseClient
     .from('check_ins')
     .select('*')
     .eq('user_id', userId)
@@ -219,7 +219,7 @@ async function checkAndAwardBadges() {
   const userId = currentProfile.id;
 
   // Get existing badges
-  const { data: existingBadges } = await supabase
+  const { data: existingBadges } = await supabaseClient
     .from('badges')
     .select('badge_type')
     .eq('user_id', userId);
@@ -251,14 +251,14 @@ async function checkAndAwardBadges() {
   }
 
   // Get buddy match count
-  const { count: buddyCount } = await supabase
+  const { count: buddyCount } = await supabaseClient
     .from('buddy_requests')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', userId)
     .not('matched_with', 'is', null);
 
   // Get message count
-  const { count: msgCount } = await supabase
+  const { count: msgCount } = await supabaseClient
     .from('messages')
     .select('*', { count: 'exact', head: true })
     .eq('user_id', userId);
@@ -284,7 +284,7 @@ async function checkAndAwardBadges() {
 }
 
 async function getUserBadges(userId) {
-  const { data } = await supabase
+  const { data } = await supabaseClient
     .from('badges')
     .select('*')
     .eq('user_id', userId)
@@ -293,7 +293,7 @@ async function getUserBadges(userId) {
 }
 
 async function getPinnedBadges(userId) {
-  const { data } = await supabase
+  const { data } = await supabaseClient
     .from('pinned_badges')
     .select('*, badges(*)')
     .eq('user_id', userId)

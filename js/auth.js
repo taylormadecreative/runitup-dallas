@@ -7,6 +7,7 @@ function renderSplash() {
   document.getElementById('screen-splash').innerHTML = `
     <img src="/assets/logo.png" alt="Run It UP!" class="splash-logo">
     <p class="splash-tagline">Built By the Community, Powered by Purpose</p>
+    <p style="font-size: 0.75rem; color: var(--color-secondary); font-weight: 600; margin-bottom: var(--space-md);">82K+ runners. Dallas's biggest run club.</p>
     <div class="splash-buttons">
       <button class="btn-primary" onclick="showScreen('signup')">JOIN THE CREW</button>
       <p class="splash-login-link">Already have an account? <a href="#" onclick="showScreen('login'); return false;">Log In</a></p>
@@ -58,7 +59,7 @@ async function handleForgotPassword() {
     await supabaseClient.auth.resetPasswordForEmail(email);
     showToast('Password reset email sent! Check your inbox.', 'success');
   } catch (err) {
-    showToast('Could not send reset email. Try again.', 'error');
+    showToast('Reset email didn\'t send — try again.', 'error');
   }
 }
 
@@ -304,7 +305,7 @@ function toggleRunDay(el, day) {
 function nextOnboardingStep() {
   if (onboardingStep === 1) {
     const name = document.getElementById('onboarding-name').value.trim();
-    if (!name) { showToast('Please enter your name', 'error'); return; }
+    if (!name) { showToast('We need a name to put on the leaderboard!', 'error'); return; }
     onboardingData.display_name = name;
   }
 
@@ -362,7 +363,7 @@ async function completeOnboarding() {
     currentProfile = profile;
     enterApp();
   } catch (err) {
-    showToast(err.message || 'Setup failed. Please try again.', 'error');
+    showToast(err.message || 'Setup hit a snag — try again.', 'error');
     btn.disabled = false;
     btn.textContent = "Let's Run";
   }
@@ -428,7 +429,7 @@ function enterApp() {
 
   // Set header avatar
   const headerAvatar = document.getElementById('header-avatar');
-  headerAvatar.src = currentProfile.avatar_url || DEFAULT_AVATAR;
+  headerAvatar.src = safeAvatarUrl(currentProfile.avatar_url);
   headerAvatar.alt = currentProfile.display_name;
 
   // Initialize screens

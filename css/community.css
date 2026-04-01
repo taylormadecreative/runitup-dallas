@@ -222,8 +222,8 @@
 .chat-input::placeholder { color: var(--color-text-muted); }
 
 .chat-send-btn {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   border-radius: var(--radius-full);
   background: var(--color-primary);
   display: flex;
@@ -239,8 +239,8 @@
 }
 
 .chat-photo-btn {
-  width: 36px;
-  height: 36px;
+  width: 44px;
+  height: 44px;
   display: flex;
   align-items: center;
   justify-content: center;

@@ -10,6 +10,7 @@ async function initEvents() {
 async function refreshEvents() {
   const container = document.getElementById('screen-events');
   if (!currentProfile) return;
+  container.innerHTML = '<div class="loading-screen"><div class="spinner"></div></div>';
 
   // Get weekly run stats
   const tuesdayCount = await getCheckInCountForEvent('weekly_tuesday', 7);
@@ -136,7 +137,7 @@ function renderWeeklyRunCard(run, lastCount, buddyCount, checkedIn, nextDate) {
 function renderSpecialEventCard(event, rsvpCount, isPast) {
   return `
     <div class="special-event-card" onclick="viewEventDetail('${event.id}')">
-      ${event.cover_image_url ? `<img src="${event.cover_image_url}" alt="${event.title}">` : ''}
+      ${event.cover_image_url ? `<img src="${event.cover_image_url}" alt="${escapeHtml(event.title)}">` : `<div class="event-no-cover">🏃</div>`}
       <div class="special-event-body">
         <h3>${event.title}</h3>
         <div class="special-event-meta">
@@ -214,26 +215,29 @@ function changeCalendarMonth(delta) {
 
 async function toggleRSVP(eventId) {
   if (!currentProfile) return;
+  try {
+    const { data: existing } = await supabaseClient
+      .from('event_rsvps')
+      .select('id')
+      .eq('event_id', eventId)
+      .eq('user_id', currentProfile.id)
+      .maybeSingle();
 
-  const { data: existing } = await supabaseClient
-    .from('event_rsvps')
-    .select('id')
-    .eq('event_id', eventId)
-    .eq('user_id', currentProfile.id)
-    .maybeSingle();
+    if (existing) {
+      await supabaseClient.from('event_rsvps').delete().eq('id', existing.id);
+      showToast('No worries — maybe next time!', 'info');
+    } else {
+      await supabaseClient.from('event_rsvps').insert({
+        event_id: eventId,
+        user_id: currentProfile.id
+      });
+      showToast("Locked in! See you out there — let's run it up!", 'success');
+    }
 
-  if (existing) {
-    await supabaseClient.from('event_rsvps').delete().eq('id', existing.id);
-    showToast('No worries — maybe next time!', 'info');
-  } else {
-    await supabaseClient.from('event_rsvps').insert({
-      event_id: eventId,
-      user_id: currentProfile.id
-    });
-    showToast("Locked in! See you out there — let's run it up!", 'success');
+    refreshEvents();
+  } catch (err) {
+    showToast("RSVP didn't go through — try again.", 'error');
   }
-
-  refreshEvents();
 }
 
 async function viewEventDetail(eventId) {
@@ -265,14 +269,14 @@ async function viewEventDetail(eventId) {
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
       Events
     </button>
-    ${event.cover_image_url ? `<img src="${event.cover_image_url}" alt="${event.title}" class="event-detail-cover">` : ''}
-    <h2 style="margin-bottom: var(--space-sm);">${event.title}</h2>
+    ${event.cover_image_url ? `<img src="${event.cover_image_url}" alt="${escapeHtml(event.title)}" class="event-detail-cover">` : ''}
+    <h2 style="margin-bottom: var(--space-sm);">${escapeHtml(event.title)}</h2>
     <div class="event-detail-meta">
       📅 ${formatDate(event.event_date)} · ${formatTime(event.event_date)}<br>
-      📍 ${event.location_name} — ${event.location_address}
+      📍 ${escapeHtml(event.location_name)} — ${escapeHtml(event.location_address)}
       <br><a href="https://maps.google.com/?q=${encodeURIComponent(event.location_address)}" target="_blank">Get Directions</a>
     </div>
-    ${event.description ? `<p class="event-detail-description">${event.description}</p>` : ''}
+    ${event.description ? `<p class="event-detail-description">${escapeHtml(event.description)}</p>` : ''}
 
     ${!isPast ? `
       <button class="btn-primary ${userRsvp ? 'btn-orange' : ''}" onclick="(async()=>{await toggleRSVP('${event.id}');viewEventDetail('${event.id}')})()">
@@ -287,8 +291,8 @@ async function viewEventDetail(eventId) {
       <div class="event-attendees-list">
         ${(rsvps || []).map(r => `
           <div class="event-attendee-chip">
-            <img src="${r.users?.avatar_url || DEFAULT_AVATAR}" class="avatar-sm" alt="">
-            ${r.users?.display_name || 'Member'}
+            <img src="${safeAvatarUrl(r.users?.avatar_url)}" class="avatar-sm" alt="">
+            ${escapeHtml(r.users?.display_name || 'Member')}
           </div>
         `).join('')}
       </div>
