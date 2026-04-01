@@ -10,6 +10,7 @@ function renderSplash() {
     <p style="font-size: 0.75rem; color: var(--color-secondary); font-weight: 600; margin-bottom: var(--space-md);">82K+ runners. Dallas's biggest run club.</p>
     <div class="splash-buttons">
       <button class="btn-primary" onclick="showScreen('signup')">JOIN THE CREW</button>
+      <button class="btn-secondary btn-sm" onclick="loginAsGuest()" style="margin-top: var(--space-xs);">EXPLORE AS GUEST</button>
       <p class="splash-login-link">Already have an account? <a href="#" onclick="showScreen('login'); return false;">Log In</a></p>
     </div>
   `;
@@ -252,11 +253,14 @@ async function handleSignup(event) {
 
   try {
     const { session } = await signUp(email, password);
-    // Store session for onboarding to use
-    window._pendingSession = session;
-    // After signup, go to onboarding
-    renderOnboarding();
-    showScreen('onboarding');
+    if (session) {
+      // Email confirmation disabled — session is immediate, go to onboarding
+      renderOnboarding();
+      showScreen('onboarding');
+    } else {
+      // Email confirmation enabled — show confirmation screen
+      showEmailConfirmation(email);
+    }
   } catch (err) {
     errorEl.textContent = friendlyError(err);
     errorEl.classList.remove('hidden');
@@ -338,12 +342,7 @@ async function completeOnboarding() {
   btn.textContent = 'Setting up...';
 
   try {
-    let session = await getSession();
-    // Fallback: use session from signup if getSession returns null (email confirmation enabled)
-    if (!session && window._pendingSession) {
-      session = window._pendingSession;
-      window._pendingSession = null;
-    }
+    const session = await getSession();
     if (!session) throw new Error('No session — please try signing up again.');
 
     // Upload avatar if selected
@@ -462,4 +461,76 @@ function showScreen(name) {
   });
   const screen = document.getElementById(`screen-${name}`);
   if (screen) screen.classList.add('active');
+}
+
+// ===== GUEST LOGIN =====
+async function loginAsGuest() {
+  try {
+    // Sign in anonymously using Supabase anonymous auth
+    const { data, error } = await supabaseClient.auth.signInAnonymously();
+    if (error) throw error;
+
+    // Create a guest profile
+    const guestProfile = await createUserProfile({
+      id: data.session.user.id,
+      display_name: 'Guest Runner',
+      avatar_url: null,
+      pace_group: 'jog_it_up',
+      run_days: ['tuesday', 'saturday'],
+      role: 'member'
+    });
+
+    // Auto-join default channels
+    await autoJoinChannels(guestProfile);
+
+    currentProfile = guestProfile;
+    enterApp();
+  } catch (err) {
+    // Fallback: if anonymous auth is not enabled, create a temp guest session
+    // by signing up with a random guest email
+    try {
+      const guestId = Math.random().toString(36).substring(2, 10);
+      const guestEmail = `guest_${guestId}@runitup.demo`;
+      const guestPass = `guest_${guestId}_pass`;
+
+      await signUp(guestEmail, guestPass);
+      const session = await getSession();
+
+      if (!session) {
+        showToast('Guest login not available right now — try signing up.', 'info');
+        return;
+      }
+
+      const guestProfile = await createUserProfile({
+        id: session.user.id,
+        display_name: 'Guest Runner',
+        avatar_url: null,
+        pace_group: 'jog_it_up',
+        run_days: ['tuesday', 'saturday'],
+        role: 'member'
+      });
+
+      await autoJoinChannels(guestProfile);
+      currentProfile = guestProfile;
+      enterApp();
+    } catch (err2) {
+      showToast('Guest login not available right now — try signing up.', 'info');
+    }
+  }
+}
+
+// ===== EMAIL CONFIRMATION SCREEN =====
+function showEmailConfirmation(email) {
+  document.getElementById('screen-signup').innerHTML = `
+    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; text-align: center; padding: var(--space-xl);">
+      <div style="width: 64px; height: 64px; border-radius: var(--radius-full); background: var(--color-surface); display: flex; align-items: center; justify-content: center; margin-bottom: var(--space-lg);">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="var(--color-primary)"><path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/></svg>
+      </div>
+      <h2 style="margin-bottom: var(--space-sm);">Check Your Email</h2>
+      <p style="color: var(--color-text-muted); margin-bottom: var(--space-md);">We sent a confirmation link to <strong style="color: var(--color-text);">${escapeHtml(email)}</strong></p>
+      <p style="color: var(--color-text-muted); font-size: 0.875rem; margin-bottom: var(--space-xl);">Tap the link in your email, then come back here. The app will pick you up automatically.</p>
+      <button class="btn-secondary btn-sm" onclick="renderSplash(); showScreen('splash');">Back to Home</button>
+    </div>
+  `;
+  showScreen('signup');
 }
