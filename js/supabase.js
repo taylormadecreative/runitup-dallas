@@ -98,11 +98,21 @@ async function uploadFile(bucket, path, file) {
   return publicUrl;
 }
 
-// ===== SANITIZATION HELPER =====
-function sanitizeHTML(str) {
+// ===== SANITIZATION HELPERS =====
+function escapeHtml(str) {
   const div = document.createElement('div');
   div.textContent = str;
   return div.innerHTML;
+}
+
+// Legacy alias
+function sanitizeHTML(str) { return escapeHtml(str); }
+
+// Validate avatar URLs to prevent XSS via src attributes
+function safeAvatarUrl(url) {
+  if (!url) return DEFAULT_AVATAR;
+  if (url.startsWith('http://') || url.startsWith('https://') || url.startsWith('data:')) return url;
+  return DEFAULT_AVATAR;
 }
 
 // ===== TOAST HELPER =====

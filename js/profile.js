@@ -201,7 +201,7 @@ function showEditProfile() {
 
     <div class="form-group" style="width: 100%;">
       <label class="form-label">Display Name</label>
-      <input class="form-input" type="text" id="edit-name" value="${currentProfile.display_name}">
+      <input class="form-input" type="text" id="edit-name" value="${escapeHtml(currentProfile.display_name)}" maxlength="50">
     </div>
 
     <div style="width: 100%;">
@@ -263,7 +263,7 @@ async function saveProfile() {
   const name = document.getElementById('edit-name')?.value.trim();
   if (!name) { showToast('We need a name for the leaderboard!', 'error'); return; }
 
-  const updates = { display_name: name };
+  const updates = { display_name: escapeHtml(name) };
   if (editPaceGroup) updates.pace_group = editPaceGroup;
   if (editRunDays && editRunDays.length > 0) updates.run_days = editRunDays;
 

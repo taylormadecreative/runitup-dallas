@@ -30,7 +30,16 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (event === 'SIGNED_IN' && session) {
       await loadUserAndEnterApp();
     }
+    if (event === 'TOKEN_REFRESHED' && !session) {
+      // Token refresh failed — session expired
+      showToast('Session expired. Please log in again.', 'info');
+      await signOut();
+    }
     if (event === 'SIGNED_OUT') {
+      // Clean up realtime subscriptions
+      if (typeof cleanupHome === 'function') cleanupHome();
+      if (typeof closeChat === 'function') closeChat();
+      if (typeof buddyChannel !== 'undefined' && buddyChannel) { supabaseClient.removeChannel(buddyChannel); buddyChannel = null; }
       currentUser = null;
       currentProfile = null;
       document.getElementById('app-shell').classList.add('hidden');

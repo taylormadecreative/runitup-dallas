@@ -8,7 +8,7 @@ async function openBuddyBoard(runDay, runDate) {
   const container = document.getElementById('screen-buddy-board');
 
   // Get buddy requests for this run
-  const { data: requests } = await supabase
+  const { data: requests } = await supabaseClient
     .from('buddy_requests')
     .select('*, users(display_name, avatar_url, pace_group)')
     .eq('run_day', runDay)
@@ -56,7 +56,7 @@ async function openBuddyBoard(runDay, runDate) {
     <div style="display: flex; flex-direction: column; gap: var(--space-sm);">
       ${sorted.filter(r => r.user_id !== currentProfile.id).map(r => `
         <div class="card" style="display: flex; align-items: flex-start; gap: var(--space-md); ${r.matched_with ? 'opacity: 0.5;' : ''}">
-          <img src="${r.users?.avatar_url || DEFAULT_AVATAR}" class="avatar-md" alt="${r.users?.display_name}">
+          <img src="${safeAvatarUrl(r.users?.avatar_url)}" class="avatar-md" alt="${r.users?.display_name}">
           <div style="flex: 1;">
             <div style="display: flex; align-items: center; gap: var(--space-sm); margin-bottom: 2px;">
               <strong style="font-size: 0.875rem;">${r.users?.display_name || 'Member'}</strong>
@@ -114,7 +114,7 @@ async function createBuddyRequest(runDay, runDate) {
 async function matchWithBuddy(requestId, otherUserId, runDay, runDate) {
   try {
     // Update the other person's request (only if not already matched — race condition guard)
-    const { data, error } = await supabase
+    const { data, error } = await supabaseClient
       .from('buddy_requests')
       .update({ matched_with: currentProfile.id })
       .eq('id', requestId)
@@ -129,7 +129,7 @@ async function matchWithBuddy(requestId, otherUserId, runDay, runDate) {
     }
 
     // Create our own request if we don't have one, and mark matched
-    const { data: myRequest } = await supabase
+    const { data: myRequest } = await supabaseClient
       .from('buddy_requests')
       .select('id')
       .eq('user_id', currentProfile.id)
@@ -161,8 +161,4 @@ async function matchWithBuddy(requestId, otherUserId, runDay, runDate) {
   }
 }
 
-function escapeHtml(text) {
-  const div = document.createElement('div');
-  div.textContent = text;
-  return div.innerHTML;
-}
+// escapeHtml is now defined in supabase.js (loaded first)

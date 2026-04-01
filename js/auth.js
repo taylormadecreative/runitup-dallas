@@ -125,7 +125,7 @@ function renderOnboarding() {
       </div>
       <div class="form-group">
         <label class="form-label" for="onboarding-name">Display Name</label>
-        <input class="form-input" type="text" id="onboarding-name" placeholder="What should we call you?" required>
+        <input class="form-input" type="text" id="onboarding-name" placeholder="What should we call you?" required maxlength="50">
       </div>
       <div class="onboarding-actions">
         <button class="btn-primary" onclick="nextOnboardingStep()">Next</button>
@@ -306,7 +306,7 @@ function nextOnboardingStep() {
   if (onboardingStep === 1) {
     const name = document.getElementById('onboarding-name').value.trim();
     if (!name) { showToast('We need a name to put on the leaderboard!', 'error'); return; }
-    onboardingData.display_name = name;
+    onboardingData.display_name = escapeHtml(name);
   }
 
   document.getElementById(`onboarding-step-${onboardingStep}`).classList.remove('active');

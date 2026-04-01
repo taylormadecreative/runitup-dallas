@@ -139,10 +139,10 @@ function renderSpecialEventCard(event, rsvpCount, isPast) {
     <div class="special-event-card" onclick="viewEventDetail('${event.id}')">
       ${event.cover_image_url ? `<img src="${event.cover_image_url}" alt="${escapeHtml(event.title)}">` : `<div class="event-no-cover">🏃</div>`}
       <div class="special-event-body">
-        <h3>${event.title}</h3>
+        <h3>${escapeHtml(event.title)}</h3>
         <div class="special-event-meta">
           <span>📅 ${formatDate(event.event_date)} · ${formatTime(event.event_date)}</span>
-          <span>📍 ${event.location_name}</span>
+          <span>📍 ${escapeHtml(event.location_name)}</span>
         </div>
         <div class="special-event-actions">
           <div class="rsvp-count"><strong>${rsvpCount}</strong> going</div>

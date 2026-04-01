@@ -15,6 +15,7 @@ async function initHome() {
 async function refreshHome() {
   const container = document.getElementById('screen-home');
   if (!currentProfile) return;
+  container.innerHTML = '<div class="loading-screen"><div class="spinner"></div></div>';
 
   // Determine next run
   const nextTuesday = getNextRunDate(2);
@@ -104,12 +105,12 @@ async function refreshHome() {
     <!-- Upcoming Special Event -->
     ${upcomingEvent ? `
     <div class="upcoming-event-card" onclick="viewEventDetail('${upcomingEvent.id}')">
-      ${upcomingEvent.cover_image_url ? `<img src="${upcomingEvent.cover_image_url}" alt="${upcomingEvent.title}">` : ''}
+      ${upcomingEvent.cover_image_url ? `<img src="${upcomingEvent.cover_image_url}" alt="${escapeHtml(upcomingEvent.title)}">` : ''}
       <div class="upcoming-event-info">
-        <h4>${upcomingEvent.title}</h4>
+        <h4>${escapeHtml(upcomingEvent.title)}</h4>
         <div class="upcoming-event-meta">
           <span>\u{1F4C5} ${formatDate(upcomingEvent.event_date)}</span>
-          <span>\u{1F4CD} ${upcomingEvent.location_name}</span>
+          <span>\u{1F4CD} ${escapeHtml(upcomingEvent.location_name)}</span>
         </div>
       </div>
     </div>
@@ -204,7 +205,7 @@ async function getCommunityHighlights() {
       if (def && b.users) {
         highlights.push({
           icon: def.icon,
-          text: `<strong>${b.users.display_name}</strong> earned ${def.label}`
+          text: `<strong>${escapeHtml(b.users.display_name)}</strong> earned ${escapeHtml(def.label)}`
         });
       }
     });

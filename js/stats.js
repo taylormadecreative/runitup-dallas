@@ -9,6 +9,7 @@ async function initStats() {
 async function refreshStats() {
   const container = document.getElementById('screen-stats');
   if (!currentProfile) return;
+  container.innerHTML = '<div class="loading-screen"><div class="spinner"></div></div>';
 
   const stats = await getUserStats(currentProfile.id);
   const badges = await getUserBadges(currentProfile.id);
@@ -70,10 +71,10 @@ async function refreshStats() {
           <div class="leaderboard-item ${entry.id === currentProfile.id ? 'me' : ''}"
             onclick="viewMemberProfile('${entry.id}')">
             <span class="lb-rank">${i + 1}</span>
-            <img src="${entry.avatar_url || DEFAULT_AVATAR}" class="avatar-sm" alt="">
+            <img src="${safeAvatarUrl(entry.avatar_url)}" class="avatar-sm" alt="">
             <div class="lb-info">
               <div class="lb-name">
-                ${entry.display_name}
+                ${escapeHtml(entry.display_name)}
                 ${paceGroupBadgeHTML(entry.pace_group)}
               </div>
             </div>

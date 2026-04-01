@@ -30,9 +30,10 @@ async function initCommunity() {
 async function refreshCommunity() {
   const container = document.getElementById('screen-community');
   if (!currentProfile) return;
+  container.innerHTML = '<div class="loading-screen"><div class="spinner"></div></div>';
 
   // Get user's channels
-  const { data: memberships } = await supabase
+  const { data: memberships } = await supabaseClient
     .from('channel_members')
     .select('channel_id, channels(id, name, type, description)')
     .eq('user_id', currentProfile.id);
@@ -41,7 +42,7 @@ async function refreshCommunity() {
 
   // Get last message for each channel
   const channelData = await Promise.all(channels.map(async (ch) => {
-    const { data: lastMsg } = await supabase
+    const { data: lastMsg } = await supabaseClient
       .from('messages')
       .select('content, created_at, users(display_name)')
       .eq('channel_id', ch.id)
@@ -51,7 +52,7 @@ async function refreshCommunity() {
 
     // Count unread
     const lastRead = lastReadTimestamps[ch.id] || '1970-01-01';
-    const { count: unread } = await supabase
+    const { count: unread } = await supabaseClient
       .from('messages')
       .select('*', { count: 'exact', head: true })
       .eq('channel_id', ch.id)
@@ -91,7 +92,7 @@ async function refreshCommunity() {
           <div class="channel-icon">${CHANNEL_ICONS[ch.name] || '\u{1F4AC}'}</div>
           <div class="channel-info">
             <div class="channel-name">#${ch.name}</div>
-            <div class="channel-preview">${ch.lastMsg ? `${ch.lastMsg.users?.display_name || 'Someone'}: ${ch.lastMsg.content}` : ch.description || 'No messages yet'}</div>
+            <div class="channel-preview">${ch.lastMsg ? `${escapeHtml(ch.lastMsg.users?.display_name || 'Someone')}: ${escapeHtml(ch.lastMsg.content)}` : escapeHtml(ch.description || 'No messages yet')}</div>
           </div>
           <div class="channel-meta">
             ${ch.lastMsg ? `<span class="channel-time">${formatRelativeTime(ch.lastMsg.created_at)}</span>` : ''}
@@ -168,7 +169,7 @@ async function loadMessages() {
   if (!msgContainer || !activeChannelId) return;
 
   // Get pinned messages
-  const { data: pinned } = await supabase
+  const { data: pinned } = await supabaseClient
     .from('messages')
     .select('*, users(display_name)')
     .eq('channel_id', activeChannelId)
@@ -177,7 +178,7 @@ async function loadMessages() {
     .limit(1);
 
   // Get recent messages
-  const { data: messages } = await supabase
+  const { data: messages } = await supabaseClient
     .from('messages')
     .select('*, users(display_name, avatar_url, pace_group)')
     .eq('channel_id', activeChannelId)
@@ -193,7 +194,7 @@ async function loadMessages() {
     html += `
       <div class="pinned-message">
         <span class="pin-icon">\u{1F4CC}</span>
-        <span><strong>${pinned[0].users?.display_name}:</strong> ${escapeHtml(pinned[0].content)}</span>
+        <span><strong>${escapeHtml(pinned[0].users?.display_name || 'Member')}:</strong> ${escapeHtml(pinned[0].content)}</span>
       </div>
     `;
   }
@@ -210,10 +211,10 @@ function renderMessage(msg) {
 
   return `
     <div class="message-row ${isMine ? 'mine' : ''}">
-      <img src="${msg.users?.avatar_url || DEFAULT_AVATAR}" class="avatar-sm message-avatar" alt="">
+      <img src="${safeAvatarUrl(msg.users?.avatar_url)}" class="avatar-sm message-avatar" alt="">
       <div>
         <div class="message-sender">
-          ${msg.users?.display_name || 'Member'}
+          ${escapeHtml(msg.users?.display_name || 'Member')}
           ${paceGroupBadgeHTML(msg.users?.pace_group)}
         </div>
         <div class="message-bubble">
