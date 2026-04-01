@@ -215,7 +215,7 @@ function changeCalendarMonth(delta) {
 async function toggleRSVP(eventId) {
   if (!currentProfile) return;
 
-  const { data: existing } = await supabase
+  const { data: existing } = await supabaseClient
     .from('event_rsvps')
     .select('id')
     .eq('event_id', eventId)
@@ -237,7 +237,7 @@ async function toggleRSVP(eventId) {
 }
 
 async function viewEventDetail(eventId) {
-  const { data: event } = await supabase
+  const { data: event } = await supabaseClient
     .from('special_events')
     .select('*')
     .eq('id', eventId)
@@ -245,12 +245,12 @@ async function viewEventDetail(eventId) {
 
   if (!event) return;
 
-  const { data: rsvps } = await supabase
+  const { data: rsvps } = await supabaseClient
     .from('event_rsvps')
     .select('user_id, users(display_name, avatar_url)')
     .eq('event_id', eventId);
 
-  const { data: photos } = await supabase
+  const { data: photos } = await supabaseClient
     .from('event_photos')
     .select('*')
     .eq('event_id', eventId)
@@ -275,7 +275,7 @@ async function viewEventDetail(eventId) {
     ${event.description ? `<p style="margin-bottom: var(--space-lg);">${event.description}</p>` : ''}
 
     ${!isPast ? `
-      <button class="btn-primary ${userRsvp ? 'btn-orange' : ''}" onclick="toggleRSVP('${event.id}'); viewEventDetail('${event.id}');">
+      <button class="btn-primary ${userRsvp ? 'btn-orange' : ''}" onclick="(async()=>{await toggleRSVP('${event.id}');viewEventDetail('${event.id}')})()">
         ${userRsvp ? "Cancel RSVP" : "RSVP — I'm Going!"}
       </button>
     ` : ''}

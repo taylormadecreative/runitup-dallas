@@ -13,8 +13,11 @@ document.addEventListener('DOMContentLoaded', async () => {
   document.getElementById('screen-splash').innerHTML = '<div class="loading-screen"><div class="spinner"></div></div>';
   document.getElementById('screen-splash').classList.add('active');
 
-  // Check for existing session
-  const session = await getSession();
+  // Check for existing session (with 10s timeout to avoid infinite spinner)
+  const session = await Promise.race([
+    getSession(),
+    new Promise((_, reject) => setTimeout(() => reject(new Error('timeout')), 10000))
+  ]).catch(() => null);
   if (session) {
     await loadUserAndEnterApp();
   } else {
@@ -56,6 +59,9 @@ document.addEventListener('DOMContentLoaded', async () => {
 let currentScreen = 'home';
 
 function navigateTo(screen) {
+  // Clean up any active sub-screens
+  if (typeof closeChat === 'function' && activeChannelId) closeChat();
+
   // Hide all app screens
   document.querySelectorAll('#app-main > .screen').forEach(s => s.classList.remove('active'));
 

@@ -401,15 +401,21 @@ async function autoJoinChannels(profile) {
 
 // ===== APP ENTRY =====
 async function loadUserAndEnterApp() {
-  const profile = await getCurrentUser();
-  if (!profile) {
-    // User exists in auth but no profile — needs onboarding
-    renderOnboarding();
-    showScreen('onboarding');
-    return;
+  try {
+    const profile = await getCurrentUser();
+    if (!profile) {
+      renderOnboarding();
+      showScreen('onboarding');
+      return;
+    }
+    currentProfile = profile;
+    enterApp();
+  } catch (err) {
+    console.error('Failed to load user:', err);
+    renderSplash();
+    showScreen('splash');
+    showToast('Having trouble connecting. Check your connection and try again.', 'error');
   }
-  currentProfile = profile;
-  enterApp();
 }
 
 function enterApp() {
@@ -438,7 +444,10 @@ function enterApp() {
 
 // ===== SCREEN NAVIGATION (auth screens) =====
 function showScreen(name) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  // Only toggle auth screens, not app screens
+  ['screen-splash', 'screen-login', 'screen-signup', 'screen-onboarding'].forEach(id => {
+    document.getElementById(id)?.classList.remove('active');
+  });
   const screen = document.getElementById(`screen-${name}`);
   if (screen) screen.classList.add('active');
 }
