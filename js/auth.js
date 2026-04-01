@@ -47,6 +47,10 @@ function renderLogin() {
           <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/><path d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
           Continue with Google
         </button>
+        <button type="button" class="btn-apple" onclick="handleAppleAuth()">
+          <svg width="18" height="18" viewBox="0 0 18 18"><path d="M13.545 8.32c-.023-2.147 1.752-3.179 1.832-3.229-1-1.46-2.552-1.66-3.103-1.683-1.318-.134-2.578.778-3.248.778-.671 0-1.707-.759-2.808-.738C4.858 3.47 3.62 4.298 2.93 5.564c-1.397 2.424-.357 6.014.998 7.98.666.96 1.458 2.04 2.5 2.001 1.003-.04 1.382-.648 2.596-.648 1.213 0 1.553.648 2.611.627 1.082-.018 1.765-1.001 2.424-1.963.764-1.112 1.079-2.19 1.098-2.247-.024-.01-2.107-.809-2.131-3.207v.213zM11.525 2.507C12.07 1.846 12.44.954 12.34.05c-.765.031-1.691.51-2.24 1.152-.493.57-.924 1.48-.808 2.353.853.066 1.724-.434 2.233-1.048z" fill="#FFFFFF"/></svg>
+          Continue with Apple
+        </button>
         <p class="auth-switch">Don't have an account? <a href="#" onclick="showScreen('signup'); return false;">Sign Up</a></p>
       </div>
     </form>
@@ -92,7 +96,12 @@ function renderSignup() {
           <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/><path d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
           Continue with Google
         </button>
+        <button type="button" class="btn-apple" onclick="handleAppleAuth()">
+          <svg width="18" height="18" viewBox="0 0 18 18"><path d="M13.545 8.32c-.023-2.147 1.752-3.179 1.832-3.229-1-1.46-2.552-1.66-3.103-1.683-1.318-.134-2.578.778-3.248.778-.671 0-1.707-.759-2.808-.738C4.858 3.47 3.62 4.298 2.93 5.564c-1.397 2.424-.357 6.014.998 7.98.666.96 1.458 2.04 2.5 2.001 1.003-.04 1.382-.648 2.596-.648 1.213 0 1.553.648 2.611.627 1.082-.018 1.765-1.001 2.424-1.963.764-1.112 1.079-2.19 1.098-2.247-.024-.01-2.107-.809-2.131-3.207v.213zM11.525 2.507C12.07 1.846 12.44.954 12.34.05c-.765.031-1.691.51-2.24 1.152-.493.57-.924 1.48-.808 2.353.853.066 1.724-.434 2.233-1.048z" fill="#FFFFFF"/></svg>
+          Continue with Apple
+        </button>
         <p class="auth-switch">Already have an account? <a href="#" onclick="showScreen('login'); return false;">Log In</a></p>
+        <p class="auth-legal">By signing up, you agree to our <a href="terms.html" target="_blank">Terms of Service</a> and <a href="privacy.html" target="_blank">Privacy Policy</a></p>
       </div>
     </form>
   `;
@@ -280,6 +289,14 @@ async function handleGoogleAuth() {
     await signInWithGoogle();
   } catch (err) {
     showToast("Google didn't connect — try again.", 'error');
+  }
+}
+
+async function handleAppleAuth() {
+  try {
+    await signInWithApple();
+  } catch (err) {
+    showToast("Apple sign-in didn't connect — try again.", 'error');
   }
 }
 

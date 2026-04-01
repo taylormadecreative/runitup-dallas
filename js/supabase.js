@@ -32,6 +32,15 @@ async function signInWithGoogle() {
   return data;
 }
 
+async function signInWithApple() {
+  const { data, error } = await supabaseClient.auth.signInWithOAuth({
+    provider: 'apple',
+    options: { redirectTo: window.location.origin }
+  });
+  if (error) throw error;
+  return data;
+}
+
 async function signOut() {
   const { error } = await supabaseClient.auth.signOut();
   if (error) throw error;
