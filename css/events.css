@@ -248,3 +248,91 @@
 
 .cal-dot.weekly { background: var(--color-primary); }
 .cal-dot.special { background: var(--color-secondary); }
+
+/* ===== EVENT DETAIL ===== */
+.event-detail-cover {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-radius: var(--radius-md);
+  margin-bottom: var(--space-md);
+}
+
+.event-detail-meta {
+  font-size: 0.875rem;
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-md);
+}
+
+.event-detail-meta a {
+  color: var(--color-primary);
+}
+
+.event-detail-description {
+  color: var(--color-text-muted);
+  margin-bottom: var(--space-lg);
+}
+
+.event-attendees-header,
+.event-photos-header {
+  font-size: 0.875rem;
+  font-family: var(--font-body);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--space-sm);
+}
+
+.event-attendees-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-sm);
+}
+
+.event-attendee-chip {
+  display: flex;
+  align-items: center;
+  gap: var(--space-xs);
+  background: var(--color-surface);
+  padding: 4px 8px;
+  border-radius: var(--radius-full);
+  font-size: 0.75rem;
+}
+
+.event-attendee-chip img {
+  width: 20px;
+  height: 20px;
+}
+
+.event-photos-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-xs);
+}
+
+.event-photos-grid img {
+  width: 100%;
+  aspect-ratio: 1;
+  object-fit: cover;
+  border-radius: var(--radius-sm);
+}
+
+/* ===== SECTION HEADER (reusable) ===== */
+.section-header {
+  font-size: 0.875rem;
+  font-family: var(--font-body);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  font-weight: 600;
+  margin-bottom: var(--space-sm);
+}
+
+.past-events-header {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  font-family: var(--font-body);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-top: var(--space-sm);
+}

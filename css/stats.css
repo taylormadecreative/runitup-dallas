@@ -186,9 +186,9 @@
   text-align: center;
 }
 
-.leaderboard-item:nth-child(1) .lb-rank { color: #FFD700; }
-.leaderboard-item:nth-child(2) .lb-rank { color: #C0C0C0; }
-.leaderboard-item:nth-child(3) .lb-rank { color: #CD7F32; }
+.leaderboard-item:nth-child(1) .lb-rank { color: var(--color-gold); }
+.leaderboard-item:nth-child(2) .lb-rank { color: var(--color-silver); }
+.leaderboard-item:nth-child(3) .lb-rank { color: var(--color-bronze); }
 
 .lb-info {
   flex: 1;

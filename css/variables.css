@@ -11,6 +11,9 @@
   --color-success: #00C853;
   --color-error: #FF3B30;
   --color-badge-bg: #FF3B30;
+  --color-gold: #FFD700;
+  --color-silver: #C0C0C0;
+  --color-bronze: #CD7F32;
 
   /* Typography */
   --font-display: 'Big Shoulders Display', sans-serif;

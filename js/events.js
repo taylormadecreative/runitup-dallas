@@ -90,7 +90,7 @@ async function refreshEvents() {
           ` : ''}
           ${upcoming.map(e => renderSpecialEventCard(e, rsvpCounts[e.id] || 0, false)).join('')}
           ${past.length > 0 ? `
-            <h3 style="color: var(--color-text-muted); font-size: 0.875rem; font-family: var(--font-body); text-transform: uppercase; letter-spacing: 0.1em; margin-top: var(--space-sm);">Past Events</h3>
+            <h3 class="past-events-header">Past Events</h3>
             ${past.map(e => renderSpecialEventCard(e, rsvpCounts[e.id] || 0, true)).join('')}
           ` : ''}
         </div>
@@ -265,14 +265,14 @@ async function viewEventDetail(eventId) {
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
       Events
     </button>
-    ${event.cover_image_url ? `<img src="${event.cover_image_url}" alt="${event.title}" style="width: 100%; height: 200px; object-fit: cover; border-radius: var(--radius-md); margin-bottom: var(--space-md);">` : ''}
+    ${event.cover_image_url ? `<img src="${event.cover_image_url}" alt="${event.title}" class="event-detail-cover">` : ''}
     <h2 style="margin-bottom: var(--space-sm);">${event.title}</h2>
-    <div style="font-size: 0.875rem; color: var(--color-text-muted); margin-bottom: var(--space-md);">
+    <div class="event-detail-meta">
       📅 ${formatDate(event.event_date)} · ${formatTime(event.event_date)}<br>
       📍 ${event.location_name} — ${event.location_address}
-      <br><a href="https://maps.google.com/?q=${encodeURIComponent(event.location_address)}" target="_blank" style="color: var(--color-primary);">Get Directions</a>
+      <br><a href="https://maps.google.com/?q=${encodeURIComponent(event.location_address)}" target="_blank">Get Directions</a>
     </div>
-    ${event.description ? `<p style="margin-bottom: var(--space-lg);">${event.description}</p>` : ''}
+    ${event.description ? `<p class="event-detail-description">${event.description}</p>` : ''}
 
     ${!isPast ? `
       <button class="btn-primary ${userRsvp ? 'btn-orange' : ''}" onclick="(async()=>{await toggleRSVP('${event.id}');viewEventDetail('${event.id}')})()">
@@ -281,13 +281,13 @@ async function viewEventDetail(eventId) {
     ` : ''}
 
     <div style="margin-top: var(--space-lg);">
-      <h3 style="font-size: 0.875rem; font-family: var(--font-body); color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: var(--space-sm);">
+      <h3 class="event-attendees-header">
         ${(rsvps || []).length} Going
       </h3>
-      <div style="display: flex; flex-wrap: wrap; gap: var(--space-sm);">
+      <div class="event-attendees-list">
         ${(rsvps || []).map(r => `
-          <div style="display: flex; align-items: center; gap: var(--space-xs); background: var(--color-surface); padding: 4px 8px; border-radius: var(--radius-full); font-size: 0.75rem;">
-            <img src="${r.users?.avatar_url || DEFAULT_AVATAR}" class="avatar-sm" style="width: 20px; height: 20px;" alt="">
+          <div class="event-attendee-chip">
+            <img src="${r.users?.avatar_url || DEFAULT_AVATAR}" class="avatar-sm" alt="">
             ${r.users?.display_name || 'Member'}
           </div>
         `).join('')}
@@ -296,11 +296,11 @@ async function viewEventDetail(eventId) {
 
     ${isPast && (photos || []).length > 0 ? `
       <div style="margin-top: var(--space-lg);">
-        <h3 style="font-size: 0.875rem; font-family: var(--font-body); color: var(--color-text-muted); text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: var(--space-sm);">
+        <h3 class="event-photos-header">
           Photos
         </h3>
-        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-xs);">
-          ${(photos || []).map(p => `<img src="${p.photo_url}" style="width: 100%; aspect-ratio: 1; object-fit: cover; border-radius: var(--radius-sm);">`).join('')}
+        <div class="event-photos-grid">
+          ${(photos || []).map(p => `<img src="${p.photo_url}">`).join('')}
         </div>
       </div>
     ` : ''}

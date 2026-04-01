@@ -67,9 +67,15 @@ async function refreshProfile() {
       </div>
     </div>
 
+    <div style="width: 100%; display: flex; flex-direction: column; gap: var(--space-xs);">
+      <a href="#" onclick="showToast('Privacy Policy coming soon', 'info'); return false;" style="font-size: 0.75rem; color: var(--color-text-muted); padding: var(--space-sm) 0;">Privacy Policy</a>
+      <a href="#" onclick="showToast('Terms of Service coming soon', 'info'); return false;" style="font-size: 0.75rem; color: var(--color-text-muted); padding: var(--space-sm) 0;">Terms of Service</a>
+    </div>
+
     <div class="profile-actions">
       <button class="btn-secondary" onclick="showEditProfile()">Edit Profile</button>
       <button class="btn-logout" onclick="handleLogout()">Log Out</button>
+      <button class="btn-logout" style="color: var(--color-error); opacity: 0.6; font-size: 0.75rem;" onclick="handleDeleteAccount()">Delete My Account</button>
     </div>
   `;
 }
@@ -274,5 +280,18 @@ async function saveProfile() {
 async function handleLogout() {
   if (confirm('Are you sure you want to log out?')) {
     await signOut();
+  }
+}
+
+async function handleDeleteAccount() {
+  if (!confirm('Are you sure? This will permanently delete your account and all your data. This cannot be undone.')) return;
+  if (!confirm('Really delete everything? Your streak, badges, and check-in history will be gone forever.')) return;
+  try {
+    // Delete user profile data (cascades will handle related data)
+    await supabaseClient.from('users').delete().eq('id', currentProfile.id);
+    await signOut();
+    showToast('Account deleted. We hope to see you on the pavement again someday.', 'info');
+  } catch (err) {
+    showToast('Could not delete account. Contact support.', 'error');
   }
 }
