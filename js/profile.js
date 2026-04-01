@@ -21,9 +21,14 @@ async function refreshProfile() {
     }
   });
 
-  const runDaysLabel = currentProfile.run_days.includes('tuesday') && currentProfile.run_days.includes('saturday')
-    ? 'Both Days'
-    : currentProfile.run_days.includes('tuesday') ? 'Tuesdays' : 'Saturdays';
+  const runDaysLabel = (() => {
+    const days = currentProfile.run_days;
+    const parts = [];
+    if (days.includes('monday')) parts.push('Mon');
+    if (days.includes('tuesday')) parts.push('Tue');
+    if (days.includes('saturday')) parts.push('Sat');
+    return parts.length > 0 ? parts.join(' / ') : 'No days set';
+  })();
 
   container.innerHTML = `
     <div class="profile-avatar-wrapper">
@@ -38,7 +43,7 @@ async function refreshProfile() {
       <div class="profile-name">${currentProfile.display_name}</div>
       <div class="profile-meta">
         ${paceGroupBadgeHTML(currentProfile.pace_group)}
-        <span class="detail">&#x1F4C5; ${runDaysLabel}</span>
+        <span class="detail">${runDaysLabel}</span>
         <span class="detail">Joined ${formatDate(currentProfile.created_at)}</span>
       </div>
     </div>
@@ -103,9 +108,14 @@ async function viewMemberProfile(userId) {
     }
   });
 
-  const runDaysLabel = profile.run_days.includes('tuesday') && profile.run_days.includes('saturday')
-    ? 'Both Days'
-    : profile.run_days.includes('tuesday') ? 'Tuesdays' : 'Saturdays';
+  const runDaysLabel = (() => {
+    const days = profile.run_days;
+    const parts = [];
+    if (days.includes('monday')) parts.push('Mon');
+    if (days.includes('tuesday')) parts.push('Tue');
+    if (days.includes('saturday')) parts.push('Sat');
+    return parts.length > 0 ? parts.join(' / ') : 'No days set';
+  })();
 
   container.innerHTML = `
     <button class="auth-back" onclick="navigateBack()" style="align-self: flex-start;">
@@ -119,7 +129,7 @@ async function viewMemberProfile(userId) {
       <div class="profile-name">${profile.display_name}</div>
       <div class="profile-meta">
         ${paceGroupBadgeHTML(profile.pace_group)}
-        <span class="detail">&#x1F4C5; ${runDaysLabel}</span>
+        <span class="detail">${runDaysLabel}</span>
         <span class="detail">Joined ${formatDate(profile.created_at)}</span>
       </div>
     </div>
@@ -150,7 +160,7 @@ async function viewMemberProfile(userId) {
     </div>
 
     <button class="btn-primary btn-orange" onclick="openBuddyFromProfile('${userId}')">
-      &#x1F91D; Run Together
+      RUN TOGETHER
     </button>
   `;
 
@@ -221,10 +231,16 @@ function showEditProfile() {
     <div style="width: 100%;">
       <label class="form-label" style="display: block; margin-bottom: var(--space-sm);">Run Days</label>
       <div class="option-grid">
+        <button class="option-card ${currentProfile.run_days.includes('monday') ? 'selected' : ''}" onclick="toggleEditRunDay(this, 'monday')">
+          <div class="option-info">
+            <h4 style="font-family: var(--font-body); text-transform: none; letter-spacing: normal;">Monday Nights</h4>
+            <p>Trinity Groves — 7:00 PM</p>
+          </div>
+        </button>
         <button class="option-card ${currentProfile.run_days.includes('tuesday') ? 'selected' : ''}" onclick="toggleEditRunDay(this, 'tuesday')">
           <div class="option-info">
             <h4 style="font-family: var(--font-body); text-transform: none; letter-spacing: normal;">Tuesday Nights</h4>
-            <p>Deep Ellum — 7:00 PM</p>
+            <p>Kanvas Sports Bar, Deep Ellum — 7:00 PM</p>
           </div>
         </button>
         <button class="option-card ${currentProfile.run_days.includes('saturday') ? 'selected' : ''}" onclick="toggleEditRunDay(this, 'saturday')">

@@ -13,12 +13,21 @@ async function refreshEvents() {
   container.innerHTML = '<div class="loading-screen"><div class="spinner"></div></div>';
 
   // Get weekly run stats
+  const mondayCount = await getCheckInCountForEvent('weekly_monday', 7);
   const tuesdayCount = await getCheckInCountForEvent('weekly_tuesday', 7);
   const saturdayCount = await getCheckInCountForEvent('weekly_saturday', 7);
 
   // Get buddy counts for next runs
+  const nextMondayDate = getNextRunDate(1).toISOString().split('T')[0];
   const nextTuesdayDate = getNextRunDate(2).toISOString().split('T')[0];
   const nextSaturdayDate = getNextRunDate(6).toISOString().split('T')[0];
+
+  const { count: mondayBuddies } = await supabaseClient
+    .from('buddy_requests')
+    .select('*', { count: 'exact', head: true })
+    .eq('run_day', 'monday')
+    .eq('run_date', nextMondayDate)
+    .is('matched_with', null);
 
   const { count: tuesdayBuddies } = await supabaseClient
     .from('buddy_requests')
@@ -35,6 +44,7 @@ async function refreshEvents() {
     .is('matched_with', null);
 
   // Get check-in status
+  const mondayChecked = await hasCheckedInToday('weekly_monday');
   const tuesdayChecked = await hasCheckedInToday('weekly_tuesday');
   const saturdayChecked = await hasCheckedInToday('weekly_saturday');
 
@@ -67,8 +77,9 @@ async function refreshEvents() {
         <h2>Weekly Runs</h2>
       </div>
       <div class="weekly-runs">
-        ${renderWeeklyRunCard(WEEKLY_RUNS[0], tuesdayCount, tuesdayBuddies || 0, tuesdayChecked, nextTuesdayDate)}
-        ${renderWeeklyRunCard(WEEKLY_RUNS[1], saturdayCount, saturdayBuddies || 0, saturdayChecked, nextSaturdayDate)}
+        ${renderWeeklyRunCard(WEEKLY_RUNS[0], mondayCount, mondayBuddies || 0, mondayChecked, nextMondayDate)}
+        ${renderWeeklyRunCard(WEEKLY_RUNS[1], tuesdayCount, tuesdayBuddies || 0, tuesdayChecked, nextTuesdayDate)}
+        ${renderWeeklyRunCard(WEEKLY_RUNS[2], saturdayCount, saturdayBuddies || 0, saturdayChecked, nextSaturdayDate)}
       </div>
     </div>
 
@@ -120,13 +131,13 @@ function renderWeeklyRunCard(run, lastCount, buddyCount, checkedIn, nextDate) {
         <span class="weekly-run-time">${run.time}</span>
       </div>
       <div class="weekly-run-details">
-        📍 ${run.location} · ${run.distance} · <a href="${run.mapsUrl}" target="_blank">Directions</a>
+        ${run.location} &middot; ${run.distance} &middot; <a href="${run.mapsUrl}" target="_blank">Directions</a>
       </div>
       <div class="weekly-run-stats">${lastCount} showed up last week</div>
       <div class="weekly-run-actions">
         ${btnHtml}
         <button class="btn-buddy" onclick="openBuddyBoard('${run.day}', '${nextDate}')">
-          🤝 Looking for a buddy?
+          Looking for a buddy?
         </button>
       </div>
       ${buddyCount > 0 ? `<div class="buddy-count">${buddyCount} looking for a buddy</div>` : ''}
@@ -137,12 +148,12 @@ function renderWeeklyRunCard(run, lastCount, buddyCount, checkedIn, nextDate) {
 function renderSpecialEventCard(event, rsvpCount, isPast) {
   return `
     <div class="special-event-card" onclick="viewEventDetail('${event.id}')">
-      ${event.cover_image_url ? `<img src="${event.cover_image_url}" alt="${escapeHtml(event.title)}">` : `<div class="event-no-cover">🏃</div>`}
+      ${event.cover_image_url ? `<img src="${event.cover_image_url}" alt="${escapeHtml(event.title)}">` : `<div class="event-no-cover">RIU</div>`}
       <div class="special-event-body">
         <h3>${escapeHtml(event.title)}</h3>
         <div class="special-event-meta">
-          <span>📅 ${formatDate(event.event_date)} · ${formatTime(event.event_date)}</span>
-          <span>📍 ${escapeHtml(event.location_name)}</span>
+          <span>${formatDate(event.event_date)} &middot; ${formatTime(event.event_date)}</span>
+          <span>${escapeHtml(event.location_name)}</span>
         </div>
         <div class="special-event-actions">
           <div class="rsvp-count"><strong>${rsvpCount}</strong> going</div>
@@ -272,8 +283,8 @@ async function viewEventDetail(eventId) {
     ${event.cover_image_url ? `<img src="${event.cover_image_url}" alt="${escapeHtml(event.title)}" class="event-detail-cover">` : ''}
     <h2 style="margin-bottom: var(--space-sm);">${escapeHtml(event.title)}</h2>
     <div class="event-detail-meta">
-      📅 ${formatDate(event.event_date)} · ${formatTime(event.event_date)}<br>
-      📍 ${escapeHtml(event.location_name)} — ${escapeHtml(event.location_address)}
+      ${formatDate(event.event_date)} &middot; ${formatTime(event.event_date)}<br>
+      ${escapeHtml(event.location_name)} &mdash; ${escapeHtml(event.location_address)}
       <br><a href="https://maps.google.com/?q=${encodeURIComponent(event.location_address)}" target="_blank">Get Directions</a>
     </div>
     ${event.description ? `<p class="event-detail-description">${escapeHtml(event.description)}</p>` : ''}

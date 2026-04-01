@@ -136,19 +136,19 @@ function showToast(message, type = 'info') {
 
 // ===== DATE HELPERS =====
 function getNextRunDate(dayOfWeek) {
-  // dayOfWeek: 2 = Tuesday, 6 = Saturday
+  // dayOfWeek: 1 = Monday, 2 = Tuesday, 6 = Saturday
   const now = new Date();
   const current = now.getDay();
   let daysUntil = dayOfWeek - current;
   if (daysUntil < 0) daysUntil += 7;
   if (daysUntil === 0) {
     // If it's the same day, check if the run has passed
-    const runHour = dayOfWeek === 2 ? 19 : 8; // 7PM Tue, 8AM Sat
+    const runHour = dayOfWeek === 6 ? 8 : 19; // 8AM Sat, 7PM Mon/Tue
     if (now.getHours() >= runHour + 1) daysUntil = 7;
   }
   const next = new Date(now);
   next.setDate(now.getDate() + daysUntil);
-  next.setHours(dayOfWeek === 2 ? 19 : 8, 0, 0, 0);
+  next.setHours(dayOfWeek === 6 ? 8 : 19, 0, 0, 0);
   return next;
 }
 
@@ -211,12 +211,23 @@ function paceGroupBadgeHTML(paceGroup) {
 // ===== WEEKLY RUN DATA =====
 const WEEKLY_RUNS = [
   {
+    day: 'monday',
+    dayOfWeek: 1,
+    label: 'MONDAY',
+    location: 'Trinity Groves',
+    address: 'Under the Bridge, Trinity Groves, Dallas, TX',
+    mapsUrl: 'https://maps.google.com/?q=Trinity+Groves+Dallas+TX',
+    time: '7:00 PM',
+    distance: '2 miles',
+    eventType: 'weekly_monday'
+  },
+  {
     day: 'tuesday',
     dayOfWeek: 2,
     label: 'TUESDAY',
     location: 'Deep Ellum',
-    address: 'Deep Ellum, Dallas, TX',
-    mapsUrl: 'https://maps.google.com/?q=Deep+Ellum+Dallas+TX',
+    address: 'Kanvas Sports Bar, Deep Ellum, Dallas, TX',
+    mapsUrl: 'https://maps.google.com/?q=Kanvas+Sports+Bar+Deep+Ellum+Dallas+TX',
     time: '7:00 PM',
     distance: '2 miles',
     eventType: 'weekly_tuesday'

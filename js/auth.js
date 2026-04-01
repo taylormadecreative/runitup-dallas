@@ -142,28 +142,24 @@ function renderOnboarding() {
       <p>No wrong answers — every level is welcome</p>
       <div class="option-grid">
         <button class="option-card" onclick="selectPaceGroup(this, 'walk_it_up')">
-          <span class="option-emoji">🚶</span>
           <div class="option-info">
             <h4>Walk It Up</h4>
             <p>16+ min/mile — every step counts</p>
           </div>
         </button>
         <button class="option-card" onclick="selectPaceGroup(this, 'jog_it_up')">
-          <span class="option-emoji">🏃</span>
           <div class="option-info">
             <h4>Jog It Up</h4>
             <p>12-16 min/mile — finding our rhythm</p>
           </div>
         </button>
         <button class="option-card" onclick="selectPaceGroup(this, 'run_it_up')">
-          <span class="option-emoji">🔥</span>
           <div class="option-info">
             <h4>Run It Up</h4>
             <p>8-12 min/mile — let's get it</p>
           </div>
         </button>
         <button class="option-card" onclick="selectPaceGroup(this, 'sprint_it_up')">
-          <span class="option-emoji">⚡</span>
           <div class="option-info">
             <h4>Sprint It Up</h4>
             <p>Under 8 min/mile — catch us if you can</p>
@@ -184,15 +180,19 @@ function renderOnboarding() {
       <h2>When Do You Run?</h2>
       <p>Pick your days — you can always change this later</p>
       <div class="option-grid">
+        <button class="option-card" onclick="toggleRunDay(this, 'monday')">
+          <div class="option-info">
+            <h4>Monday Nights</h4>
+            <p>Trinity Groves — 7:00 PM — 2 miles</p>
+          </div>
+        </button>
         <button class="option-card" onclick="toggleRunDay(this, 'tuesday')">
-          <span class="option-emoji">🌃</span>
           <div class="option-info">
             <h4>Tuesday Nights</h4>
-            <p>Deep Ellum — 7:00 PM — 2 miles</p>
+            <p>Kanvas Sports Bar, Deep Ellum — 7:00 PM — 2 miles</p>
           </div>
         </button>
         <button class="option-card" onclick="toggleRunDay(this, 'saturday')">
-          <span class="option-emoji">🌅</span>
           <div class="option-info">
             <h4>Saturday Mornings</h4>
             <p>Fair Oaks Park — 8:00 AM — 3-5 miles</p>
@@ -386,6 +386,10 @@ async function autoJoinChannels(profile) {
   if (paceChannel) toJoin.push({ channel_id: paceChannel.id, user_id: profile.id });
 
   // Join run day channels
+  if (profile.run_days.includes('monday')) {
+    const ch = channels.find(c => c.name === 'monday-trinity-groves');
+    if (ch) toJoin.push({ channel_id: ch.id, user_id: profile.id });
+  }
   if (profile.run_days.includes('tuesday')) {
     const ch = channels.find(c => c.name === 'tuesday-deep-ellum');
     if (ch) toJoin.push({ channel_id: ch.id, user_id: profile.id });

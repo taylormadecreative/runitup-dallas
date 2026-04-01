@@ -202,16 +202,16 @@ function closeMilesSlider() {
 
 // ===== BADGE SYSTEM =====
 const BADGE_DEFINITIONS = [
-  { type: 'first_step', label: 'First Step', description: 'First check-in', icon: '\u{1F463}' },
-  { type: 'early_bird', label: 'Early Bird', description: '5 Saturday morning runs', icon: '\u{1F305}' },
-  { type: 'night_runner', label: 'Night Runner', description: '5 Tuesday evening runs', icon: '\u{1F303}' },
-  { type: 'streak_week', label: 'Streak Week', description: '4-week attendance streak', icon: '\u{1F4AA}' },
-  { type: 'on_fire', label: 'On Fire', description: '12-week attendance streak', icon: '\u{1F525}' },
-  { type: 'century_club', label: 'Century Club', description: '100 total miles', icon: '\u{1F4AF}' },
-  { type: 'run_buddy', label: 'Run Buddy', description: 'Used buddy feature 3 times', icon: '\u{1F91D}' },
-  { type: 'day_one', label: 'Day One', description: 'Attended a special event', icon: '\u{2B50}' },
-  { type: 'both_sides', label: 'Both Sides', description: 'Tuesday + Saturday same week', icon: '\u{1F504}' },
-  { type: 'social_butterfly', label: 'Social Butterfly', description: 'Sent 50 messages', icon: '\u{1F98B}' }
+  { type: 'first_step', label: 'First Step', description: 'First check-in', icon: 'FS' },
+  { type: 'early_bird', label: 'Early Bird', description: '5 Saturday morning runs', icon: 'EB' },
+  { type: 'night_runner', label: 'Night Runner', description: '5 Tuesday evening runs', icon: 'NR' },
+  { type: 'streak_week', label: 'Streak Week', description: '4-week attendance streak', icon: '4W' },
+  { type: 'on_fire', label: 'On Fire', description: '12-week attendance streak', icon: 'OF' },
+  { type: 'century_club', label: 'Century Club', description: '100 total miles', icon: 'CC' },
+  { type: 'run_buddy', label: 'Run Buddy', description: 'Used buddy feature 3 times', icon: 'RB' },
+  { type: 'day_one', label: 'Day One', description: 'Attended a special event', icon: 'D1' },
+  { type: 'both_sides', label: 'Both Sides', description: 'Tuesday + Saturday same week', icon: 'BS' },
+  { type: 'social_butterfly', label: 'Social Butterfly', description: 'Sent 50 messages', icon: 'SB' }
 ];
 
 async function checkAndAwardBadges() {
@@ -279,7 +279,7 @@ async function checkAndAwardBadges() {
   for (const badgeType of toAward) {
     await supabaseClient.from('badges').insert({ user_id: userId, badge_type: badgeType });
     const def = BADGE_DEFINITIONS.find(b => b.type === badgeType);
-    if (def) showToast(`NEW BADGE UNLOCKED: ${def.icon} ${def.label}!`, 'success');
+    if (def) showToast(`NEW BADGE UNLOCKED: ${def.label}!`, 'success');
   }
 }
 

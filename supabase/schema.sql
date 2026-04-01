@@ -1,8 +1,8 @@
 -- ===== ENUMS =====
 CREATE TYPE pace_group AS ENUM ('walk_it_up', 'jog_it_up', 'run_it_up', 'sprint_it_up');
 CREATE TYPE user_role AS ENUM ('member', 'captain', 'admin');
-CREATE TYPE event_type AS ENUM ('weekly_tuesday', 'weekly_saturday', 'special');
-CREATE TYPE run_day AS ENUM ('tuesday', 'saturday');
+CREATE TYPE event_type AS ENUM ('weekly_monday', 'weekly_tuesday', 'weekly_saturday', 'special');
+CREATE TYPE run_day AS ENUM ('monday', 'tuesday', 'saturday');
 CREATE TYPE channel_type AS ENUM ('run_day', 'pace_group', 'social');
 
 -- ===== USERS (extends auth.users) =====
@@ -192,7 +192,8 @@ CREATE POLICY "Users can manage own pins" ON public.pinned_badges FOR ALL USING 
 
 -- ===== SEED CHANNELS =====
 INSERT INTO public.channels (name, type, description) VALUES
-  ('tuesday-deep-ellum', 'run_day', 'Tuesday night runs at Deep Ellum'),
+  ('monday-trinity-groves', 'run_day', 'Monday night runs at Trinity Groves'),
+  ('tuesday-deep-ellum', 'run_day', 'Tuesday night runs at Deep Ellum — Kanvas Sports Bar'),
   ('saturday-fair-oaks', 'run_day', 'Saturday morning runs at Fair Oaks Park'),
   ('trail-runs', 'run_day', 'Trail run coordination and meetups'),
   ('walk-it-up', 'pace_group', 'Walkers — every step counts'),
@@ -208,3 +209,10 @@ INSERT INTO public.channels (name, type, description) VALUES
 ALTER PUBLICATION supabase_realtime ADD TABLE public.messages;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.buddy_requests;
 ALTER PUBLICATION supabase_realtime ADD TABLE public.check_ins;
+
+-- ===== MONDAY RUN SUPPORT (run on live Supabase if schema already deployed) =====
+-- ALTER TYPE event_type ADD VALUE IF NOT EXISTS 'weekly_monday';
+-- ALTER TYPE run_day ADD VALUE IF NOT EXISTS 'monday';
+-- INSERT INTO public.channels (name, type, description) VALUES
+--   ('monday-trinity-groves', 'run_day', 'Monday night runs at Trinity Groves')
+--   ON CONFLICT (name) DO NOTHING;

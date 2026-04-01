@@ -19,7 +19,7 @@ async function refreshStats() {
   container.innerHTML = `
     <!-- Stats Hero -->
     <div class="stats-hero">
-      <div class="flame">🔥</div>
+      <div class="flame">&#9650;</div>
       <div class="streak-number">${stats.streak}</div>
       <div class="streak-text">Week Streak</div>
       <div class="stats-row">

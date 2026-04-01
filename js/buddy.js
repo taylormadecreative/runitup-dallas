@@ -25,7 +25,9 @@ async function openBuddyBoard(runDay, runDate) {
     return aMatch - bMatch;
   });
 
-  const dayLabel = runDay === 'tuesday' ? 'Tuesday — Deep Ellum' : 'Saturday — Fair Oaks';
+  const dayLabel = runDay === 'monday' ? 'Monday — Trinity Groves'
+    : runDay === 'tuesday' ? 'Tuesday — Deep Ellum'
+    : 'Saturday — Fair Oaks';
 
   container.innerHTML = `
     <button class="auth-back" onclick="navigateTo('events')">
@@ -43,7 +45,7 @@ async function openBuddyBoard(runDay, runDate) {
           <input class="form-input" type="text" id="buddy-intro" placeholder="e.g. First time here, a little nervous!" maxlength="100">
         </div>
         <button class="btn-primary" onclick="createBuddyRequest('${runDay}', '${runDate}')">
-          \u{1F91D} Add Me to the Board
+          ADD ME TO THE BOARD
         </button>
       </div>
     ` : `
@@ -67,7 +69,7 @@ async function openBuddyBoard(runDay, runDate) {
               <span style="font-size: 0.75rem; color: var(--color-success);">\u2713 Matched</span>
             ` : `
               <button class="btn-primary btn-sm" onclick="matchWithBuddy('${r.id}', '${r.user_id}', '${runDay}', '${runDate}')">
-                Run Together
+                RUN TOGETHER
               </button>
             `}
           </div>
@@ -152,7 +154,9 @@ async function matchWithBuddy(requestId, otherUserId, runDay, runDate) {
 
     // Get the other user's name
     const otherUser = await getUserProfile(otherUserId);
-    const dayLabel = runDay === 'tuesday' ? 'Tuesday at Deep Ellum' : 'Saturday at Fair Oaks';
+    const dayLabel = runDay === 'monday' ? 'Monday at Trinity Groves'
+      : runDay === 'tuesday' ? 'Tuesday at Deep Ellum'
+      : 'Saturday at Fair Oaks';
     showToast(`You and ${otherUser.display_name} are running together ${dayLabel}!`, 'success');
 
     openBuddyBoard(runDay, runDate);

@@ -17,11 +17,14 @@ async function refreshHome() {
   if (!currentProfile) return;
   container.innerHTML = '<div class="loading-screen"><div class="spinner"></div></div>';
 
-  // Determine next run
-  const nextTuesday = getNextRunDate(2);
-  const nextSaturday = getNextRunDate(6);
-  const nextRun = nextTuesday < nextSaturday ? WEEKLY_RUNS[0] : WEEKLY_RUNS[1];
-  const nextRunDate = nextTuesday < nextSaturday ? nextTuesday : nextSaturday;
+  // Determine next run (Monday, Tuesday, or Saturday — whichever is soonest)
+  const runDates = WEEKLY_RUNS.map(run => ({
+    run,
+    date: getNextRunDate(run.dayOfWeek)
+  }));
+  runDates.sort((a, b) => a.date - b.date);
+  const nextRun = runDates[0].run;
+  const nextRunDate = runDates[0].date;
 
   // Get user stats
   const stats = await getUserStats(currentProfile.id);
@@ -66,7 +69,7 @@ async function refreshHome() {
       <div class="next-run-title">${nextRun.label} \u2014 <span>${nextRun.location}</span></div>
       <div class="countdown" id="home-countdown"></div>
       <div class="next-run-address">
-        \u{1F4CD} ${nextRun.address} \u00B7 <a href="${nextRun.mapsUrl}" target="_blank">Get Directions</a>
+        ${nextRun.address} \u00B7 <a href="${nextRun.mapsUrl}" target="_blank">Get Directions</a>
       </div>
       <div style="font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: var(--space-sm);">
         ${nextRun.time} \u00B7 ${nextRun.distance} \u00B7 ${lastCount} showed up last week
@@ -78,7 +81,7 @@ async function refreshHome() {
     <!-- Streak Bar -->
     <div class="streak-bar" onclick="navigateTo('stats')">
       <div class="streak-info">
-        <span class="streak-flame">\u{1F525}</span>
+        <span class="streak-flame" style="color: var(--color-secondary); font-family: var(--font-display); font-weight: 800;">&#9650;</span>
         <span class="streak-count">${stats.streak}</span>
         <span class="streak-label">Week Streak</span>
       </div>
@@ -109,8 +112,8 @@ async function refreshHome() {
       <div class="upcoming-event-info">
         <h4>${escapeHtml(upcomingEvent.title)}</h4>
         <div class="upcoming-event-meta">
-          <span>\u{1F4C5} ${formatDate(upcomingEvent.event_date)}</span>
-          <span>\u{1F4CD} ${escapeHtml(upcomingEvent.location_name)}</span>
+          <span>${formatDate(upcomingEvent.event_date)}</span>
+          <span>${escapeHtml(upcomingEvent.location_name)}</span>
         </div>
       </div>
     </div>
@@ -180,14 +183,14 @@ async function getCommunityHighlights() {
 
   if (tuesdayCount > 0) {
     highlights.push({
-      icon: '\u{1F303}',
+      icon: 'TU',
       text: `<strong>${tuesdayCount}</strong> checked in at Deep Ellum this week`
     });
   }
 
   if (saturdayCount > 0) {
     highlights.push({
-      icon: '\u{1F305}',
+      icon: 'SA',
       text: `<strong>${saturdayCount}</strong> showed up at Fair Oaks this week`
     });
   }

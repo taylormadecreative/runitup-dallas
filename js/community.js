@@ -5,17 +5,18 @@ let chatSubscription = null;
 let lastReadTimestamps = {};
 
 const CHANNEL_ICONS = {
-  'tuesday-deep-ellum': '\u{1F303}',
-  'saturday-fair-oaks': '\u{1F305}',
-  'trail-runs': '\u{26F0}',
-  'walk-it-up': '\u{1F6B6}',
-  'jog-it-up': '\u{1F3C3}',
-  'run-it-up': '\u{1F525}',
-  'sprint-it-up': '\u{26A1}',
-  'general': '\u{1F4AC}',
-  'newbies': '\u{1F44B}',
-  'post-run-pics': '\u{1F4F8}',
-  'fit-check': '\u{1F457}'
+  'monday-trinity-groves': 'MO',
+  'tuesday-deep-ellum': 'TU',
+  'saturday-fair-oaks': 'SA',
+  'trail-runs': 'TR',
+  'walk-it-up': 'WK',
+  'jog-it-up': 'JG',
+  'run-it-up': 'RU',
+  'sprint-it-up': 'SP',
+  'general': 'GN',
+  'newbies': 'NB',
+  'post-run-pics': 'PP',
+  'fit-check': 'FC'
 };
 
 async function initCommunity() {
@@ -89,7 +90,7 @@ async function refreshCommunity() {
     <div class="channel-list">
       ${channelData.map(ch => `
         <div class="channel-item" onclick="openChat('${ch.id}', '${ch.name}')">
-          <div class="channel-icon">${CHANNEL_ICONS[ch.name] || '\u{1F4AC}'}</div>
+          <div class="channel-icon">${CHANNEL_ICONS[ch.name] || 'CH'}</div>
           <div class="channel-info">
             <div class="channel-name">#${ch.name}</div>
             <div class="channel-preview">${ch.lastMsg ? `${escapeHtml(ch.lastMsg.users?.display_name || 'Someone')}: ${escapeHtml(ch.lastMsg.content)}` : escapeHtml(ch.description || 'No messages yet')}</div>
@@ -193,7 +194,7 @@ async function loadMessages() {
   if (pinned?.[0]) {
     html += `
       <div class="pinned-message">
-        <span class="pin-icon">\u{1F4CC}</span>
+        <span class="pin-icon">&#9650;</span>
         <span><strong>${escapeHtml(pinned[0].users?.display_name || 'Member')}:</strong> ${escapeHtml(pinned[0].content)}</span>
       </div>
     `;
@@ -270,7 +271,7 @@ async function handleChatPhoto(event) {
     await supabaseClient.from('messages').insert({
       channel_id: activeChannelId,
       user_id: currentProfile.id,
-      content: '\u{1F4F7} Photo',
+      content: 'Photo',
       image_url: url
     });
   } catch (err) {
