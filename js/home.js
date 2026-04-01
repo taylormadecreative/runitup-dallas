@@ -63,19 +63,19 @@ async function refreshHome() {
   }
 
   container.innerHTML = `
-    <!-- Next Run Card -->
-    <div class="next-run-card">
-      <div class="next-run-label">Next Run</div>
-      <div class="next-run-title">${nextRun.label} \u2014 <span>${nextRun.location}</span></div>
-      <div class="countdown" id="home-countdown"></div>
-      <div class="next-run-address">
-        ${nextRun.address} \u00B7 <a href="${nextRun.mapsUrl}" target="_blank">Get Directions</a>
+    <!-- Hero Banner -->
+    <div class="home-hero" style="background-image: url('/assets/photos/hero-group.jpg');">
+      <div class="home-hero-overlay">
+        <div class="next-run-label">Next Run</div>
+        <div class="next-run-title">${nextRun.label} \u2014 <span>${nextRun.location}</span></div>
+        <div class="countdown" id="home-countdown"></div>
+        <div class="next-run-meta">${nextRun.time} \u00B7 ${nextRun.distance} \u00B7 ${lastCount} showed up last week</div>
+        <div class="next-run-address">
+          ${nextRun.address} \u00B7 <a href="${nextRun.mapsUrl}" target="_blank">Directions</a>
+        </div>
+        <button class="${checkInBtnClass}" ${checkInBtnDisabled}
+          onclick="handleCheckIn('${nextRun.eventType}')">${checkInBtnText}</button>
       </div>
-      <div style="font-size: 0.75rem; color: var(--color-text-muted); margin-bottom: var(--space-sm);">
-        ${nextRun.time} \u00B7 ${nextRun.distance} \u00B7 ${lastCount} showed up last week
-      </div>
-      <button class="${checkInBtnClass}" ${checkInBtnDisabled}
-        onclick="handleCheckIn('${nextRun.eventType}')">${checkInBtnText}</button>
     </div>
 
     <!-- Streak Bar -->
@@ -87,6 +87,35 @@ async function refreshHome() {
       </div>
       <div class="streak-dots">
         ${stats.weekHistory.map(w => `<div class="streak-dot ${w ? 'filled' : ''}"></div>`).join('')}
+      </div>
+    </div>
+
+    <!-- Quick Stats -->
+    <div class="quick-stats-row">
+      <div class="quick-stat-card">
+        <div class="quick-stat-value">${stats.totalCheckIns || 0}</div>
+        <div class="quick-stat-label">Check-ins</div>
+      </div>
+      <div class="quick-stat-card">
+        <div class="quick-stat-value">${stats.totalMiles || 0}</div>
+        <div class="quick-stat-label">Miles</div>
+      </div>
+      <div class="quick-stat-card">
+        <div class="quick-stat-value">${stats.streak || 0}</div>
+        <div class="quick-stat-label">Streak</div>
+      </div>
+    </div>
+
+    <!-- The Crew Gallery -->
+    <div class="home-gallery-section">
+      <h3 class="section-header">The Crew</h3>
+      <div class="home-gallery-scroll">
+        <img src="/assets/photos/community-vibes.jpg" class="home-gallery-img" alt="Community vibes">
+        <img src="/assets/photos/deep-ellum-night.jpg" class="home-gallery-img" alt="Deep Ellum night run">
+        <img src="/assets/photos/warmup-stretch.jpg" class="home-gallery-img" alt="Pre-run warmup">
+        <img src="/assets/photos/urban-run.jpg" class="home-gallery-img" alt="Urban run">
+        <img src="/assets/photos/group-run-city.jpg" class="home-gallery-img" alt="Group run">
+        <img src="/assets/photos/fair-oaks-morning.jpg" class="home-gallery-img" alt="Fair Oaks morning">
       </div>
     </div>
 

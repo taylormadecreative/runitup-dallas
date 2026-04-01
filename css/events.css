@@ -26,6 +26,16 @@
   background: var(--color-surface);
   border-radius: var(--radius-md);
   padding: var(--space-md);
+  overflow: hidden;
+}
+
+.weekly-run-img {
+  width: calc(100% + var(--space-md) * 2);
+  height: 100px;
+  object-fit: cover;
+  border-radius: var(--radius-md) var(--radius-md) 0 0;
+  margin: calc(var(--space-md) * -1);
+  margin-bottom: var(--space-sm);
 }
 
 .weekly-run-header {

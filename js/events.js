@@ -111,9 +111,17 @@ async function refreshEvents() {
   `;
 }
 
+// Photo map for weekly run cards
+const WEEKLY_RUN_PHOTOS = {
+  monday: '/assets/photos/urban-run.jpg',
+  tuesday: '/assets/photos/deep-ellum-night.jpg',
+  saturday: '/assets/photos/fair-oaks-morning.jpg'
+};
+
 function renderWeeklyRunCard(run, lastCount, buddyCount, checkedIn, nextDate) {
   const nextRunDate = getNextRunDate(run.dayOfWeek);
   const windowOpen = isCheckInWindow(nextRunDate);
+  const photo = WEEKLY_RUN_PHOTOS[run.day] || '';
 
   let btnHtml = '';
   if (checkedIn) {
@@ -126,6 +134,7 @@ function renderWeeklyRunCard(run, lastCount, buddyCount, checkedIn, nextDate) {
 
   return `
     <div class="weekly-run-card">
+      ${photo ? `<img src="${photo}" alt="${run.location}" class="weekly-run-img">` : ''}
       <div class="weekly-run-header">
         <span class="weekly-run-day">${run.label}</span>
         <span class="weekly-run-time">${run.time}</span>

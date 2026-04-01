@@ -1,4 +1,4 @@
-const CACHE_NAME = 'runitup-v9';
+const CACHE_NAME = 'runitup-v10';
 const STATIC_ASSETS = [
   '/',
   '/index.html',
@@ -24,7 +24,15 @@ const STATIC_ASSETS = [
   '/js/checkin.js',
   '/assets/logo.png',
   '/assets/logo-192.png',
-  '/assets/logo-512.png'
+  '/assets/logo-512.png',
+  '/assets/photos/hero-group.jpg',
+  '/assets/photos/deep-ellum-night.jpg',
+  '/assets/photos/fair-oaks-morning.jpg',
+  '/assets/photos/community-vibes.jpg',
+  '/assets/photos/event-5k.jpg',
+  '/assets/photos/warmup-stretch.jpg',
+  '/assets/photos/urban-run.jpg',
+  '/assets/photos/group-run-city.jpg'
 ];
 
 self.addEventListener('install', (event) => {

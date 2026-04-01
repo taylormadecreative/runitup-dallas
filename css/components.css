@@ -149,8 +149,8 @@
 .btn-secondary:active { opacity: 0.7; }
 
 .btn-orange {
-  background: var(--color-secondary);
-  color: var(--color-text);
+  background: var(--color-primary-dark);
+  color: var(--color-bg);
 }
 
 .btn-sm {
