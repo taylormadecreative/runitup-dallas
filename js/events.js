@@ -16,11 +16,13 @@ async function refreshEvents() {
   const mondayCount = await getCheckInCountForEvent('weekly_monday', 7);
   const tuesdayCount = await getCheckInCountForEvent('weekly_tuesday', 7);
   const saturdayCount = await getCheckInCountForEvent('weekly_saturday', 7);
+  const sundayCount = await getCheckInCountForEvent('weekly_sunday', 7);
 
   // Get buddy counts for next runs
   const nextMondayDate = getNextRunDate(1).toISOString().split('T')[0];
   const nextTuesdayDate = getNextRunDate(2).toISOString().split('T')[0];
   const nextSaturdayDate = getNextRunDate(6).toISOString().split('T')[0];
+  const nextSundayDate = getNextRunDate(0).toISOString().split('T')[0];
 
   const { count: mondayBuddies } = await supabaseClient
     .from('buddy_requests')
@@ -43,10 +45,18 @@ async function refreshEvents() {
     .eq('run_date', nextSaturdayDate)
     .is('matched_with', null);
 
+  const { count: sundayBuddies } = await supabaseClient
+    .from('buddy_requests')
+    .select('*', { count: 'exact', head: true })
+    .eq('run_day', 'sunday')
+    .eq('run_date', nextSundayDate)
+    .is('matched_with', null);
+
   // Get check-in status
   const mondayChecked = await hasCheckedInToday('weekly_monday');
   const tuesdayChecked = await hasCheckedInToday('weekly_tuesday');
   const saturdayChecked = await hasCheckedInToday('weekly_saturday');
+  const sundayChecked = await hasCheckedInToday('weekly_sunday');
 
   // Get special events
   const { data: specialEvents } = await supabaseClient
@@ -80,6 +90,7 @@ async function refreshEvents() {
         ${renderWeeklyRunCard(WEEKLY_RUNS[0], mondayCount, mondayBuddies || 0, mondayChecked, nextMondayDate)}
         ${renderWeeklyRunCard(WEEKLY_RUNS[1], tuesdayCount, tuesdayBuddies || 0, tuesdayChecked, nextTuesdayDate)}
         ${renderWeeklyRunCard(WEEKLY_RUNS[2], saturdayCount, saturdayBuddies || 0, saturdayChecked, nextSaturdayDate)}
+        ${renderWeeklyRunCard(WEEKLY_RUNS[3], sundayCount, sundayBuddies || 0, sundayChecked, nextSundayDate)}
       </div>
     </div>
 
@@ -97,7 +108,7 @@ async function refreshEvents() {
         <div class="special-events">
           ${upcoming.length === 0 && past.length === 0 ? `
             <div class="empty-state">
-              <p>No special events on the calendar yet. Weekly runs are still going strong — pull up Tuesday or Saturday!</p>
+              <p>No special events on the calendar yet. Weekly runs are still going strong — pull up Monday, Tuesday, Saturday, or Sunday!</p>
             </div>
           ` : ''}
           ${upcoming.map(e => renderSpecialEventCard(e, rsvpCounts[e.id] || 0, false)).join('')}
@@ -113,9 +124,10 @@ async function refreshEvents() {
 
 // Photo map for weekly run cards
 const WEEKLY_RUN_PHOTOS = {
-  monday: '/assets/photos/urban-run.jpg',
-  tuesday: '/assets/photos/deep-ellum-night.jpg',
-  saturday: '/assets/photos/fair-oaks-morning.jpg'
+  'monday': '/assets/photos/urban-run.jpg',
+  'tuesday': '/assets/photos/deep-ellum-night.jpg',
+  'saturday': '/assets/photos/fair-oaks-morning.jpg',
+  'sunday': '/assets/photos/group-run-city.jpg'
 };
 
 function renderWeeklyRunCard(run, lastCount, buddyCount, checkedIn, nextDate) {
@@ -196,12 +208,14 @@ function renderCalendarView(events) {
     const date = new Date(calendarYear, calendarMonth, day);
     const dow = date.getDay();
     const isToday = date.toDateString() === today.toDateString();
+    const isMonday = dow === 1;
     const isTuesday = dow === 2;
     const isSaturday = dow === 6;
+    const isSunday = dow === 0;
     const hasSpecialEvent = events.some(e => new Date(e.event_date).toDateString() === date.toDateString());
 
     let dotHtml = '';
-    if (isTuesday || isSaturday) dotHtml += `<div class="cal-dot weekly"></div>`;
+    if (isMonday || isTuesday || isSaturday || isSunday) dotHtml += `<div class="cal-dot weekly"></div>`;
     if (hasSpecialEvent) dotHtml += `<div class="cal-dot special" style="left: calc(50% + 4px);"></div>`;
 
     daysHtml += `<div class="calendar-day ${isToday ? 'today' : ''}">${day}${dotHtml}</div>`;

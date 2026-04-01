@@ -216,3 +216,11 @@ ALTER PUBLICATION supabase_realtime ADD TABLE public.check_ins;
 -- INSERT INTO public.channels (name, type, description) VALUES
 --   ('monday-trinity-groves', 'run_day', 'Monday night runs at Trinity Groves')
 --   ON CONFLICT (name) DO NOTHING;
+
+-- ===== SUNDAY RUN SUPPORT (run on live Supabase if schema already deployed) =====
+ALTER TYPE event_type ADD VALUE IF NOT EXISTS 'weekly_sunday';
+ALTER TYPE run_day ADD VALUE IF NOT EXISTS 'sunday';
+
+INSERT INTO public.channels (name, type, description) VALUES
+  ('sunday-levy-plaza', 'run_day', 'Sunday morning runs at Levy Event Plaza')
+ON CONFLICT (name) DO NOTHING;

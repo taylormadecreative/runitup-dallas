@@ -196,7 +196,13 @@ function renderOnboarding() {
         <button class="option-card" onclick="toggleRunDay(this, 'saturday')">
           <div class="option-info">
             <h4>Saturday Mornings</h4>
-            <p>Fair Oaks Park — 8:00 AM — 3-5 miles</p>
+            <p>Fair Oaks Park — 8:30 AM — 3-5 miles</p>
+          </div>
+        </button>
+        <button class="option-card" onclick="toggleRunDay(this, 'sunday')">
+          <div class="option-info">
+            <h4>Sunday Mornings</h4>
+            <p>Levy Event Plaza, Irving — 8:30 AM — 3 miles</p>
           </div>
         </button>
       </div>
@@ -402,6 +408,10 @@ async function autoJoinChannels(profile) {
   }
   if (profile.run_days.includes('saturday')) {
     const ch = channels.find(c => c.name === 'saturday-fair-oaks');
+    if (ch) toJoin.push({ channel_id: ch.id, user_id: profile.id });
+  }
+  if (profile.run_days.includes('sunday')) {
+    const ch = channels.find(c => c.name === 'sunday-levy-plaza');
     if (ch) toJoin.push({ channel_id: ch.id, user_id: profile.id });
   }
 

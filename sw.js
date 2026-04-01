@@ -1,4 +1,4 @@
-const CACHE_NAME = 'runitup-v10';
+const CACHE_NAME = 'runitup-v11';
 const STATIC_ASSETS = [
   '/',
   '/index.html',

@@ -136,19 +136,23 @@ function showToast(message, type = 'info') {
 
 // ===== DATE HELPERS =====
 function getNextRunDate(dayOfWeek) {
-  // dayOfWeek: 1 = Monday, 2 = Tuesday, 6 = Saturday
+  // dayOfWeek: 0 = Sunday, 1 = Monday, 2 = Tuesday, 6 = Saturday
   const now = new Date();
   const current = now.getDay();
   let daysUntil = dayOfWeek - current;
   if (daysUntil < 0) daysUntil += 7;
   if (daysUntil === 0) {
     // If it's the same day, check if the run has passed
-    const runHour = dayOfWeek === 6 ? 8 : 19; // 8AM Sat, 7PM Mon/Tue
+    const runHour = (dayOfWeek === 1 || dayOfWeek === 2) ? 19 : 8; // 7PM Mon/Tue, 8:30AM Sat/Sun
     if (now.getHours() >= runHour + 1) daysUntil = 7;
   }
   const next = new Date(now);
   next.setDate(now.getDate() + daysUntil);
-  next.setHours(dayOfWeek === 6 ? 8 : 19, 0, 0, 0);
+  if (dayOfWeek === 1 || dayOfWeek === 2) {
+    next.setHours(19, 0, 0, 0); // 7 PM
+  } else {
+    next.setHours(8, 30, 0, 0); // 8:30 AM
+  }
   return next;
 }
 
@@ -215,8 +219,8 @@ const WEEKLY_RUNS = [
     dayOfWeek: 1,
     label: 'MONDAY',
     location: 'Trinity Groves',
-    address: 'Under the Bridge, Trinity Groves, Dallas, TX',
-    mapsUrl: 'https://maps.google.com/?q=Trinity+Groves+Dallas+TX',
+    address: '3118 Gulden Lane, Dallas, TX',
+    mapsUrl: 'https://maps.google.com/?q=3118+Gulden+Lane+Dallas+TX',
     time: '7:00 PM',
     distance: '2 miles',
     eventType: 'weekly_monday'
@@ -226,8 +230,8 @@ const WEEKLY_RUNS = [
     dayOfWeek: 2,
     label: 'TUESDAY',
     location: 'Deep Ellum',
-    address: 'Kanvas Sports Bar, Deep Ellum, Dallas, TX',
-    mapsUrl: 'https://maps.google.com/?q=Kanvas+Sports+Bar+Deep+Ellum+Dallas+TX',
+    address: '2823 Main St, Dallas, TX',
+    mapsUrl: 'https://maps.google.com/?q=2823+Main+St+Dallas+TX',
     time: '7:00 PM',
     distance: '2 miles',
     eventType: 'weekly_tuesday'
@@ -237,10 +241,21 @@ const WEEKLY_RUNS = [
     dayOfWeek: 6,
     label: 'SATURDAY',
     location: 'Fair Oaks Park',
-    address: '7501 Fair Oaks Ave, Dallas, TX 75231',
-    mapsUrl: 'https://maps.google.com/?q=Fair+Oaks+Park+Dallas+TX',
-    time: '8:00 AM',
+    address: '7621 Fair Oaks Ave, Dallas, TX 75231',
+    mapsUrl: 'https://maps.google.com/?q=7621+Fair+Oaks+Ave+Dallas+TX+75231',
+    time: '8:30 AM',
     distance: '3-5 miles',
     eventType: 'weekly_saturday'
+  },
+  {
+    day: 'sunday',
+    dayOfWeek: 0,
+    label: 'SUNDAY',
+    location: 'Levy Event Plaza',
+    address: '501 E Las Colinas Blvd, Irving, TX',
+    mapsUrl: 'https://maps.google.com/?q=501+E+Las+Colinas+Blvd+Irving+TX',
+    time: '8:30 AM',
+    distance: '3 miles',
+    eventType: 'weekly_sunday'
   }
 ];

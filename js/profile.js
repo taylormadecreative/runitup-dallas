@@ -27,6 +27,7 @@ async function refreshProfile() {
     if (days.includes('monday')) parts.push('Mon');
     if (days.includes('tuesday')) parts.push('Tue');
     if (days.includes('saturday')) parts.push('Sat');
+    if (days.includes('sunday')) parts.push('Sun');
     return parts.length > 0 ? parts.join(' / ') : 'No days set';
   })();
 
@@ -114,6 +115,7 @@ async function viewMemberProfile(userId) {
     if (days.includes('monday')) parts.push('Mon');
     if (days.includes('tuesday')) parts.push('Tue');
     if (days.includes('saturday')) parts.push('Sat');
+    if (days.includes('sunday')) parts.push('Sun');
     return parts.length > 0 ? parts.join(' / ') : 'No days set';
   })();
 
@@ -246,7 +248,13 @@ function showEditProfile() {
         <button class="option-card ${currentProfile.run_days.includes('saturday') ? 'selected' : ''}" onclick="toggleEditRunDay(this, 'saturday')">
           <div class="option-info">
             <h4 style="font-family: var(--font-body); text-transform: none; letter-spacing: normal;">Saturday Mornings</h4>
-            <p>Fair Oaks Park — 8:00 AM</p>
+            <p>Fair Oaks Park — 8:30 AM</p>
+          </div>
+        </button>
+        <button class="option-card ${currentProfile.run_days.includes('sunday') ? 'selected' : ''}" onclick="toggleEditRunDay(this, 'sunday')">
+          <div class="option-info">
+            <h4 style="font-family: var(--font-body); text-transform: none; letter-spacing: normal;">Sunday Mornings</h4>
+            <p>Levy Event Plaza, Irving — 8:30 AM</p>
           </div>
         </button>
       </div>

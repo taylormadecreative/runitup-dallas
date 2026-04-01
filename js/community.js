@@ -8,6 +8,7 @@ const CHANNEL_ICONS = {
   'monday-trinity-groves': 'MO',
   'tuesday-deep-ellum': 'TU',
   'saturday-fair-oaks': 'SA',
+  'sunday-levy-plaza': 'SU',
   'trail-runs': 'TR',
   'walk-it-up': 'WK',
   'jog-it-up': 'JG',
