@@ -232,10 +232,10 @@
   color: var(--color-text-muted);
 }
 
-.pace-badge.walk_it_up { background: #1B5E20; color: #A5D6A7; }
-.pace-badge.jog_it_up { background: #0D47A1; color: #90CAF9; }
-.pace-badge.run_it_up { background: #4A148C; color: #CE93D8; }
-.pace-badge.sprint_it_up { background: #BF360C; color: #FFAB91; }
+.pace-badge.walk_it_up { background: #1A2E05; color: #BFFF00; }
+.pace-badge.jog_it_up { background: #1A2E05; color: #99CC00; }
+.pace-badge.run_it_up { background: #2A3A10; color: #BFFF00; border: 1px solid #BFFF00; }
+.pace-badge.sprint_it_up { background: #BFFF00; color: #0A0A0A; }
 
 /* ===== FORM INPUTS ===== */
 .form-group {
