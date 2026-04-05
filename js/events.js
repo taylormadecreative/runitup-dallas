@@ -124,10 +124,10 @@ async function refreshEvents() {
 
 // Photo map for weekly run cards
 const WEEKLY_RUN_PHOTOS = {
-  'monday': './assets/photos/urban-run.jpg',
-  'tuesday': './assets/photos/deep-ellum-night.jpg',
-  'saturday': './assets/photos/fair-oaks-morning.jpg',
-  'sunday': './assets/photos/group-run-city.jpg'
+  'monday': './assets/photos/motion-blur.jpg',
+  'tuesday': './assets/photos/night-sprint.jpg',
+  'saturday': './assets/photos/solo-skyline.jpg',
+  'sunday': './assets/photos/low-angle-film.jpg'
 };
 
 function renderWeeklyRunCard(run, lastCount, buddyCount, checkedIn, nextDate) {

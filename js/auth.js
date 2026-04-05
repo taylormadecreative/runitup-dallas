@@ -5,13 +5,17 @@ let currentProfile = null;
 // ===== RENDER SPLASH =====
 function renderSplash() {
   document.getElementById('screen-splash').innerHTML = `
-    <img src="./assets/logo.png" alt="Run It UP!" class="splash-logo">
-    <p class="splash-tagline">Built By the Community, Powered by Purpose</p>
-    <p style="font-size: 0.75rem; color: var(--color-primary); font-weight: 600; margin-bottom: var(--space-md);">82K+ runners. Dallas's biggest run club.</p>
-    <div class="splash-buttons">
-      <button class="btn-primary" onclick="showScreen('signup')">JOIN THE CREW</button>
-      <button class="btn-secondary btn-sm" onclick="loginAsGuest()" style="margin-top: var(--space-xs);">EXPLORE AS GUEST</button>
-      <p class="splash-login-link">Already have an account? <a href="#" onclick="showScreen('login'); return false;">Log In</a></p>
+    <div class="splash-hero" style="background-image: url('./assets/photos/low-angle-urban.jpg');">
+      <div class="splash-hero-overlay">
+        <img src="./assets/logo.png" alt="Run It UP!" class="splash-logo">
+        <p class="splash-tagline">Built By the Community, Powered by Purpose</p>
+        <p style="font-size: 0.75rem; color: var(--color-primary); font-weight: 600; margin-bottom: var(--space-md);">82K+ runners. Dallas's biggest run club.</p>
+        <div class="splash-buttons">
+          <button class="btn-primary" onclick="showScreen('signup')">JOIN THE CREW</button>
+          <button class="btn-secondary btn-sm" onclick="loginAsGuest()" style="margin-top: var(--space-xs);">EXPLORE AS GUEST</button>
+          <p class="splash-login-link">Already have an account? <a href="#" onclick="showScreen('login'); return false;">Log In</a></p>
+        </div>
+      </div>
     </div>
   `;
 }

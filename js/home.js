@@ -64,7 +64,7 @@ async function refreshHome() {
 
   container.innerHTML = `
     <!-- Hero Banner -->
-    <div class="home-hero" style="background-image: url('./assets/photos/hero-group.jpg');">
+    <div class="home-hero" style="background-image: url('./assets/photos/hero.jpg');">
       <div class="home-hero-overlay">
         <div class="next-run-label">Next Run</div>
         <div class="next-run-title">${nextRun.label} \u2014 <span>${nextRun.location}</span></div>
@@ -106,30 +106,38 @@ async function refreshHome() {
       </div>
     </div>
 
-    <!-- The Crew Gallery -->
-    <div class="home-gallery-section">
-      <h3 class="section-header">The Crew</h3>
-      <div class="home-gallery-scroll">
-        <img src="./assets/photos/community-vibes.jpg" class="home-gallery-img" alt="Community vibes">
-        <img src="./assets/photos/deep-ellum-night.jpg" class="home-gallery-img" alt="Deep Ellum night run">
-        <img src="./assets/photos/warmup-stretch.jpg" class="home-gallery-img" alt="Pre-run warmup">
-        <img src="./assets/photos/urban-run.jpg" class="home-gallery-img" alt="Urban run">
-        <img src="./assets/photos/group-run-city.jpg" class="home-gallery-img" alt="Group run">
-        <img src="./assets/photos/fair-oaks-morning.jpg" class="home-gallery-img" alt="Fair Oaks morning">
-      </div>
-    </div>
-
     <!-- Community Highlights -->
     ${highlights.length > 0 ? `
     <div class="highlights-section">
       <h3>Community</h3>
       <div class="highlights-scroll">
-        ${highlights.map(h => `
+        ${highlights.map((h, i) => {
+          const covers = [
+            './assets/photos/night-sprint.jpg',
+            './assets/photos/solo-skyline.jpg',
+            './assets/photos/low-angle-alley.jpg',
+            './assets/photos/solo-neon.jpg',
+            './assets/photos/above-night.jpg',
+            './assets/photos/motion-brick.jpg',
+            './assets/photos/pack-street.jpg',
+            './assets/photos/duo-women.jpg',
+            './assets/photos/hero.jpg',
+            './assets/photos/low-angle-urban.jpg',
+            './assets/photos/above-crowd.jpg',
+            './assets/photos/motion-blur.jpg',
+            './assets/photos/motion-night.jpg',
+            './assets/photos/low-angle-film.jpg'
+          ];
+          const cover = covers[i % covers.length];
+          return `
           <div class="highlight-card">
-            <div class="highlight-icon">${h.icon}</div>
-            <div class="highlight-text">${h.text}</div>
+            <div class="highlight-cover" style="background-image: url('${cover}');"></div>
+            <div class="highlight-body">
+              <div class="highlight-icon">${h.icon}</div>
+              <div class="highlight-text">${h.text}</div>
+            </div>
           </div>
-        `).join('')}
+        `}).join('')}
       </div>
     </div>
     ` : ''}

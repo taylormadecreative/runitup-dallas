@@ -20,6 +20,22 @@ const CHANNEL_ICONS = {
   'fit-check': 'FC'
 };
 
+const CHANNEL_COVERS = {
+  'monday-trinity-groves': './assets/photos/motion-blur.jpg',
+  'tuesday-deep-ellum': './assets/photos/night-sprint.jpg',
+  'saturday-fair-oaks': './assets/photos/solo-skyline.jpg',
+  'sunday-levy-plaza': './assets/photos/low-angle-film.jpg',
+  'trail-runs': './assets/photos/solo-neon.jpg',
+  'walk-it-up': './assets/photos/duo-women.jpg',
+  'jog-it-up': './assets/photos/pack-street.jpg',
+  'run-it-up': './assets/photos/low-angle-alley.jpg',
+  'sprint-it-up': './assets/photos/motion-brick.jpg',
+  'general': './assets/photos/above-crowd.jpg',
+  'newbies': './assets/photos/low-angle-urban.jpg',
+  'post-run-pics': './assets/photos/above-night.jpg',
+  'fit-check': './assets/photos/hero.jpg'
+};
+
 async function initCommunity() {
   // Load last-read timestamps from localStorage
   try {
