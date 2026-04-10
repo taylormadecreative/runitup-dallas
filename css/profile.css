@@ -105,6 +105,126 @@
   display: block;
 }
 
+.profile-badge-slot .badge-lockup {
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 2px;
+  width: 100%;
+  height: 100%;
+  line-height: 1;
+  padding: 0 4px;
+}
+
+.profile-badge-slot .badge-lockup.badge-stacked {
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 1px;
+}
+
+.profile-badge-slot .badge-num {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 2rem;
+  letter-spacing: -0.03em;
+  color: var(--color-primary);
+  line-height: 0.85;
+  text-shadow:
+    0 0 2px rgba(191, 255, 0, 0.9),
+    0 0 14px rgba(191, 255, 0, 0.55),
+    0 0 28px rgba(191, 255, 0, 0.25);
+}
+
+.profile-badge-slot .badge-num-tight {
+  font-size: 1.7rem;
+  letter-spacing: -0.05em;
+}
+
+.profile-badge-slot .badge-num-plus {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.35rem;
+  color: var(--color-primary);
+  line-height: 0.85;
+}
+
+.profile-badge-slot .badge-word {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.6rem;
+  letter-spacing: -0.02em;
+  color: var(--color-primary);
+  line-height: 0.85;
+  text-shadow:
+    0 0 2px rgba(191, 255, 0, 0.9),
+    0 0 14px rgba(191, 255, 0, 0.55);
+}
+
+.profile-badge-slot .badge-word-sm {
+  font-size: 1.05rem;
+}
+
+.profile-badge-slot .badge-divider {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 0.8rem;
+  color: rgba(191, 255, 0, 0.55);
+}
+
+.profile-badge-slot .badge-mark {
+  font-family: var(--font-body);
+  font-weight: 700;
+  font-size: 0.5rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(191, 255, 0, 0.7);
+  line-height: 1;
+  align-self: flex-end;
+  margin-bottom: 4px;
+}
+
+.profile-badge-slot .badge-flame {
+  width: 26px;
+  height: 26px;
+  filter: drop-shadow(0 0 6px rgba(191, 255, 0, 0.4));
+}
+
+.profile-badge-slot {
+  position: relative;
+}
+
+.profile-badge-slot .badge-stamp {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 12px;
+  height: 12px;
+  color: rgba(191, 255, 0, 0.55);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.profile-badge-slot .badge-lockup.badge-rare .badge-num,
+.profile-badge-slot .badge-lockup.badge-rare .badge-word {
+  background: linear-gradient(180deg, #DFFF66 0%, #BFFF00 50%, #8FCC00 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter: drop-shadow(0 0 6px rgba(191, 255, 0, 0.7));
+}
+
+.profile-badge-slot .badge-lockup.badge-legendary .badge-num,
+.profile-badge-slot .badge-lockup.badge-legendary .badge-word {
+  background: linear-gradient(180deg, #FFE55C 0%, #FFD700 35%, #BFFF00 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  filter:
+    drop-shadow(0 0 4px rgba(255, 215, 0, 0.6))
+    drop-shadow(0 0 14px rgba(191, 255, 0, 0.4));
+}
+
 .profile-badge-slot.empty {
   background: var(--color-surface);
   border: 2px dashed var(--color-surface-hover);

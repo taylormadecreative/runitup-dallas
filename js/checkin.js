@@ -472,41 +472,42 @@ function downloadCheckInCard(canvas) {
 }
 
 // ===== BADGE SYSTEM =====
-// getBadgeIcon returns inline SVG markup for each badge type.
-// SVGs use currentColor so CSS controls the stroke/fill via the parent.
+// Badges are typographic lockups using Big Shoulders Display — the brand
+// typeface IS the badge. Each badge has a hero numeral + contextual mark
+// (subscript or suffix). Three rarity tiers: common, rare, legendary.
 function getBadgeIcon(badgeType) {
   const icons = {
-    // First Step — sneaker / running shoe
-    first_step: `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 21h22a3 3 0 0 0 3-3v-1a3 3 0 0 0-1.8-2.75L18 10.5l-4.5-4-4 1.5-2.5 3L3 13v8z"/><path d="M8 16l1 2"/><path d="M12 14l1.5 2.5"/><path d="M16 12.5l2 3"/></svg>`,
+    // First Step — "01" with "MI" subscript. Common tier.
+    first_step: `<svg class="badge-stamp" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 9h8M3 6l2 1 1-2 2 1 1-1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="badge-lockup"><span class="badge-num">01</span><span class="badge-mark">MI</span></span>`,
 
-    // Early Bird — sunrise
-    early_bird: `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="16" cy="20" r="5"/><path d="M2 25h28"/><path d="M6 20H4"/><path d="M28 20h-2"/><path d="M16 11V6"/><path d="M7.5 13.5L5.5 11.5"/><path d="M24.5 13.5L26.5 11.5"/></svg>`,
+    // Early Bird — "5AM" with sunrise hallmark stamp. Common tier.
+    early_bird: `<svg class="badge-stamp" viewBox="0 0 12 12" aria-hidden="true"><circle cx="6" cy="8" r="2.2" fill="currentColor"/><path d="M1 11h10" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg><span class="badge-lockup"><span class="badge-word">5AM</span></span>`,
 
-    // Night Runner — moon with stars
-    night_runner: `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M22 19.5A9 9 0 0 1 12.5 10a9 9 0 0 0 9.5 12 9 9 0 0 0 8-5 9 9 0 0 1-8 2.5z"/><path d="M6 7l1 2 2 1-2 1-1 2-1-2-2-1 2-1z"/><path d="M25 6l.7 1.4 1.4.6-1.4.6-.7 1.4-.7-1.4-1.4-.6 1.4-.6z"/></svg>`,
+    // Night Runner — "11PM" with moon crescent hallmark. Common tier.
+    night_runner: `<svg class="badge-stamp" viewBox="0 0 12 12" aria-hidden="true"><path d="M9 3a4 4 0 1 0 0 6 3 3 0 0 1 0-6z" fill="currentColor"/></svg><span class="badge-lockup"><span class="badge-num">11</span><span class="badge-mark">PM</span></span>`,
 
-    // Streak Week — calendar / week
-    streak_week: `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="4" y="6" width="24" height="22" rx="2"/><path d="M4 12h24"/><path d="M10 3v6"/><path d="M22 3v6"/><path d="M10 17h3"/><path d="M17 17h5"/><path d="M10 22h3"/><path d="M17 22h5"/></svg>`,
+    // Streak Week — "7 DAY" with calendar dot grid hallmark. Common tier.
+    streak_week: `<svg class="badge-stamp" viewBox="0 0 12 12" aria-hidden="true"><circle cx="3" cy="3" r="1" fill="currentColor"/><circle cx="6" cy="3" r="1" fill="currentColor"/><circle cx="9" cy="3" r="1" fill="currentColor"/><circle cx="3" cy="6" r="1" fill="currentColor"/><circle cx="6" cy="6" r="1" fill="currentColor"/><circle cx="9" cy="6" r="1" fill="currentColor"/><circle cx="3" cy="9" r="1" fill="currentColor"/></svg><span class="badge-lockup badge-stacked"><span class="badge-num">7</span><span class="badge-mark">DAY</span></span>`,
 
-    // On Fire — flame
-    on_fire: `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 29c5 0 9-3.5 9-8.5 0-4-2.5-6-4-9-1.4-2.8-1-5.5-1-7.5-2 1.5-5 4-6.5 7C12 14 10 15.5 10 19c0 5.5 3.5 10 6 10z"/><path d="M16 29c2.5 0 4.5-2 4.5-4.5 0-2-1.5-3-2.5-4.5-.9 1-2 2-2 3.5 0 1.5-2 2-2 3.5 0 1 .9 2 2 2z"/></svg>`,
+    // On Fire — solid filled flame with "12W" subscript. Rare tier.
+    on_fire: `<span class="badge-lockup badge-rare badge-stacked"><svg class="badge-flame" viewBox="0 0 32 32" fill="currentColor" aria-hidden="true"><path d="M16 3c0 4 2 5 2 8.5 0 2-1 3-2.5 3C14 14.5 13 13 13 10c-2 2-5 5-5 9.5C8 25 11.5 29 16 29s8-4 8-9.5C24 13 16 13 16 3z"/><path d="M16 29c2.5 0 4.5-2 4.5-4.5 0-2.2-1.5-3.2-2.5-4.8-.9 1.1-2 2.1-2 3.6 0 1.5-2 2-2 3.5 0 1.2 1 2.2 2 2.2z" fill="#0A0A0A"/></svg><span class="badge-mark">12W</span></span>`,
 
-    // Century Club — medal
-    century_club: `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 3l-3 8"/><path d="M21 3l3 8"/><path d="M10 3h12"/><circle cx="16" cy="20" r="8"/><path d="M16 16v8"/><path d="M13 20h6"/></svg>`,
+    // Century Club — "100" with "MI" subscript. Legendary tier.
+    century_club: `<span class="badge-lockup badge-legendary"><span class="badge-num badge-num-tight">100</span><span class="badge-mark">MI</span></span>`,
 
-    // Run Buddy — two people
-    run_buddy: `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="10" r="4"/><path d="M3 26v-2a6 6 0 0 1 6-6h4a6 6 0 0 1 6 6v2"/><circle cx="22" cy="11" r="3.5"/><path d="M19 26v-1.5a5 5 0 0 1 5-5h1a4 4 0 0 1 4 4V26"/></svg>`,
+    // Run Buddy — "+1" with chain link hallmark. Common tier.
+    run_buddy: `<svg class="badge-stamp" viewBox="0 0 12 12" aria-hidden="true"><path d="M4 6a2 2 0 1 1 4 0M6 4v4" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><circle cx="4" cy="7.5" r="1.5" fill="none" stroke="currentColor" stroke-width="1.2"/><circle cx="8" cy="7.5" r="1.5" fill="none" stroke="currentColor" stroke-width="1.2"/></svg><span class="badge-lockup"><span class="badge-num">+1</span><span class="badge-mark">PAIR</span></span>`,
 
-    // Day One — star
-    day_one: `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M16 3l4 8.5 9.5 1.2-7 6.4 2 9.4L16 23.5 7.5 28.5l2-9.4-7-6.4 9.5-1.2z"/></svg>`,
+    // Day One — "OG" wordmark. Legendary tier.
+    day_one: `<span class="badge-lockup badge-legendary"><span class="badge-word">OG</span></span>`,
 
-    // Both Sides — double arrow
-    both_sides: `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 12h20"/><path d="M22 8l4 4-4 4"/><path d="M26 20H6"/><path d="M10 16l-4 4 4 4"/></svg>`,
+    // Both Sides — "2X" numeral with "DOUBLE" subscript. Rare tier.
+    both_sides: `<span class="badge-lockup badge-rare"><span class="badge-num">2X</span><span class="badge-mark">DOUBLE</span></span>`,
 
-    // Social Butterfly — chat bubble
-    social_butterfly: `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8a3 3 0 0 1 3-3h18a3 3 0 0 1 3 3v11a3 3 0 0 1-3 3h-9l-6 5v-5H7a3 3 0 0 1-3-3z"/><circle cx="11" cy="13.5" r="1.2" fill="currentColor"/><circle cx="16" cy="13.5" r="1.2" fill="currentColor"/><circle cx="21" cy="13.5" r="1.2" fill="currentColor"/></svg>`
+    // Social Butterfly — "50" with chat bubble hallmark. Common tier.
+    social_butterfly: `<svg class="badge-stamp" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 3.5a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v4a1 1 0 0 1-1 1H5L3 10V3.5z" fill="currentColor"/></svg><span class="badge-lockup"><span class="badge-num">50</span><span class="badge-mark">DM</span></span>`
   };
-  return icons[badgeType] || `<svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="16" cy="16" r="12"/></svg>`;
+  return icons[badgeType] || `<span class="badge-lockup"><span class="badge-num">?</span></span>`;
 }
 
 const BADGE_DEFINITIONS = [
