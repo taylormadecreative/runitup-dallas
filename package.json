@@ -1,0 +1,38 @@
+{
+  "name": "runitup-app",
+  "version": "1.0.0",
+  "description": "",
+  "main": "sw.js",
+  "directories": {
+    "doc": "docs"
+  },
+  "scripts": {
+    "build": "rm -rf www && mkdir -p www && cp index.html manifest.json sw.js privacy.html terms.html www/ && cp -r css js assets www/",
+    "cap:sync": "npm run build && npx cap sync",
+    "cap:open:ios": "npx cap open ios",
+    "cap:open:android": "npx cap open android",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/taylormadecreative/runitup-dallas.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/taylormadecreative/runitup-dallas/issues"
+  },
+  "homepage": "https://github.com/taylormadecreative/runitup-dallas#readme",
+  "dependencies": {
+    "@capacitor/android": "^8.3.0",
+    "@capacitor/browser": "^8.0.3",
+    "@capacitor/cli": "^8.3.0",
+    "@capacitor/core": "^8.3.0",
+    "@capacitor/ios": "^8.3.0"
+  },
+  "devDependencies": {
+    "typescript": "^6.0.2"
+  }
+}

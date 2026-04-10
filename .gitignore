@@ -1,2 +1,16 @@
 # Local Netlify folder
 .netlify
+
+# Dependencies
+node_modules/
+
+# Capacitor build directory
+www/
+
+# macOS
+.DS_Store
+
+# Source image generation (not needed for app)
+assets/photos/campaign/
+assets/photos/enhanced/
+assets/prompts/

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'runitup-v13';
+const CACHE_NAME = 'runitup-v14';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -25,14 +25,20 @@ const STATIC_ASSETS = [
   './assets/logo.png',
   './assets/logo-192.png',
   './assets/logo-512.png',
-  './assets/photos/hero-group.jpg',
-  './assets/photos/deep-ellum-night.jpg',
-  './assets/photos/fair-oaks-morning.jpg',
-  './assets/photos/community-vibes.jpg',
-  './assets/photos/event-5k.jpg',
-  './assets/photos/warmup-stretch.jpg',
-  './assets/photos/urban-run.jpg',
-  './assets/photos/group-run-city.jpg'
+  './assets/photos/hero.jpg',
+  './assets/photos/night-sprint.jpg',
+  './assets/photos/solo-neon.jpg',
+  './assets/photos/solo-skyline.jpg',
+  './assets/photos/pack-street.jpg',
+  './assets/photos/duo-women.jpg',
+  './assets/photos/low-angle-alley.jpg',
+  './assets/photos/low-angle-urban.jpg',
+  './assets/photos/low-angle-film.jpg',
+  './assets/photos/above-night.jpg',
+  './assets/photos/above-crowd.jpg',
+  './assets/photos/motion-night.jpg',
+  './assets/photos/motion-brick.jpg',
+  './assets/photos/motion-blur.jpg'
 ];
 
 self.addEventListener('install', (event) => {

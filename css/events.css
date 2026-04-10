@@ -93,6 +93,43 @@
   white-space: nowrap;
 }
 
+.btn-share {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-surface-hover);
+  border-radius: var(--radius-md);
+  color: var(--color-primary);
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.btn-share:active {
+  background: var(--color-primary);
+  color: var(--color-bg);
+}
+
+.btn-share-hero {
+  width: 48px;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255,255,255,0.15);
+  border: 2px solid var(--color-primary);
+  border-radius: var(--radius-md);
+  color: var(--color-primary);
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.btn-share-hero:active {
+  background: var(--color-primary);
+  color: var(--color-bg);
+}
+
 .buddy-count {
   font-size: 0.75rem;
   color: var(--color-secondary);

@@ -1,5 +1,5 @@
-// Demo mode: set to true to enable check-in at any time
-const DEMO_MODE = true;
+// Demo mode: set to true to enable check-in at any time (disable for production)
+const DEMO_MODE = false;
 
 // Default avatar for users without a profile photo
 const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23252525'/%3E%3Ctext x='50' y='55' text-anchor='middle' dominant-baseline='middle' font-family='Inter,sans-serif' font-size='40' font-weight='600' fill='%239A9A9A'%3E%3F%3C/text%3E%3C/svg%3E";
@@ -26,19 +26,40 @@ async function signIn(email, password) {
 async function signInWithGoogle() {
   const { data, error } = await supabaseClient.auth.signInWithOAuth({
     provider: 'google',
-    options: { redirectTo: window.location.origin }
+    options: {
+      redirectTo: window.location.origin,
+      skipBrowserRedirect: true
+    }
   });
   if (error) throw error;
+  if (data?.url) {
+    await openAuthUrl(data.url);
+  }
   return data;
 }
 
 async function signInWithApple() {
   const { data, error } = await supabaseClient.auth.signInWithOAuth({
     provider: 'apple',
-    options: { redirectTo: window.location.origin }
+    options: {
+      redirectTo: window.location.origin,
+      skipBrowserRedirect: true
+    }
   });
   if (error) throw error;
+  if (data?.url) {
+    await openAuthUrl(data.url);
+  }
   return data;
+}
+
+// Open OAuth URL in Safari View Controller (in-app) on native, or same window on web
+async function openAuthUrl(url) {
+  if (window.Capacitor?.isNativePlatform() && window.Capacitor.Plugins?.Browser) {
+    await window.Capacitor.Plugins.Browser.open({ url: url, presentationStyle: 'popover' });
+  } else {
+    window.location.href = url;
+  }
 }
 
 async function signOut() {
@@ -105,6 +126,40 @@ async function uploadFile(bucket, path, file) {
     .from(bucket)
     .getPublicUrl(path);
   return publicUrl;
+}
+
+// ===== SHARE HELPER =====
+async function shareRun(title, text, url) {
+  const shareData = { title, text, url };
+  try {
+    if (navigator.share) {
+      await navigator.share(shareData);
+    } else {
+      await navigator.clipboard.writeText(`${text}\n${url}`);
+      showToast('Link copied — send it to your crew!', 'success');
+    }
+  } catch (err) {
+    if (err.name !== 'AbortError') {
+      try {
+        await navigator.clipboard.writeText(`${text}\n${url}`);
+        showToast('Link copied!', 'success');
+      } catch {
+        showToast('Could not share — try copying the link manually.', 'error');
+      }
+    }
+  }
+}
+
+function shareWeeklyRun(day, location, time, address) {
+  const text = `Pull up to Run It UP! ${day} at ${location}! ${time} — ${address}. All paces welcome. 🏃‍♂️`;
+  const url = 'https://taylormadecreative.github.io/runitup-dallas/';
+  shareRun('Run It UP! Dallas', text, url);
+}
+
+function shareSpecialEvent(title, date, location) {
+  const text = `${title} with Run It UP! Dallas — ${date} at ${location}. You coming?`;
+  const url = 'https://taylormadecreative.github.io/runitup-dallas/';
+  shareRun(title, text, url);
 }
 
 // ===== SANITIZATION HELPERS =====

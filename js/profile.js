@@ -41,7 +41,7 @@ async function refreshProfile() {
     </div>
 
     <div>
-      <div class="profile-name">${currentProfile.display_name}</div>
+      <div class="profile-name">${escapeHtml(currentProfile.display_name)}</div>
       <div class="profile-meta">
         ${paceGroupBadgeHTML(currentProfile.pace_group)}
         <span class="detail">${runDaysLabel}</span>
@@ -128,7 +128,7 @@ async function viewMemberProfile(userId) {
     <img src="${safeAvatarUrl(profile.avatar_url)}" class="avatar-xl" alt="${escapeHtml(profile.display_name)}">
 
     <div>
-      <div class="profile-name">${profile.display_name}</div>
+      <div class="profile-name">${escapeHtml(profile.display_name)}</div>
       <div class="profile-meta">
         ${paceGroupBadgeHTML(profile.pace_group)}
         <span class="detail">${runDaysLabel}</span>
@@ -179,23 +179,43 @@ function openBuddyFromProfile(userId) {
 }
 
 async function updateProfileAvatar(event) {
-  const file = event.target.files[0];
+  let file;
+  try {
+    file = event.target.files[0];
+  } catch (err) {
+    showToast('Could not access photo — try choosing from your library instead.', 'error');
+    return;
+  }
   if (!file || !currentProfile) return;
 
+  // Validate file type and size
+  if (!file.type.startsWith('image/')) {
+    showToast('Please select an image file.', 'error');
+    return;
+  }
+  if (file.size > 10 * 1024 * 1024) {
+    showToast('Photo is too large — please choose one under 10MB.', 'error');
+    return;
+  }
+
   try {
-    const ext = file.name.split('.').pop();
+    const ext = file.name.split('.').pop() || 'jpg';
     const path = `${currentProfile.id}/avatar.${ext}`;
     const url = await uploadFile('avatars', path, file);
     currentProfile = await updateUserProfile(currentProfile.id, { avatar_url: url });
 
     // Update header avatar too
-    document.getElementById('header-avatar').src = url;
+    const headerAvatar = document.getElementById('header-avatar');
+    if (headerAvatar) headerAvatar.src = url;
 
     showToast('New pic, who dis?', 'success');
     refreshProfile();
   } catch (err) {
     showToast('Photo didn\'t save — try again.', 'error');
   }
+
+  // Reset input so the same file can be re-selected
+  event.target.value = '';
 }
 
 function showEditProfile() {
