@@ -59,6 +59,16 @@
   letter-spacing: 0.1em;
 }
 
+/* ===== CHALLENGE ===== */
+.challenge-section h3 {
+  font-size: 0.875rem;
+  font-family: var(--font-body);
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--space-md);
+}
+
 /* ===== BADGES ===== */
 .badges-section h3 {
   font-size: 0.875rem;
@@ -84,23 +94,51 @@
 }
 
 .badge-icon {
-  width: 48px;
-  height: 48px;
+  width: 56px;
+  height: 56px;
   border-radius: var(--radius-md);
-  background: var(--color-surface);
+  background: radial-gradient(
+    circle at 30% 25%,
+    rgba(191, 255, 0, 0.14) 0%,
+    var(--color-surface) 65%
+  );
+  border: 1px solid rgba(191, 255, 0, 0.18);
   display: flex;
   align-items: center;
   justify-content: center;
-  font-family: var(--font-display);
-  font-size: 0.875rem;
-  font-weight: 800;
   color: var(--color-primary);
-  letter-spacing: 0.02em;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 4px 12px rgba(0, 0, 0, 0.3);
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s ease;
+}
+
+.badge-icon svg {
+  width: 32px;
+  height: 32px;
+  display: block;
+}
+
+.badge-item:not(.locked):active .badge-icon {
+  transform: scale(0.96);
+}
+
+.badge-item:not(.locked) .badge-icon {
+  animation: badgeShimmer 3.5s ease-in-out infinite;
+}
+
+@keyframes badgeShimmer {
+  0%, 100% { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04), 0 4px 12px rgba(0, 0, 0, 0.3); }
+  50% { box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 4px 18px rgba(191, 255, 0, 0.18); }
 }
 
 .badge-item.locked .badge-icon {
-  filter: grayscale(1);
-  opacity: 0.3;
+  background: var(--color-surface);
+  border-color: rgba(255, 255, 255, 0.05);
+  color: var(--color-text-muted);
+  opacity: 0.35;
+  animation: none;
+  box-shadow: none;
 }
 
 .badge-label {

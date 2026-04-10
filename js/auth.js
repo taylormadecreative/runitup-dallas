@@ -83,6 +83,12 @@ function renderSignup() {
       <h1>Join the Crew</h1>
       <p>Create your Run It UP! account</p>
     </div>
+    <ul class="signup-benefits" aria-label="What you get">
+      <li>Track your streak</li>
+      <li>Find a running buddy</li>
+      <li>Earn badges + climb the leaderboard</li>
+      <li>Connect with the crew</li>
+    </ul>
     <form class="auth-form" onsubmit="handleSignup(event)">
       <div class="form-group">
         <label class="form-label" for="signup-email">Email</label>
@@ -120,6 +126,8 @@ function renderOnboarding() {
   onboardingData = { display_name: '', avatar_url: null, pace_group: null, run_days: [] };
 
   document.getElementById('screen-onboarding').innerHTML = `
+    <div class="onboarding-bg" id="onboarding-bg" style="background-image: url('./assets/photos/hero.jpg');"></div>
+
     <div class="onboarding-progress">
       <div class="progress-dot active" id="progress-1"></div>
       <div class="progress-dot" id="progress-2"></div>
@@ -127,7 +135,8 @@ function renderOnboarding() {
     </div>
 
     <!-- Step 1: Name + Avatar -->
-    <div class="onboarding-step active" id="onboarding-step-1">
+    <div class="onboarding-step active" id="onboarding-step-1" data-bg="./assets/photos/hero.jpg">
+      <div class="onboarding-headline">Welcome To The Crew</div>
       <h2>Who Are You?</h2>
       <p>Let the crew know who's pulling up</p>
       <div class="avatar-upload">
@@ -147,11 +156,12 @@ function renderOnboarding() {
     </div>
 
     <!-- Step 2: Pace Group -->
-    <div class="onboarding-step" id="onboarding-step-2">
+    <div class="onboarding-step" id="onboarding-step-2" data-bg="./assets/photos/low-angle-urban.jpg">
       <button class="auth-back" onclick="prevOnboardingStep()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
         Back
       </button>
+      <div class="onboarding-headline">Find Your Pace</div>
       <h2>Your Pace</h2>
       <p>No wrong answers — every level is welcome</p>
       <div class="option-grid">
@@ -186,11 +196,12 @@ function renderOnboarding() {
     </div>
 
     <!-- Step 3: Run Days -->
-    <div class="onboarding-step" id="onboarding-step-3">
+    <div class="onboarding-step" id="onboarding-step-3" data-bg="./assets/photos/above-crowd.jpg">
       <button class="auth-back" onclick="prevOnboardingStep()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
         Back
       </button>
+      <div class="onboarding-headline">When You Runnin?</div>
       <h2>When Do You Run?</h2>
       <p>Pick your days — you can always change this later</p>
       <div class="option-grid">
@@ -318,14 +329,23 @@ function handleAvatarUpload(event) {
 }
 
 function selectPaceGroup(el, group) {
-  document.querySelectorAll('#onboarding-step-2 .option-card').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('#onboarding-step-2 .option-card').forEach(c => {
+    c.classList.remove('selected');
+    c.classList.remove('pulse');
+  });
   el.classList.add('selected');
+  // Pulse animation on selection
+  el.classList.add('pulse');
+  setTimeout(() => el.classList.remove('pulse'), 400);
   onboardingData.pace_group = group;
   document.getElementById('btn-pace-next').disabled = false;
 }
 
 function toggleRunDay(el, day) {
   el.classList.toggle('selected');
+  // Pulse on toggle
+  el.classList.add('pulse');
+  setTimeout(() => el.classList.remove('pulse'), 400);
   const idx = onboardingData.run_days.indexOf(day);
   if (idx >= 0) {
     onboardingData.run_days.splice(idx, 1);
@@ -335,32 +355,85 @@ function toggleRunDay(el, day) {
   document.getElementById('btn-days-done').disabled = onboardingData.run_days.length === 0;
 }
 
+// Cross-fade the background image to match each step
+function updateOnboardingBg(stepNum) {
+  const stepEl = document.getElementById(`onboarding-step-${stepNum}`);
+  const bgEl = document.getElementById('onboarding-bg');
+  if (!stepEl || !bgEl) return;
+  const src = stepEl.getAttribute('data-bg');
+  if (src) bgEl.style.backgroundImage = `url('${src}')`;
+}
+
 function nextOnboardingStep() {
   if (onboardingStep === 1) {
     const name = document.getElementById('onboarding-name').value.trim();
     if (!name) { showToast('We need a name to put on the leaderboard!', 'error'); return; }
-    onboardingData.display_name = escapeHtml(name);
+    onboardingData.display_name = name;
   }
 
-  document.getElementById(`onboarding-step-${onboardingStep}`).classList.remove('active');
+  const current = document.getElementById(`onboarding-step-${onboardingStep}`);
+  current.classList.add('exiting-left');
+  current.classList.remove('active');
+
   document.getElementById(`progress-${onboardingStep}`).classList.remove('active');
   document.getElementById(`progress-${onboardingStep}`).classList.add('done');
 
   onboardingStep++;
 
-  document.getElementById(`onboarding-step-${onboardingStep}`).classList.add('active');
+  const next = document.getElementById(`onboarding-step-${onboardingStep}`);
+  next.classList.add('entering-right');
+  // Force reflow so the transition animates from entering-right -> active
+  void next.offsetWidth;
+  next.classList.add('active');
+  next.classList.remove('entering-right');
+
   document.getElementById(`progress-${onboardingStep}`).classList.add('active');
+
+  updateOnboardingBg(onboardingStep);
+
+  setTimeout(() => current.classList.remove('exiting-left'), 450);
 }
 
 function prevOnboardingStep() {
-  document.getElementById(`onboarding-step-${onboardingStep}`).classList.remove('active');
+  const current = document.getElementById(`onboarding-step-${onboardingStep}`);
+  current.classList.add('exiting-right');
+  current.classList.remove('active');
+
   document.getElementById(`progress-${onboardingStep}`).classList.remove('active');
 
   onboardingStep--;
 
-  document.getElementById(`onboarding-step-${onboardingStep}`).classList.add('active');
+  const prev = document.getElementById(`onboarding-step-${onboardingStep}`);
+  prev.classList.add('entering-left');
+  void prev.offsetWidth;
+  prev.classList.add('active');
+  prev.classList.remove('entering-left');
+
   document.getElementById(`progress-${onboardingStep}`).classList.remove('done');
   document.getElementById(`progress-${onboardingStep}`).classList.add('active');
+
+  updateOnboardingBg(onboardingStep);
+
+  setTimeout(() => current.classList.remove('exiting-right'), 450);
+}
+
+// Full-screen "YOU'RE IN!" reveal before dropping into the home screen
+function showYoureInReveal() {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.className = 'youre-in-overlay';
+    overlay.innerHTML = `<div class="youre-in-text">YOU'RE IN!</div>`;
+    document.body.appendChild(overlay);
+    // Trigger the scale/fade animation
+    requestAnimationFrame(() => overlay.classList.add('active'));
+    setTimeout(() => {
+      overlay.classList.add('leaving');
+      setTimeout(() => {
+        overlay.remove();
+        resolve();
+      }, 350);
+    }, 1100);
+  });
 }
 
 async function completeOnboarding() {
@@ -394,6 +467,9 @@ async function completeOnboarding() {
     await autoJoinChannels(profile);
 
     currentProfile = profile;
+
+    // Celebratory reveal before entering the app
+    await showYoureInReveal();
     enterApp();
   } catch (err) {
     showToast(err.message || 'Setup hit a snag — try again.', 'error');

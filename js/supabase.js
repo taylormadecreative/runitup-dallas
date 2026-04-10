@@ -152,13 +152,13 @@ async function shareRun(title, text, url) {
 
 function shareWeeklyRun(day, location, time, address) {
   const text = `Pull up to Run It UP! ${day} at ${location}! ${time} — ${address}. All paces welcome. 🏃‍♂️`;
-  const url = 'https://taylormadecreative.github.io/runitup-dallas/';
+  const url = 'https://www.runitupdallas.com';
   shareRun('Run It UP! Dallas', text, url);
 }
 
 function shareSpecialEvent(title, date, location) {
   const text = `${title} with Run It UP! Dallas — ${date} at ${location}. You coming?`;
-  const url = 'https://taylormadecreative.github.io/runitup-dallas/';
+  const url = 'https://www.runitupdallas.com';
   shareRun(title, text, url);
 }
 

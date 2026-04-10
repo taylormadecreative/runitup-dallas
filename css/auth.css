@@ -202,6 +202,37 @@
   gap: var(--space-xs);
 }
 
+/* ===== SIGNUP BENEFITS ===== */
+.signup-benefits {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 var(--space-lg) 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+}
+
+.signup-benefits li {
+  position: relative;
+  padding-left: 18px;
+  font-size: 0.8125rem;
+  color: var(--color-text);
+  line-height: 1.4;
+}
+
+.signup-benefits li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 50%;
+  width: 6px;
+  height: 6px;
+  border-radius: var(--radius-full);
+  background: var(--color-primary);
+  transform: translateY(-50%);
+  box-shadow: 0 0 8px rgba(191, 255, 0, 0.55);
+}
+
 /* ===== ONBOARDING ===== */
 #screen-onboarding.active {
   display: flex;
@@ -210,6 +241,39 @@
   height: 100dvh;
   padding: var(--space-xl);
   background: var(--color-bg);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Fixed background photo layer — subtle, switches per step */
+.onboarding-bg {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  opacity: 0.08;
+  filter: saturate(1.1);
+  transition: background-image 0.5s ease, opacity 0.5s ease;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.onboarding-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(10, 10, 10, 0.3) 0%,
+    rgba(10, 10, 10, 0.85) 60%,
+    rgba(10, 10, 10, 1) 100%
+  );
+}
+
+#screen-onboarding > *:not(.onboarding-bg) {
+  position: relative;
+  z-index: 1;
 }
 
 .onboarding-progress {
@@ -233,10 +297,56 @@
   flex: 1;
   display: none;
   flex-direction: column;
+  opacity: 0;
+  transform: translateX(0);
+  transition:
+    opacity 400ms cubic-bezier(0.2, 0.8, 0.2, 1),
+    transform 400ms cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .onboarding-step.active {
   display: flex;
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.onboarding-step.entering-right {
+  display: flex;
+  opacity: 0;
+  transform: translateX(32px);
+}
+
+.onboarding-step.entering-left {
+  display: flex;
+  opacity: 0;
+  transform: translateX(-32px);
+}
+
+.onboarding-step.exiting-left {
+  display: flex;
+  opacity: 0;
+  transform: translateX(-32px);
+  pointer-events: none;
+}
+
+.onboarding-step.exiting-right {
+  display: flex;
+  opacity: 0;
+  transform: translateX(32px);
+  pointer-events: none;
+}
+
+/* Display headline above the standard h2 — Big Shoulders, lime accent */
+.onboarding-headline {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 1.625rem;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  margin-bottom: var(--space-xs);
+  text-shadow: 0 0 20px rgba(191, 255, 0, 0.35);
 }
 
 .onboarding-step h2 {
@@ -250,6 +360,50 @@
 .onboarding-actions {
   margin-top: auto;
   padding-bottom: var(--space-xl);
+}
+
+/* ===== YOU'RE IN! REVEAL ===== */
+.youre-in-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--color-bg);
+  z-index: 9999;
+  opacity: 0;
+  transition: opacity 300ms ease;
+}
+
+.youre-in-overlay.active {
+  opacity: 1;
+}
+
+.youre-in-overlay.leaving {
+  opacity: 0;
+}
+
+.youre-in-text {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: 4.5rem;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+  text-shadow:
+    0 0 25px rgba(191, 255, 0, 0.55),
+    0 0 55px rgba(191, 255, 0, 0.3);
+  transform: scale(0.6);
+  opacity: 0;
+  animation: youreInPop 1000ms cubic-bezier(0.2, 0.8, 0.2, 1) forwards;
+}
+
+@keyframes youreInPop {
+  0%   { transform: scale(0.6); opacity: 0; }
+  50%  { transform: scale(1.08); opacity: 1; }
+  70%  { transform: scale(0.98); opacity: 1; }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 /* ===== AVATAR UPLOAD ===== */
@@ -311,6 +465,17 @@
 .option-card.selected {
   border-color: var(--color-primary);
   background: rgba(191, 255, 0, 0.05);
+  box-shadow: 0 0 0 4px rgba(191, 255, 0, 0.08);
+}
+
+.option-card.pulse {
+  animation: optionPulse 400ms cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+@keyframes optionPulse {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.03); }
+  100% { transform: scale(1); }
 }
 
 .option-card .option-emoji {

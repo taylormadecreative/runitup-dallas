@@ -36,6 +36,28 @@ const CHANNEL_COVERS = {
   'fit-check': './assets/photos/hero.jpg'
 };
 
+// Channel category drives the colored strip on the left of each row
+// 'run' = lime green (run days), 'pace' = orange (pace groups), 'social' = white
+const CHANNEL_CATEGORIES = {
+  'monday-trinity-groves': 'run',
+  'tuesday-deep-ellum': 'run',
+  'saturday-fair-oaks': 'run',
+  'sunday-levy-plaza': 'run',
+  'trail-runs': 'run',
+  'walk-it-up': 'pace',
+  'jog-it-up': 'pace',
+  'run-it-up': 'pace',
+  'sprint-it-up': 'pace',
+  'general': 'social',
+  'newbies': 'social',
+  'post-run-pics': 'social',
+  'fit-check': 'social'
+};
+
+function getChannelCategory(name) {
+  return CHANNEL_CATEGORIES[name] || 'social';
+}
+
 async function initCommunity() {
   // Load last-read timestamps from localStorage
   try {
@@ -105,8 +127,12 @@ async function refreshCommunity() {
       <h2>Community</h2>
     </div>
     <div class="channel-list">
-      ${channelData.map(ch => `
-        <div class="channel-item" onclick="openChat('${ch.id}', '${ch.name}')">
+      ${channelData.map(ch => {
+        const category = getChannelCategory(ch.name);
+        const cover = CHANNEL_COVERS[ch.name];
+        return `
+        <div class="channel-item channel-item--${category}" onclick="openChat('${ch.id}', '${ch.name}')">
+          <div class="channel-strip" aria-hidden="true"></div>
           <div class="channel-icon">${CHANNEL_ICONS[ch.name] || 'CH'}</div>
           <div class="channel-info">
             <div class="channel-name">#${ch.name}</div>
@@ -116,8 +142,9 @@ async function refreshCommunity() {
             ${ch.lastMsg ? `<span class="channel-time">${formatRelativeTime(ch.lastMsg.created_at)}</span>` : ''}
             ${ch.unread > 0 ? `<span class="channel-unread">${ch.unread}</span>` : ''}
           </div>
+          ${cover ? `<div class="channel-thumb" style="background-image: url('${cover}');" aria-hidden="true"></div>` : ''}
         </div>
-      `).join('')}
+      `;}).join('')}
     </div>
   `;
 }
@@ -261,6 +288,11 @@ async function sendMessage() {
   const input = document.getElementById('chat-input');
   const content = input?.value.trim();
   if (!content || !activeChannelId || !currentProfile) return;
+
+  if (content.length > 2000) {
+    showToast('Message too long — keep it under 2000 characters', 'error');
+    return;
+  }
 
   input.value = '';
 

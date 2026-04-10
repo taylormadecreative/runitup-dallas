@@ -111,6 +111,13 @@ async function refreshHome() {
       </div>
     </div>
 
+    <!-- Monthly Challenge -->
+    ${(() => {
+      const challenge = getCurrentChallenge();
+      const progress = getChallengeProgress(challenge, stats.checkIns, stats.streak);
+      return renderChallengeCard(challenge, progress, true);
+    })()}
+
     <!-- Community Highlights -->
     ${highlights.length > 0 ? `
     <div class="highlights-section">
@@ -254,6 +261,26 @@ async function getCommunityHighlights() {
         });
       }
     });
+  }
+
+  // Recent check-in activity — single query with user join (no N+1)
+  const { data: recentCheckIns } = await supabaseClient
+    .from('check_ins')
+    .select('user_id, checked_in_at, event_type, users(display_name)')
+    .order('checked_in_at', { ascending: false })
+    .limit(10);
+
+  if (recentCheckIns) {
+    const seenUsers = new Set();
+    for (const ci of recentCheckIns) {
+      if (!ci.users?.display_name) continue;
+      if (seenUsers.has(ci.user_id)) continue;
+      seenUsers.add(ci.user_id);
+      highlights.push({
+        icon: 'RU',
+        text: `<strong>${escapeHtml(ci.users.display_name)}</strong> just checked in`
+      });
+    }
   }
 
   return highlights;

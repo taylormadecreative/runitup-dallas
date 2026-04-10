@@ -14,16 +14,72 @@
 }
 
 .channel-item {
+  position: relative;
   display: flex;
   align-items: center;
   gap: var(--space-md);
   padding: var(--space-md);
+  padding-left: calc(var(--space-md) + 6px);
   border-bottom: 1px solid var(--color-surface);
   cursor: pointer;
-  transition: background 0.15s;
+  transition: background 0.2s ease, transform 0.2s ease;
 }
 
-.channel-item:active { background: var(--color-surface); }
+.channel-item:active {
+  background: var(--color-surface);
+  transform: scale(0.995);
+}
+
+/* Left-edge colored strip — category indicator */
+.channel-strip {
+  position: absolute;
+  top: 10px;
+  bottom: 10px;
+  left: 0;
+  width: 4px;
+  border-radius: 0 2px 2px 0;
+  background: var(--color-text-muted);
+  transition: width 0.2s ease, box-shadow 0.2s ease;
+}
+
+.channel-item--run .channel-strip {
+  background: var(--color-primary);
+  box-shadow: 0 0 12px rgba(191, 255, 0, 0.35);
+}
+
+.channel-item--pace .channel-strip {
+  background: #FF7A1A;
+  box-shadow: 0 0 12px rgba(255, 122, 26, 0.3);
+}
+
+.channel-item--social .channel-strip {
+  background: #FFFFFF;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
+}
+
+.channel-item:active .channel-strip { width: 5px; }
+
+/* Right-side thumbnail preview */
+.channel-thumb {
+  width: 44px;
+  height: 44px;
+  border-radius: var(--radius-sm);
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  flex-shrink: 0;
+  border: 1px solid var(--color-surface-hover);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  position: relative;
+  overflow: hidden;
+}
+
+.channel-thumb::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0) 40%, rgba(0, 0, 0, 0.45) 100%);
+}
 
 .channel-icon {
   width: 44px;

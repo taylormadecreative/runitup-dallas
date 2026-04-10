@@ -12,51 +12,53 @@ async function refreshEvents() {
   if (!currentProfile) return;
   container.innerHTML = '<div class="loading-screen"><div class="spinner"></div></div>';
 
-  // Get weekly run stats
-  const mondayCount = await getCheckInCountForEvent('weekly_monday', 7);
-  const tuesdayCount = await getCheckInCountForEvent('weekly_tuesday', 7);
-  const saturdayCount = await getCheckInCountForEvent('weekly_saturday', 7);
-  const sundayCount = await getCheckInCountForEvent('weekly_sunday', 7);
-
-  // Get buddy counts for next runs
+  // Get buddy count dates for next runs
   const nextMondayDate = getNextRunDate(1).toISOString().split('T')[0];
   const nextTuesdayDate = getNextRunDate(2).toISOString().split('T')[0];
   const nextSaturdayDate = getNextRunDate(6).toISOString().split('T')[0];
   const nextSundayDate = getNextRunDate(0).toISOString().split('T')[0];
 
-  const { count: mondayBuddies } = await supabaseClient
+  // Helper to build a buddy count query
+  const buddyCountQuery = (day, date) => supabaseClient
     .from('buddy_requests')
     .select('*', { count: 'exact', head: true })
-    .eq('run_day', 'monday')
-    .eq('run_date', nextMondayDate)
+    .eq('run_day', day)
+    .eq('run_date', date)
     .is('matched_with', null);
 
-  const { count: tuesdayBuddies } = await supabaseClient
-    .from('buddy_requests')
-    .select('*', { count: 'exact', head: true })
-    .eq('run_day', 'tuesday')
-    .eq('run_date', nextTuesdayDate)
-    .is('matched_with', null);
+  // Run all independent queries in parallel
+  const [
+    mondayCount,
+    tuesdayCount,
+    saturdayCount,
+    sundayCount,
+    mondayBuddiesRes,
+    tuesdayBuddiesRes,
+    saturdayBuddiesRes,
+    sundayBuddiesRes,
+    mondayChecked,
+    tuesdayChecked,
+    saturdayChecked,
+    sundayChecked
+  ] = await Promise.all([
+    getCheckInCountForEvent('weekly_monday', 7),
+    getCheckInCountForEvent('weekly_tuesday', 7),
+    getCheckInCountForEvent('weekly_saturday', 7),
+    getCheckInCountForEvent('weekly_sunday', 7),
+    buddyCountQuery('monday', nextMondayDate),
+    buddyCountQuery('tuesday', nextTuesdayDate),
+    buddyCountQuery('saturday', nextSaturdayDate),
+    buddyCountQuery('sunday', nextSundayDate),
+    hasCheckedInToday('weekly_monday'),
+    hasCheckedInToday('weekly_tuesday'),
+    hasCheckedInToday('weekly_saturday'),
+    hasCheckedInToday('weekly_sunday')
+  ]);
 
-  const { count: saturdayBuddies } = await supabaseClient
-    .from('buddy_requests')
-    .select('*', { count: 'exact', head: true })
-    .eq('run_day', 'saturday')
-    .eq('run_date', nextSaturdayDate)
-    .is('matched_with', null);
-
-  const { count: sundayBuddies } = await supabaseClient
-    .from('buddy_requests')
-    .select('*', { count: 'exact', head: true })
-    .eq('run_day', 'sunday')
-    .eq('run_date', nextSundayDate)
-    .is('matched_with', null);
-
-  // Get check-in status
-  const mondayChecked = await hasCheckedInToday('weekly_monday');
-  const tuesdayChecked = await hasCheckedInToday('weekly_tuesday');
-  const saturdayChecked = await hasCheckedInToday('weekly_saturday');
-  const sundayChecked = await hasCheckedInToday('weekly_sunday');
+  const mondayBuddies = mondayBuddiesRes.count;
+  const tuesdayBuddies = tuesdayBuddiesRes.count;
+  const saturdayBuddies = saturdayBuddiesRes.count;
+  const sundayBuddies = sundayBuddiesRes.count;
 
   // Get special events
   const { data: specialEvents } = await supabaseClient

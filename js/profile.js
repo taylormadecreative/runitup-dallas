@@ -307,7 +307,7 @@ async function saveProfile() {
   const name = document.getElementById('edit-name')?.value.trim();
   if (!name) { showToast('We need a name for the leaderboard!', 'error'); return; }
 
-  const updates = { display_name: escapeHtml(name) };
+  const updates = { display_name: name };
   if (editPaceGroup) updates.pace_group = editPaceGroup;
   if (editRunDays && editRunDays.length > 0) updates.run_days = editRunDays;
 

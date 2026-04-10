@@ -419,6 +419,12 @@
   margin-bottom: var(--space-xs);
 }
 
+.highlight-card .highlight-icon svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
 .highlight-card .highlight-text {
   color: var(--color-text);
 }
@@ -457,4 +463,222 @@
   color: var(--color-text-muted);
   display: flex;
   gap: var(--space-md);
+}
+
+/* ===== MONTHLY CHALLENGE CARD ===== */
+.challenge-card {
+  background: var(--color-surface);
+  border-radius: var(--radius-md);
+  padding: var(--space-md) var(--space-lg);
+  width: 100%;
+}
+
+.challenge-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--space-sm);
+}
+
+.challenge-label {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.challenge-days-left {
+  font-size: 0.625rem;
+  font-weight: 600;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.challenge-title {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 800;
+  color: var(--color-text);
+  text-transform: uppercase;
+  margin-bottom: var(--space-md);
+  line-height: 1.2;
+}
+
+.challenge-progress-bar {
+  width: 100%;
+  height: 8px;
+  background: var(--color-surface-hover);
+  border-radius: var(--radius-full);
+  overflow: hidden;
+  margin-bottom: var(--space-sm);
+}
+
+.challenge-progress-fill {
+  height: 100%;
+  background: var(--color-primary);
+  border-radius: var(--radius-full);
+  transition: width 0.8s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  min-width: 0;
+}
+
+.challenge-progress-fill.completed {
+  background: var(--color-primary);
+  box-shadow: 0 0 12px rgba(191, 255, 0, 0.4);
+}
+
+.challenge-status {
+  display: flex;
+  align-items: center;
+}
+
+.challenge-count {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-text-muted);
+}
+
+.challenge-completed-badge {
+  font-family: var(--font-display);
+  font-size: 0.8rem;
+  font-weight: 800;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+/* ===== MILESTONE CELEBRATION OVERLAY ===== */
+.milestone-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+  transition: background 0.4s ease;
+  pointer-events: none;
+}
+
+.milestone-overlay.active {
+  background: rgba(0, 0, 0, 0.9);
+  pointer-events: all;
+}
+
+.milestone-modal {
+  text-align: center;
+  max-width: 340px;
+  width: 100%;
+  opacity: 0;
+  transform: scale(0.8) translateY(20px);
+  transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.milestone-overlay.active .milestone-modal {
+  opacity: 1;
+  transform: scale(1) translateY(0);
+}
+
+.milestone-number {
+  font-family: var(--font-display);
+  font-size: 7rem;
+  font-weight: 900;
+  color: var(--color-primary);
+  line-height: 1;
+  margin-bottom: var(--space-sm);
+  text-shadow: 0 0 60px rgba(191, 255, 0, 0.3), 0 0 120px rgba(191, 255, 0, 0.1);
+}
+
+.milestone-name {
+  font-family: var(--font-display);
+  font-size: 1.75rem;
+  font-weight: 800;
+  color: var(--color-text);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: var(--space-md);
+}
+
+.milestone-message {
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  margin-bottom: var(--space-xl);
+}
+
+.milestone-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+}
+
+/* ===== CONFETTI ANIMATION ===== */
+.milestone-confetti {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1001;
+}
+
+.confetti-dot {
+  position: absolute;
+  top: -10px;
+  border-radius: 50%;
+  opacity: 0;
+  animation: confettiFall 3s ease-in forwards;
+}
+
+@keyframes confettiFall {
+  0% {
+    opacity: 1;
+    transform: translateY(0) rotate(0deg) scale(1);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100vh) rotate(720deg) scale(0.5);
+  }
+}
+
+/* Vary horizontal drift for organic feel */
+.confetti-dot:nth-child(odd) {
+  animation-name: confettiFallLeft;
+}
+
+.confetti-dot:nth-child(3n) {
+  animation-name: confettiFallRight;
+  border-radius: 2px;
+}
+
+@keyframes confettiFallLeft {
+  0% {
+    opacity: 1;
+    transform: translateY(0) translateX(0) rotate(0deg);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100vh) translateX(-40px) rotate(540deg);
+  }
+}
+
+@keyframes confettiFallRight {
+  0% {
+    opacity: 1;
+    transform: translateY(0) translateX(0) rotate(0deg);
+  }
+  20% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+    transform: translateY(100vh) translateX(50px) rotate(-480deg);
+  }
 }
