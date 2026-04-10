@@ -31,10 +31,12 @@ async function checkIn(eventType, eventId = null) {
     .single();
 
   if (error) {
+    haptic('error');
     showToast('Check-in didn\'t go through — try again.', 'error');
     throw error;
   }
 
+  haptic('success');
   showToast("YOU'RE LOCKED IN! Time to run it up!", 'success');
 
   // Check for new badges after check-in
@@ -585,14 +587,322 @@ async function checkAndAwardBadges() {
   if (!earned.has('both_sides') && hasBothSides) toAward.push('both_sides');
   if (!earned.has('social_butterfly') && (msgCount || 0) >= 50) toAward.push('social_butterfly');
 
+  const unlockedDefs = [];
   for (const badgeType of toAward) {
     await supabaseClient.from('badges').insert({ user_id: userId, badge_type: badgeType });
     const def = BADGE_DEFINITIONS.find(b => b.type === badgeType);
-    if (def) showToast(`NEW BADGE UNLOCKED: ${def.label}!`, 'success');
+    if (def) unlockedDefs.push(def);
+  }
+
+  // Queue badge unlock celebrations — shown one after the other
+  if (unlockedDefs.length) {
+    queueBadgeUnlocks(unlockedDefs);
   }
 
   // Check for milestone celebrations
   await checkAndShowMilestone(stats.totalCheckIns);
+}
+
+// ===== BADGE UNLOCK CELEBRATION =====
+// Queue badges so multiple earned at once chain nicely (e.g. First Step + Day One)
+let _badgeUnlockQueue = [];
+let _badgeUnlockActive = false;
+
+function queueBadgeUnlocks(defs) {
+  _badgeUnlockQueue.push(...defs);
+  if (!_badgeUnlockActive) {
+    _processBadgeUnlockQueue();
+  }
+}
+
+function _processBadgeUnlockQueue() {
+  const next = _badgeUnlockQueue.shift();
+  if (!next) {
+    _badgeUnlockActive = false;
+    return;
+  }
+  _badgeUnlockActive = true;
+  showBadgeUnlock(next);
+}
+
+function showBadgeUnlock(def) {
+  // Haptic punch on reveal — matches the rest of the app's feedback pattern
+  if (typeof haptic === 'function') haptic('heavy');
+
+  const overlay = document.createElement('div');
+  overlay.className = 'badge-unlock-overlay';
+  overlay.innerHTML = `
+    <div class="badge-unlock-confetti milestone-confetti" aria-hidden="true">
+      ${Array.from({ length: 40 }, (_, i) => {
+        const isLime = i % 3 !== 0;
+        const color = isLime ? 'var(--color-primary)' : '#FF6B2B';
+        const left = Math.random() * 100;
+        const delay = Math.random() * 2;
+        const duration = 2 + Math.random() * 2;
+        const size = 4 + Math.random() * 6;
+        return `<div class="confetti-dot" style="
+          left: ${left}%;
+          background: ${color};
+          width: ${size}px;
+          height: ${size}px;
+          animation-delay: ${delay}s;
+          animation-duration: ${duration}s;
+        "></div>`;
+      }).join('')}
+    </div>
+    <div class="badge-unlock-modal">
+      <div class="badge-unlock-label">Badge Unlocked</div>
+      <div class="badge-unlock-icon-wrap">
+        <div class="badge-unlock-glow" aria-hidden="true"></div>
+        <div class="badge-unlock-icon badge-icon">
+          ${def.icon}
+        </div>
+      </div>
+      <div class="badge-unlock-name">${escapeHtml(def.label)}</div>
+      <div class="badge-unlock-description">${escapeHtml(def.description)}</div>
+      <div class="badge-unlock-actions">
+        <button class="btn-primary" data-action="share">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+          Share
+        </button>
+        <button class="btn-secondary btn-sm" data-action="close">Nice</button>
+      </div>
+    </div>
+  `;
+
+  overlay.querySelector('[data-action="share"]').addEventListener('click', () => {
+    shareBadgeCard(def.type);
+  });
+  overlay.querySelector('[data-action="close"]').addEventListener('click', () => {
+    closeBadgeUnlock();
+  });
+  // Backdrop dismiss
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closeBadgeUnlock();
+  });
+
+  document.body.appendChild(overlay);
+
+  // Animate in
+  requestAnimationFrame(() => overlay.classList.add('active'));
+}
+
+function closeBadgeUnlock() {
+  const overlay = document.querySelector('.badge-unlock-overlay');
+  if (!overlay) {
+    _badgeUnlockActive = false;
+    return;
+  }
+  overlay.classList.remove('active');
+  setTimeout(() => {
+    overlay.remove();
+    // Brief pause between queued badges so the transition feels intentional
+    setTimeout(() => _processBadgeUnlockQueue(), 250);
+  }, 300);
+}
+
+// ===== SHAREABLE BADGE CARD =====
+// Canvas-rendered 1080x1920 IG Stories card for any earned badge.
+// Maps each badge type to a hero element + tier styling.
+const BADGE_CARD_HERO = {
+  first_step:       { hero: '01 MI',       tier: 'common' },
+  early_bird:       { hero: '5AM',         tier: 'common' },
+  night_runner:     { hero: '11 PM',       tier: 'common' },
+  streak_week:      { hero: '7 DAY',       tier: 'common' },
+  run_buddy:        { hero: '+1 PAIR',     tier: 'common' },
+  social_butterfly: { hero: '50 DM',       tier: 'common' },
+  on_fire:          { hero: 'FLAME + 12W', tier: 'rare', drawFlame: true },
+  both_sides:       { hero: '2X DOUBLE',   tier: 'rare' },
+  century_club:     { hero: '100 MI',      tier: 'legendary' },
+  day_one:          { hero: 'OG',          tier: 'legendary' }
+};
+
+async function shareBadgeCard(badgeType) {
+  const def = BADGE_DEFINITIONS.find(b => b.type === badgeType);
+  const meta = BADGE_CARD_HERO[badgeType];
+  if (!def || !meta) {
+    showToast('Could not build badge card.', 'error');
+    return;
+  }
+
+  try {
+    const [, logoImg, bgImg] = await Promise.all([
+      loadBigShouldersFont(),
+      loadImageSafe('./assets/logo.png'),
+      loadImageSafe('./assets/photos/low-angle-urban.jpg')
+    ]);
+
+    const displayFont = '"Big Shoulders Display", "Arial Black", Impact, sans-serif';
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 1080;
+    canvas.height = 1920;
+    const ctx = canvas.getContext('2d');
+
+    // ===== LAYER 1: Base background =====
+    ctx.fillStyle = '#0A0A0A';
+    ctx.fillRect(0, 0, 1080, 1920);
+
+    // ===== LAYER 2: Campaign photo background =====
+    if (bgImg) {
+      ctx.globalAlpha = 0.25;
+      const imgRatio = bgImg.width / bgImg.height;
+      const canvasRatio = 1080 / 1920;
+      let drawW, drawH, drawX, drawY;
+      if (imgRatio > canvasRatio) {
+        drawH = 1920;
+        drawW = drawH * imgRatio;
+        drawX = (1080 - drawW) / 2;
+        drawY = 0;
+      } else {
+        drawW = 1080;
+        drawH = drawW / imgRatio;
+        drawX = 0;
+        drawY = (1920 - drawH) / 2;
+      }
+      ctx.drawImage(bgImg, drawX, drawY, drawW, drawH);
+      ctx.globalAlpha = 1.0;
+    }
+
+    // ===== LAYER 3: 4-stop gradient overlay (matches checkin card) =====
+    const grad = ctx.createLinearGradient(0, 0, 0, 1920);
+    grad.addColorStop(0, 'rgba(10, 10, 10, 0.4)');
+    grad.addColorStop(0.3, 'rgba(10, 10, 10, 0.85)');
+    grad.addColorStop(0.7, 'rgba(10, 10, 10, 0.85)');
+    grad.addColorStop(1, 'rgba(10, 10, 10, 0.95)');
+    ctx.fillStyle = grad;
+    ctx.fillRect(0, 0, 1080, 1920);
+
+    // ===== LAYER 4: RIU Logo (top) =====
+    if (logoImg) {
+      ctx.drawImage(logoImg, 470, 200, 140, 140);
+    }
+
+    // ===== LAYER 5: "BADGE UNLOCKED" header =====
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#BFFF00';
+    ctx.font = `900 96px ${displayFont}`;
+    ctx.fillText('BADGE UNLOCKED', 540, 500);
+
+    // Accent line under header
+    ctx.fillStyle = '#BFFF00';
+    ctx.fillRect(390, 530, 300, 4);
+
+    // ===== LAYER 6: Hero element (huge centered) =====
+    const isLegendary = meta.tier === 'legendary';
+    const heroY = 1020;
+    const heroText = meta.hero;
+
+    // Tight fit: pick font size based on hero length
+    const heroLen = heroText.length;
+    let heroFontSize;
+    if (heroLen <= 3) heroFontSize = 420;
+    else if (heroLen <= 5) heroFontSize = 360;
+    else if (heroLen <= 8) heroFontSize = 260;
+    else heroFontSize = 200;
+
+    ctx.font = `900 ${heroFontSize}px ${displayFont}`;
+
+    if (isLegendary) {
+      // Gold → lime gradient for Century Club / Day One
+      const goldGrad = ctx.createLinearGradient(0, heroY - 200, 0, heroY + 50);
+      goldGrad.addColorStop(0, '#FFE55C');
+      goldGrad.addColorStop(0.35, '#FFD700');
+      goldGrad.addColorStop(1, '#BFFF00');
+      ctx.fillStyle = goldGrad;
+    } else {
+      ctx.fillStyle = '#BFFF00';
+    }
+
+    // Neon glow bloom
+    ctx.shadowColor = isLegendary ? 'rgba(255, 215, 0, 0.55)' : 'rgba(191, 255, 0, 0.55)';
+    ctx.shadowBlur = 60;
+    ctx.fillText(heroText, 540, heroY);
+
+    // Second pass for a tighter inner glow
+    ctx.shadowBlur = 20;
+    ctx.fillText(heroText, 540, heroY);
+    ctx.shadowBlur = 0;
+
+    // Draw a solid flame glyph above the hero text for On Fire
+    if (meta.drawFlame) {
+      ctx.save();
+      ctx.fillStyle = '#BFFF00';
+      ctx.shadowColor = 'rgba(191, 255, 0, 0.7)';
+      ctx.shadowBlur = 40;
+      const fx = 540;
+      const fy = heroY - 320;
+      ctx.beginPath();
+      ctx.moveTo(fx, fy - 120);
+      ctx.bezierCurveTo(fx + 70, fy - 60, fx + 90, fy + 10, fx + 40, fy + 60);
+      ctx.bezierCurveTo(fx + 90, fy + 40, fx + 100, fy + 90, fx + 40, fy + 130);
+      ctx.bezierCurveTo(fx - 10, fy + 150, fx - 80, fy + 110, fx - 70, fy + 50);
+      ctx.bezierCurveTo(fx - 60, fy, fx - 20, fy - 20, fx - 10, fy - 60);
+      ctx.bezierCurveTo(fx - 5, fy - 95, fx - 10, fy - 110, fx, fy - 120);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // ===== LAYER 7: Badge name =====
+    ctx.shadowBlur = 0;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = `900 96px ${displayFont}`;
+    ctx.fillText(def.label.toUpperCase(), 540, 1260);
+
+    // ===== LAYER 8: Description =====
+    ctx.fillStyle = 'rgba(255,255,255,0.65)';
+    ctx.font = '500 36px Inter, Arial, sans-serif';
+    ctx.fillText(def.description, 540, 1330);
+
+    // ===== LAYER 9: Lime accent line + branding =====
+    ctx.fillStyle = '#BFFF00';
+    ctx.fillRect(440, 1680, 200, 3);
+
+    ctx.fillStyle = 'rgba(255,255,255,0.55)';
+    ctx.font = `700 32px ${displayFont}`;
+    ctx.fillText('RUN IT UP! DALLAS', 540, 1740);
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.font = '400 24px Inter, Arial, sans-serif';
+    ctx.fillText('@runitupdallas', 540, 1790);
+
+    // Convert to blob and share
+    canvas.toBlob(async (blob) => {
+      if (!blob) {
+        showToast('Could not generate image — try again.', 'error');
+        return;
+      }
+
+      const file = new File([blob], `runitup-badge-${badgeType}.png`, { type: 'image/png' });
+
+      if (navigator.share && navigator.canShare && navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({
+            title: 'Run It UP! Dallas',
+            text: `Just unlocked the ${def.label} badge with Run It UP! Dallas. #RunItUpDallas`,
+            files: [file]
+          });
+        } catch (err) {
+          if (err.name !== 'AbortError') {
+            downloadBadgeCard(canvas, badgeType);
+          }
+        }
+      } else {
+        downloadBadgeCard(canvas, badgeType);
+      }
+    }, 'image/png');
+  } catch (err) {
+    console.error('shareBadgeCard error:', err);
+    showToast('Could not share — try saving a screenshot instead.', 'error');
+  }
+}
+
+function downloadBadgeCard(canvas, badgeType) {
+  const link = document.createElement('a');
+  link.download = `runitup-badge-${badgeType}.png`;
+  link.href = canvas.toDataURL('image/png');
+  link.click();
+  showToast('Badge card saved — post it to your stories!', 'success');
 }
 
 // ===== MONTHLY CHALLENGE SYSTEM =====

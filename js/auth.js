@@ -80,14 +80,14 @@ function renderSignup() {
       Back
     </button>
     <div class="auth-header">
-      <h1>Join the Crew</h1>
-      <p>Create your Run It UP! account</p>
+      <div class="signup-hero-headline">JOIN THE CREW.</div>
+      <p class="signup-hero-sub">Every run. Every crew member. One app.</p>
     </div>
     <ul class="signup-benefits" aria-label="What you get">
-      <li>Track your streak</li>
-      <li>Find a running buddy</li>
-      <li>Earn badges + climb the leaderboard</li>
-      <li>Connect with the crew</li>
+      <li>Lock in your check-ins and build your streak</li>
+      <li>Find a running buddy — never run alone</li>
+      <li>Earn badges. Climb the leaderboard.</li>
+      <li>Connect with 12 community channels</li>
     </ul>
     <form class="auth-form" onsubmit="handleSignup(event)">
       <div class="form-group">
@@ -136,7 +136,7 @@ function renderOnboarding() {
 
     <!-- Step 1: Name + Avatar -->
     <div class="onboarding-step active" id="onboarding-step-1" data-bg="./assets/photos/hero.jpg">
-      <div class="onboarding-headline">Welcome To The Crew</div>
+      <div class="onboarding-headline">WELCOME TO THE CREW</div>
       <h2>Who Are You?</h2>
       <p>Let the crew know who's pulling up</p>
       <div class="avatar-upload">
@@ -161,7 +161,7 @@ function renderOnboarding() {
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
         Back
       </button>
-      <div class="onboarding-headline">Find Your Pace</div>
+      <div class="onboarding-headline">FIND YOUR PACE</div>
       <h2>Your Pace</h2>
       <p>No wrong answers — every level is welcome</p>
       <div class="option-grid">
@@ -201,7 +201,7 @@ function renderOnboarding() {
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
         Back
       </button>
-      <div class="onboarding-headline">When You Runnin?</div>
+      <div class="onboarding-headline">WHEN YOU RUNNIN?</div>
       <h2>When Do You Run?</h2>
       <p>Pick your days — you can always change this later</p>
       <div class="option-grid">

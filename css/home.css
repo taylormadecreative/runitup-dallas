@@ -682,3 +682,227 @@
     transform: translateY(100vh) translateX(50px) rotate(-480deg);
   }
 }
+
+/* ===== BADGE UNLOCK CELEBRATION OVERLAY ===== */
+.badge-unlock-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0);
+  z-index: 1002;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+  transition: background 0.4s ease;
+  pointer-events: none;
+}
+
+.badge-unlock-overlay.active {
+  background: rgba(0, 0, 0, 0.92);
+  pointer-events: all;
+}
+
+.badge-unlock-modal {
+  position: relative;
+  text-align: center;
+  max-width: 360px;
+  width: 100%;
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.4s ease, transform 0.4s ease;
+  z-index: 2;
+}
+
+.badge-unlock-overlay.active .badge-unlock-modal {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.badge-unlock-label {
+  font-family: var(--font-display);
+  font-size: 1.125rem;
+  font-weight: 900;
+  color: var(--color-primary);
+  text-transform: uppercase;
+  letter-spacing: 0.18em;
+  margin-bottom: var(--space-lg);
+  opacity: 0;
+  transform: translateY(8px);
+  animation: badgeUnlockLabelIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.15s forwards;
+  text-shadow: 0 0 20px rgba(191, 255, 0, 0.45);
+}
+
+@keyframes badgeUnlockLabelIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Badge icon wrapper — hosts the icon + radial glow */
+.badge-unlock-icon-wrap {
+  position: relative;
+  width: 192px;
+  height: 192px;
+  margin: 0 auto var(--space-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Radial glow behind the badge — pulses during reveal */
+.badge-unlock-glow {
+  position: absolute;
+  inset: -40px;
+  background: radial-gradient(
+    circle,
+    rgba(191, 255, 0, 0.35) 0%,
+    rgba(191, 255, 0, 0.12) 30%,
+    transparent 65%
+  );
+  border-radius: 50%;
+  opacity: 0;
+  animation: badgeUnlockGlowPulse 2.4s ease-in-out 0.3s infinite;
+  pointer-events: none;
+}
+
+@keyframes badgeUnlockGlowPulse {
+  0%, 100% { opacity: 0.55; transform: scale(0.95); }
+  50%      { opacity: 1;    transform: scale(1.08); }
+}
+
+/* Oversized badge icon — 192px vs the 56px grid version */
+.badge-unlock-icon {
+  width: 192px !important;
+  height: 192px !important;
+  border-radius: 28px;
+  transform: scale(0.5);
+  opacity: 0;
+  animation: badgeUnlockSpring 0.7s cubic-bezier(0.34, 1.56, 0.64, 1) 0.2s forwards;
+  z-index: 1;
+}
+
+/* Scale up the lockup content so it reads at hero size */
+.badge-unlock-icon .badge-lockup {
+  gap: 8px;
+  padding: 0 16px;
+}
+
+.badge-unlock-icon .badge-num {
+  font-size: 6rem;
+}
+
+.badge-unlock-icon .badge-num-tight {
+  font-size: 5rem;
+}
+
+.badge-unlock-icon .badge-num-plus {
+  font-size: 4rem;
+}
+
+.badge-unlock-icon .badge-word {
+  font-size: 4.75rem;
+}
+
+.badge-unlock-icon .badge-word-sm {
+  font-size: 3rem;
+}
+
+.badge-unlock-icon .badge-mark {
+  font-size: 1.25rem;
+  margin-bottom: 12px;
+}
+
+.badge-unlock-icon .badge-lockup.badge-stacked .badge-mark {
+  margin-top: 8px;
+  margin-bottom: 0;
+}
+
+.badge-unlock-icon .badge-flame {
+  width: 80px;
+  height: 80px;
+}
+
+.badge-unlock-icon .badge-stamp {
+  width: 28px;
+  height: 28px;
+  top: 16px;
+  right: 16px;
+}
+
+/* Spring-in: 0.5 → 1.1 → 1.0 (Apple-style) */
+@keyframes badgeUnlockSpring {
+  0%   { transform: scale(0.5); opacity: 0; }
+  60%  { transform: scale(1.1); opacity: 1; }
+  80%  { transform: scale(0.96); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.badge-unlock-name {
+  font-family: var(--font-display);
+  font-size: 2.25rem;
+  font-weight: 900;
+  color: var(--color-text);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1;
+  margin-bottom: var(--space-sm);
+  opacity: 0;
+  transform: translateY(10px);
+  animation: badgeUnlockTextIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.55s forwards;
+}
+
+.badge-unlock-description {
+  font-size: 0.9375rem;
+  color: var(--color-text-muted);
+  line-height: 1.5;
+  margin-bottom: var(--space-xl);
+  padding: 0 var(--space-md);
+  opacity: 0;
+  transform: translateY(10px);
+  animation: badgeUnlockTextIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.65s forwards;
+}
+
+@keyframes badgeUnlockTextIn {
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.badge-unlock-actions {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-sm);
+  opacity: 0;
+  transform: translateY(10px);
+  animation: badgeUnlockTextIn 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) 0.75s forwards;
+}
+
+/* Legendary tier — swap the glow to gold */
+.badge-unlock-icon:has(.badge-legendary) ~ .badge-unlock-glow,
+.badge-unlock-icon-wrap:has(.badge-legendary) .badge-unlock-glow {
+  background: radial-gradient(
+    circle,
+    rgba(255, 215, 0, 0.4) 0%,
+    rgba(255, 215, 0, 0.12) 35%,
+    transparent 65%
+  );
+}
+
+.badge-unlock-overlay .badge-unlock-icon-wrap:has(.badge-legendary) .badge-unlock-icon {
+  border-color: rgba(255, 215, 0, 0.55);
+  background: radial-gradient(
+    circle at 30% 25%,
+    rgba(255, 215, 0, 0.2) 0%,
+    rgba(191, 255, 0, 0.08) 30%,
+    var(--color-surface) 75%
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 215, 0, 0.2),
+    0 8px 60px rgba(255, 215, 0, 0.4),
+    0 0 0 1px rgba(255, 215, 0, 0.3);
+}
+
+/* Rare tier — brighter lime bloom */
+.badge-unlock-overlay .badge-unlock-icon-wrap:has(.badge-rare) .badge-unlock-icon {
+  border-color: rgba(191, 255, 0, 0.75);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.12),
+    0 8px 60px rgba(191, 255, 0, 0.45),
+    0 0 0 1px rgba(191, 255, 0, 0.25);
+}

@@ -223,13 +223,14 @@
 }
 
 /* Hallmark stamp — tiny glyph in top-right corner for Common tier differentiation */
+/* Decorative only (duplicates info in the label) — aria-hidden on all stamp SVGs */
 .badge-icon .badge-stamp {
   position: absolute;
   top: 5px;
   right: 5px;
   width: 10px;
   height: 10px;
-  color: rgba(191, 255, 0, 0.55);
+  color: rgba(191, 255, 0, 0.7);
   z-index: 2;
   pointer-events: none;
 }
@@ -319,22 +320,28 @@
   box-shadow: 0 0 4px rgba(255, 215, 0, 0.5);
 }
 
-/* Locked state — dim everything, kill the glows */
+/* Locked state — ghost the lockup aggressively, kill glows + stamps,
+   signal "not yet earned" with a subtle dashed border (applied below). */
 .badge-item.locked .badge-num,
 .badge-item.locked .badge-word,
 .badge-item.locked .badge-num-plus,
 .badge-item.locked .badge-mark,
 .badge-item.locked .badge-divider {
-  color: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.14);
   text-shadow: none;
   background: none;
-  -webkit-text-fill-color: rgba(255, 255, 255, 0.18);
+  -webkit-text-fill-color: rgba(255, 255, 255, 0.14);
   filter: none;
 }
 
 .badge-item.locked .badge-flame {
-  color: rgba(255, 255, 255, 0.15);
+  color: rgba(255, 255, 255, 0.1);
   filter: none;
+}
+
+/* Hide hallmark stamps on locked badges — stamp is a reward signal */
+.badge-item.locked .badge-stamp {
+  display: none;
 }
 
 .badge-item:not(.locked):active .badge-icon {
@@ -352,11 +359,16 @@
 
 .badge-item.locked .badge-icon {
   background: var(--color-surface);
-  border-color: rgba(255, 255, 255, 0.05);
+  border: 1.5px dashed rgba(255, 255, 255, 0.1);
   color: var(--color-text-muted);
-  opacity: 0.35;
+  opacity: 0.22;
   animation: none;
   box-shadow: none;
+}
+
+/* Remove the gold ribbon from locked legendary badges too */
+.badge-item.locked .badge-icon::after {
+  display: none;
 }
 
 .badge-label {

@@ -128,6 +128,32 @@ async function uploadFile(bucket, path, file) {
   return publicUrl;
 }
 
+// ===== HAPTIC HELPERS =====
+// Trigger native haptic feedback on Capacitor (iOS/Android). Silently no-ops
+// on web or when the Haptics plugin isn't available.
+async function haptic(style = 'light') {
+  try {
+    if (!window.Capacitor?.isNativePlatform()) return;
+    const Haptics = window.Capacitor.Plugins?.Haptics;
+    if (!Haptics) return;
+    if (style === 'success') {
+      await Haptics.notification({ type: 'SUCCESS' });
+    } else if (style === 'warning') {
+      await Haptics.notification({ type: 'WARNING' });
+    } else if (style === 'error') {
+      await Haptics.notification({ type: 'ERROR' });
+    } else if (style === 'medium') {
+      await Haptics.impact({ style: 'MEDIUM' });
+    } else if (style === 'heavy') {
+      await Haptics.impact({ style: 'HEAVY' });
+    } else {
+      await Haptics.impact({ style: 'LIGHT' });
+    }
+  } catch (err) {
+    // Silently ignore haptic errors
+  }
+}
+
 // ===== SHARE HELPER =====
 async function shareRun(title, text, url) {
   const shareData = { title, text, url };

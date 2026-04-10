@@ -332,11 +332,24 @@ async function handleDeleteAccount() {
   if (!confirm('Are you sure? This will permanently delete your account and all your data. This cannot be undone.')) return;
   if (!confirm('Really delete everything? Your streak, badges, and check-in history will be gone forever.')) return;
   try {
-    // Delete user profile data (cascades will handle related data)
-    await supabaseClient.from('users').delete().eq('id', currentProfile.id);
+    // Call the Supabase Edge Function for a full atomic deletion of
+    // both the public profile AND the auth.users record (required by
+    // Apple App Store Guideline 5.1.1v). The Edge Function uses the
+    // service role key to perform the admin-level deletion that the
+    // client cannot do directly.
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    if (!session) throw new Error('Not signed in');
+
+    const { error } = await supabaseClient.functions.invoke('delete-account', {
+      headers: { Authorization: `Bearer ${session.access_token}` }
+    });
+
+    if (error) throw error;
+
     await signOut();
     showToast('Account deleted. We hope to see you on the pavement again.', 'info');
   } catch (err) {
-    showToast('Couldn\'t delete right now — reach out to contactus@runitupdallas.com', 'error');
+    console.error('Delete account error:', err);
+    showToast("Couldn't delete right now — reach out to contactus@runitupdallas.com", 'error');
   }
 }
