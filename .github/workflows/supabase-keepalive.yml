@@ -1,0 +1,36 @@
+name: Supabase Keep-Alive
+
+# Free-tier Supabase pauses projects after ~7 days without API activity.
+# When that happens, every login in the Run It UP! app fails ("Load failed").
+# This pings the project twice a week so it never pauses again.
+
+on:
+  schedule:
+    - cron: '0 13 * * 1,4' # Mon + Thu, 13:00 UTC (~8am Dallas)
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping Supabase REST + Auth (counts as project activity)
+        run: |
+          rest=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            "https://rouvbfejsyfcmswlsezd.supabase.co/rest/v1/channels?select=id&limit=1")
+          auth=$(curl -s -o /dev/null -w "%{http_code}" \
+            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
+            "https://rouvbfejsyfcmswlsezd.supabase.co/auth/v1/health")
+          echo "REST ping: $rest | Auth health: $auth"
+          if [ "$rest" != "200" ] || [ "$auth" != "200" ]; then
+            echo "::error::Supabase project is unreachable — it may be paused. Restore it in the Supabase dashboard."
+            exit 1
+          fi
+
+      # GitHub disables cron workflows in public repos after 60 days without
+      # repo activity. This step keeps the schedule itself alive.
+      - name: Keep this scheduled workflow enabled
+        uses: gautamkrishnar/keepalive-workflow@v2
