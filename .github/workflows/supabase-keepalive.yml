@@ -10,7 +10,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  actions: write
 
 jobs:
   ping:
@@ -31,6 +31,8 @@ jobs:
           fi
 
       # GitHub disables cron workflows in public repos after 60 days without
-      # repo activity. This step keeps the schedule itself alive.
+      # repo activity. Re-enabling via the API resets that timer.
       - name: Keep this scheduled workflow enabled
-        uses: gautamkrishnar/keepalive-workflow@v2
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/supabase-keepalive.yml/enable"
