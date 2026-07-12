@@ -8,9 +8,10 @@ const config: CapacitorConfig = {
     androidScheme: 'https'
   },
   ios: {
-    contentInset: 'automatic',
+    contentInset: 'never',
     preferredContentMode: 'mobile',
-    scheme: 'Run It UP'
+    scheme: 'Run It UP',
+    backgroundColor: '#0A0A0A'
   },
   plugins: {}
 };

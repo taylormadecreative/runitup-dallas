@@ -1,9 +1,12 @@
 /* ===== APP SHELL ===== */
+html, body { background: var(--color-bg); margin: 0; padding: 0; overscroll-behavior: none; }
+
 #app-shell {
   display: flex;
   flex-direction: column;
-  height: 100vh;
-  height: 100dvh;
+  position: fixed;
+  inset: 0;
+  background: var(--color-bg);
 }
 
 #app-shell.hidden { display: none; }
@@ -48,12 +51,46 @@
   -webkit-overflow-scrolling: touch;
 }
 
+/* ===== TAB TRANSITIONS ===== */
+/* One-shot entrance on the incoming screen — keyframes only, so there's
+   never an exit state left behind on the outgoing screen. */
+@media (prefers-reduced-motion: no-preference) {
+  #app-main > .screen.active {
+    animation: screenEnter 0.18s ease-out;
+  }
+}
+
+@keyframes screenEnter {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* ===== OFFLINE BANNER ===== */
+#offline-banner {
+  position: fixed;
+  top: calc(env(safe-area-inset-top) + var(--header-height));
+  left: 0;
+  right: 0;
+  z-index: 900; /* below toasts (1000) */
+  display: none;
+  padding: var(--space-sm) var(--space-md);
+  background: var(--color-surface);
+  border-left: 4px solid #FF9F0A; /* amber — connectivity warning */
+  border-bottom: 1px solid var(--color-surface-hover);
+  color: var(--color-text);
+  font-size: 0.8125rem;
+  font-weight: 500;
+}
+
+#offline-banner.visible { display: block; }
+
 /* ===== TAB BAR ===== */
 #tab-bar {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-around;
-  height: var(--tab-bar-height);
+  height: calc(var(--tab-bar-height) + var(--safe-area-bottom));
+  padding-top: var(--space-xs);
   padding-bottom: var(--safe-area-bottom);
   background: var(--color-surface);
   border-top: 1px solid var(--color-surface-hover);
@@ -290,6 +327,45 @@
   to { transform: rotate(360deg); }
 }
 
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  z-index: 10000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--space-lg);
+  animation: confirmFadeIn 0.2s ease-out;
+}
+.confirm-modal {
+  background: var(--color-surface);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius-md);
+  padding: var(--space-lg);
+  max-width: 340px;
+  width: 100%;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+.confirm-message {
+  color: var(--color-text);
+  font-size: 0.95rem;
+  line-height: 1.45;
+  margin: 0 0 var(--space-lg) 0;
+  text-align: center;
+}
+.confirm-actions {
+  display: flex;
+  gap: var(--space-sm);
+}
+.confirm-actions button { flex: 1; }
+@keyframes confirmFadeIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
 .loading-screen {
   display: flex;
   align-items: center;
@@ -315,7 +391,7 @@
 /* ===== TOAST NOTIFICATIONS ===== */
 #toast-container {
   position: fixed;
-  top: calc(var(--header-height) + var(--space-md));
+  top: calc(env(safe-area-inset-top) + var(--header-height) + var(--space-md));
   left: var(--space-md);
   right: var(--space-md);
   z-index: 1000;
@@ -335,6 +411,18 @@
   font-weight: 500;
   animation: slideDown 0.3s ease-out;
   pointer-events: auto;
+  touch-action: pan-y;
+  transition: transform 0.2s ease-out, opacity 0.2s ease-out;
+}
+
+/* Animated exit — showToast removes the node on transitionend */
+.toast.toast-exit {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toast { transition: none; }
 }
 
 .toast.success { border-left: 4px solid var(--color-success); }

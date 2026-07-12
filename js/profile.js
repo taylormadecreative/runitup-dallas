@@ -80,7 +80,12 @@ async function refreshProfile() {
     </div>
 
     <div class="profile-actions">
+      <button class="btn-primary" onclick="shareCrewInvite()">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px; vertical-align: middle;"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+        Invite the Crew
+      </button>
       <button class="btn-secondary" onclick="showEditProfile()">Edit Profile</button>
+      <button class="btn-secondary" onclick="showBlockedUsers()">Blocked Users</button>
       <button class="btn-logout" onclick="handleLogout()">Log Out</button>
       <button class="btn-logout" style="color: var(--color-error); opacity: 0.6; font-size: 0.75rem;" onclick="handleDeleteAccount()">Delete My Account</button>
     </div>
@@ -161,12 +166,98 @@ async function viewMemberProfile(userId) {
       </div>
     </div>
 
-    <button class="btn-primary btn-orange" onclick="openBuddyFromProfile('${userId}')">
-      RUN TOGETHER
-    </button>
+    ${typeof isBlocked === 'function' && isBlocked(userId) ? `
+      <div class="blocked-state">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-8 10c0-4.42 3.58-8 8-8 1.85 0 3.55.63 4.9 1.69L5.69 16.9C4.63 15.55 4 13.85 4 12zm8 8c-1.85 0-3.55-.63-4.9-1.69L18.31 7.1C19.37 8.45 20 10.15 20 12c0 4.42-3.58 8-8 8z"/></svg>
+        <div>
+          <strong>Blocked</strong>
+          <p>This user is blocked. You won't see messages or run together until you unblock.</p>
+        </div>
+        <button class="btn-secondary btn-sm" onclick="unblockFromProfile('${userId}')">Unblock</button>
+      </div>
+    ` : `
+      <div style="display: flex; flex-direction: column; gap: var(--space-sm); width: 100%;">
+        <button class="btn-primary" onclick="startDmWith('${userId}')">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px; vertical-align: middle;"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+          Message ${escapeHtml(profile.display_name.split(' ')[0])}
+        </button>
+        <button class="btn-secondary" onclick="openBuddyFromProfile('${userId}')">
+          Ask to Run Together
+        </button>
+        <button class="btn-secondary btn-sm" style="color: var(--color-error); border-color: rgba(239,68,68,0.3); margin-top: var(--space-sm);" onclick="blockFromMemberProfile(${jsArg(userId)},${jsArg(profile.display_name)})">Block ${escapeHtml(profile.display_name.split(' ')[0])}</button>
+      </div>
+    `}
   `;
 
   navigateToSub('member-profile');
+}
+
+async function blockFromMemberProfile(userId, name) {
+  if (!(await confirmNative(`Block ${name}? They won't be able to message you, match with you, or see your activity. You can unblock anytime from Profile → Settings.`, 'Block', 'Cancel'))) return;
+  try {
+    await blockUser(userId);
+    showToast(`${name} blocked.`, 'info');
+    haptic('warning');
+    viewMemberProfile(userId); // Re-render in blocked state
+  } catch (err) {
+    console.error('[block]', err);
+    showToast('Could not block — try again.', 'error');
+  }
+}
+
+async function showBlockedUsers() {
+  const container = document.getElementById('screen-member-profile');
+  container.innerHTML = '<div class="loading-screen"><div class="spinner"></div></div>';
+  navigateToSub('member-profile');
+  const blocked = await getBlockedProfiles();
+  container.innerHTML = `
+    <button class="auth-back" onclick="navigateTo('profile')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      Profile
+    </button>
+    <h2 style="margin-bottom: var(--space-xs);">Blocked Users</h2>
+    <p style="color: var(--color-text-muted); font-size: 0.875rem; margin-bottom: var(--space-lg);">People you've blocked. They can't message you, match with you, or see your activity. Unblock anytime.</p>
+    ${blocked.length === 0 ? `
+      <div class="empty-state"><p>You haven't blocked anyone. Nice.</p></div>
+    ` : `
+      <div class="blocked-list">
+        ${blocked.map(u => `
+          <div class="blocked-list-row">
+            <img src="${safeAvatarUrl(u.avatar_url)}" class="avatar-sm" alt="">
+            <div>
+              <strong>${escapeHtml(u.display_name)}</strong>
+              <small>${PACE_GROUPS[u.pace_group]?.label || ''}</small>
+            </div>
+            <button class="btn-secondary btn-sm" onclick="unblockFromList('${u.id}')">Unblock</button>
+          </div>
+        `).join('')}
+      </div>
+    `}
+  `;
+}
+
+async function unblockFromList(userId) {
+  if (!(await confirmNative('Unblock this user?', 'Unblock', 'Cancel'))) return;
+  try {
+    await unblockUser(userId);
+    showToast('Unblocked.', 'info');
+    showBlockedUsers(); // refresh list
+  } catch (err) {
+    console.error('[unblock]', err);
+    showToast('Could not unblock — try again.', 'error');
+  }
+}
+
+async function unblockFromProfile(userId) {
+  if (!(await confirmNative('Unblock this user? They\'ll be able to message you again.', 'Unblock', 'Cancel'))) return;
+  try {
+    await unblockUser(userId);
+    showToast('Unblocked.', 'info');
+    viewMemberProfile(userId);
+  } catch (err) {
+    console.error('[unblock]', err);
+    showToast('Could not unblock — try again.', 'error');
+  }
 }
 
 function openBuddyFromProfile(userId) {
@@ -200,7 +291,9 @@ async function updateProfileAvatar(event) {
 
   try {
     const ext = file.name.split('.').pop() || 'jpg';
-    const path = `${currentProfile.id}/avatar.${ext}`;
+    // Unique path per upload so the new public URL isn't served from the
+    // old cached image (uploadFile uses upsert: true on a fixed path).
+    const path = `${currentProfile.id}/avatar_${Date.now()}.${ext}`;
     const url = await uploadFile('avatars', path, file);
     currentProfile = await updateUserProfile(currentProfile.id, { avatar_url: url });
 
@@ -238,7 +331,7 @@ function showEditProfile() {
 
     <div style="width: 100%;">
       <label class="form-label" style="display: block; margin-bottom: var(--space-sm);">Pace Group</label>
-      <div class="option-grid">
+      <div class="option-grid" id="edit-pace-grid">
         ${Object.entries(PACE_GROUPS).map(([key, info]) => `
           <button class="option-card ${currentProfile.pace_group === key ? 'selected' : ''}" onclick="selectEditPaceGroup(this, '${key}')">
             <div class="option-info">
@@ -290,7 +383,7 @@ let editPaceGroup = null;
 let editRunDays = [];
 
 function selectEditPaceGroup(el, group) {
-  document.querySelectorAll('#screen-profile .option-grid:first-of-type .option-card').forEach(c => c.classList.remove('selected'));
+  document.querySelectorAll('#edit-pace-grid .option-card').forEach(c => c.classList.remove('selected'));
   el.classList.add('selected');
   editPaceGroup = group;
 }
@@ -323,14 +416,14 @@ async function saveProfile() {
 }
 
 async function handleLogout() {
-  if (confirm('Are you sure you want to log out?')) {
+  if (await confirmNative('Log out of Run It UP!?', 'Log Out', 'Stay')) {
     await signOut();
   }
 }
 
 async function handleDeleteAccount() {
-  if (!confirm('Are you sure? This will permanently delete your account and all your data. This cannot be undone.')) return;
-  if (!confirm('Really delete everything? Your streak, badges, and check-in history will be gone forever.')) return;
+  if (!(await confirmNative('Permanently delete your account and all your data? This cannot be undone.', 'Delete', 'Cancel'))) return;
+  if (!(await confirmNative('Really? Your streak, badges, and check-in history will be gone forever.', 'Yes, Delete', 'Cancel'))) return;
   try {
     // Call the Supabase Edge Function for a full atomic deletion of
     // both the public profile AND the auth.users record (required by

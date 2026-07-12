@@ -155,7 +155,11 @@ VALUES ('${chId}', '${user.id}', '${msg.replace(/'/g, "''")}', NOW() - interval 
 
   sql += '\n-- Check-ins (last 12 weeks)\n';
 
-  // Generate check-ins over past 12 weeks
+  // Generate check-ins over past 12 weeks.
+  // Days of the current week that haven't happened yet are skipped so the
+  // seed never creates future-dated check-ins (e.g. running this on a Sunday
+  // would otherwise date Monday/Tuesday/Saturday rows up to 6 days ahead).
+  const seedNow = new Date();
   for (let week = 0; week < 12; week++) {
     fakeUsers.forEach(u => {
       // 70% chance of showing up each week
@@ -165,32 +169,40 @@ VALUES ('${chId}', '${user.id}', '${msg.replace(/'/g, "''")}', NOW() - interval 
         const date = new Date();
         date.setDate(date.getDate() - (week * 7) - date.getDay() + 1); // Monday
         date.setHours(19, Math.floor(Math.random() * 30), 0, 0);
-        const miles = (1.5 + Math.random() * 1).toFixed(1);
-        sql += `INSERT INTO public.check_ins (user_id, event_type, miles, checked_in_at) VALUES ('${u.id}', 'weekly_monday', ${miles}, '${date.toISOString()}');\n`;
+        if (date <= seedNow) {
+          const miles = (1.5 + Math.random() * 1).toFixed(1);
+          sql += `INSERT INTO public.check_ins (user_id, event_type, miles, checked_in_at) VALUES ('${u.id}', 'weekly_monday', ${miles}, '${date.toISOString()}');\n`;
+        }
       }
 
       if (u.run_days.includes('tuesday') && Math.random() > 0.3) {
         const date = new Date();
         date.setDate(date.getDate() - (week * 7) - date.getDay() + 2); // Tuesday
         date.setHours(19, Math.floor(Math.random() * 30), 0, 0);
-        const miles = (1 + Math.random() * 2).toFixed(1);
-        sql += `INSERT INTO public.check_ins (user_id, event_type, miles, checked_in_at) VALUES ('${u.id}', 'weekly_tuesday', ${miles}, '${date.toISOString()}');\n`;
+        if (date <= seedNow) {
+          const miles = (1 + Math.random() * 2).toFixed(1);
+          sql += `INSERT INTO public.check_ins (user_id, event_type, miles, checked_in_at) VALUES ('${u.id}', 'weekly_tuesday', ${miles}, '${date.toISOString()}');\n`;
+        }
       }
 
       if (u.run_days.includes('saturday') && Math.random() > 0.3) {
         const date = new Date();
         date.setDate(date.getDate() - (week * 7) - date.getDay() + 6); // Saturday
         date.setHours(8, Math.floor(Math.random() * 30), 0, 0);
-        const miles = (2 + Math.random() * 3).toFixed(1);
-        sql += `INSERT INTO public.check_ins (user_id, event_type, miles, checked_in_at) VALUES ('${u.id}', 'weekly_saturday', ${miles}, '${date.toISOString()}');\n`;
+        if (date <= seedNow) {
+          const miles = (2 + Math.random() * 3).toFixed(1);
+          sql += `INSERT INTO public.check_ins (user_id, event_type, miles, checked_in_at) VALUES ('${u.id}', 'weekly_saturday', ${miles}, '${date.toISOString()}');\n`;
+        }
       }
 
       if (u.run_days.includes('sunday') && Math.random() > 0.3) {
         const date = new Date();
         date.setDate(date.getDate() - (week * 7) - date.getDay()); // Sunday
         date.setHours(8, Math.floor(Math.random() * 30), 0, 0);
-        const miles = (2 + Math.random() * 2).toFixed(1);
-        sql += `INSERT INTO public.check_ins (user_id, event_type, miles, checked_in_at) VALUES ('${u.id}', 'weekly_sunday', ${miles}, '${date.toISOString()}');\n`;
+        if (date <= seedNow) {
+          const miles = (2 + Math.random() * 2).toFixed(1);
+          sql += `INSERT INTO public.check_ins (user_id, event_type, miles, checked_in_at) VALUES ('${u.id}', 'weekly_sunday', ${miles}, '${date.toISOString()}');\n`;
+        }
       }
     });
   }

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Run It UP! Dallas — Built By the Community, Powered by Purpose</title>
+  <meta name="description" content="Run It UP! Dallas is Dallas's biggest run club. Download the app to check in, connect with runners, and find your pace.">
+  <meta name="theme-color" content="#0A0A0A">
+  <meta property="og:title" content="Run It UP! Dallas">
+  <meta property="og:description" content="Dallas's biggest run club. Download the app.">
+  <meta property="og:image" content="https://runitup-app.netlify.app/assets/og-image.jpg">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0A0A0A;
+      --surface: #1A1A1A;
+      --primary: #BFFF00;
+      --text: #FFFFFF;
+      --muted: rgba(255,255,255,0.65);
+      --muted-2: rgba(255,255,255,0.4);
+      --display: 'Big Shoulders Display', 'Arial Black', Impact, sans-serif;
+      --body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    html, body { background: var(--bg); color: var(--text); font-family: var(--body); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+    .hero { min-height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 48px 24px; text-align: center; position: relative; background: radial-gradient(ellipse at top, rgba(191,255,0,0.08), transparent 50%), #0A0A0A; }
+    .logo-mark { font-family: var(--display); font-weight: 900; font-size: clamp(56px, 12vw, 140px); color: var(--primary); letter-spacing: -0.02em; line-height: 0.9; text-transform: uppercase; text-shadow: 0 0 40px rgba(191,255,0,0.3), 0 0 80px rgba(191,255,0,0.1); }
+    .tagline { font-family: var(--body); font-size: 14px; letter-spacing: 0.25em; text-transform: uppercase; color: var(--muted); margin-top: 20px; }
+    .hero h1 { font-family: var(--display); font-weight: 900; font-size: clamp(32px, 5vw, 56px); color: var(--text); margin-top: 64px; text-transform: uppercase; letter-spacing: -0.01em; line-height: 1.05; max-width: 720px; }
+    .hero-lead { font-size: 18px; color: var(--muted); margin-top: 16px; max-width: 560px; line-height: 1.5; }
+    .hero-badge { display: inline-block; font-size: 11px; letter-spacing: 0.2em; text-transform: uppercase; color: var(--primary); background: rgba(191,255,0,0.1); border: 1px solid rgba(191,255,0,0.3); padding: 6px 14px; border-radius: 999px; margin-top: 32px; font-weight: 600; }
+    .cta-row { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-top: 40px; }
+    .btn { display: inline-flex; align-items: center; gap: 10px; font-family: var(--display); font-weight: 800; letter-spacing: 0.05em; text-transform: uppercase; padding: 18px 32px; border-radius: 12px; text-decoration: none; font-size: 15px; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+    .btn:active { transform: scale(0.97); }
+    .btn-primary { background: var(--primary); color: var(--bg); box-shadow: 0 0 20px rgba(191,255,0,0.25); }
+    .btn-primary:hover { box-shadow: 0 0 40px rgba(191,255,0,0.5); }
+    .btn-secondary { background: transparent; color: var(--text); border: 2px solid rgba(255,255,255,0.2); }
+    .btn-secondary:hover { border-color: var(--primary); color: var(--primary); }
+    .ref-note { margin-top: 28px; padding: 16px 20px; background: rgba(191,255,0,0.06); border: 1px solid rgba(191,255,0,0.2); border-radius: 12px; max-width: 440px; font-size: 14px; color: var(--text); text-align: left; display: none; }
+    .ref-note strong { color: var(--primary); }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px; max-width: 960px; margin: 80px auto; padding: 0 24px; }
+    .card { background: var(--surface); border: 1px solid rgba(255,255,255,0.06); border-radius: 16px; padding: 28px; }
+    .card h3 { font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: 20px; margin-bottom: 8px; letter-spacing: -0.01em; }
+    .card p { color: var(--muted); font-size: 15px; line-height: 1.5; }
+    .card .emoji { font-size: 32px; display: block; margin-bottom: 12px; }
+    .run-list { max-width: 720px; margin: 40px auto 80px; padding: 0 24px; }
+    .run-list h2 { font-family: var(--display); font-weight: 900; text-transform: uppercase; font-size: clamp(28px, 4vw, 42px); text-align: center; margin-bottom: 28px; letter-spacing: -0.01em; }
+    .run-row { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; border-bottom: 1px solid rgba(255,255,255,0.06); gap: 16px; }
+    .run-row:last-child { border-bottom: none; }
+    .run-day { font-family: var(--display); font-weight: 800; font-size: 20px; color: var(--text); text-transform: uppercase; letter-spacing: 0.02em; min-width: 100px; }
+    .run-location { flex: 1; color: var(--muted); font-size: 14px; }
+    .run-time { color: var(--primary); font-weight: 700; font-size: 14px; }
+    footer { text-align: center; padding: 60px 24px; border-top: 1px solid rgba(255,255,255,0.06); color: var(--muted-2); font-size: 13px; }
+    footer a { color: var(--muted); text-decoration: none; margin: 0 12px; }
+    footer a:hover { color: var(--primary); }
+    .callback-screen { position: fixed; inset: 0; background: var(--bg); z-index: 9999; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 24px; text-align: center; }
+    .callback-screen.active { display: flex; }
+    .spinner { width: 48px; height: 48px; border: 3px solid rgba(191,255,0,0.2); border-top-color: var(--primary); border-radius: 50%; animation: spin 1s linear infinite; margin-bottom: 24px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .callback-screen h2 { font-family: var(--display); font-weight: 900; font-size: 32px; text-transform: uppercase; margin-bottom: 12px; }
+    .callback-screen p { color: var(--muted); margin-bottom: 24px; max-width: 360px; }
+  </style>
+</head>
+<body>
+
+  <!-- Auth callback overlay: shown when URL has code/token params -->
+  <div id="callback" class="callback-screen">
+    <div class="spinner"></div>
+    <h2 id="cb-title">Opening Run It UP!</h2>
+    <p id="cb-text">Hang on — taking you into the app.</p>
+    <a id="cb-manual" class="btn btn-primary" style="display:none;" href="#">Open the App</a>
+  </div>
+
+  <main class="hero">
+    <div class="logo-mark">RUN IT UP!</div>
+    <div class="tagline">Dallas · Social Run Club</div>
+
+    <span class="hero-badge">Built By the Community · Powered by Purpose</span>
+    <h1>Dallas's Biggest Run Club</h1>
+    <p class="hero-lead">Check in. Connect. Run together. All paces welcome — walkers, joggers, runners, sprinters. One crew.</p>
+
+    <div id="ref-note" class="ref-note"></div>
+
+    <div class="cta-row">
+      <a class="btn btn-primary" href="https://apps.apple.com/us/app/run-it-up-dallas/id6749632500">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M17.05 12.04c-.03-2.73 2.23-4.05 2.33-4.11-1.27-1.86-3.25-2.11-3.95-2.14-1.68-.17-3.28 1-4.14 1-.87 0-2.18-.97-3.58-.95-1.84.03-3.54 1.07-4.49 2.72-1.91 3.31-.49 8.22 1.38 10.91.91 1.32 2 2.81 3.4 2.76 1.37-.05 1.89-.89 3.55-.89 1.65 0 2.11.89 3.57.86 1.47-.02 2.4-1.34 3.31-2.67 1.04-1.53 1.47-3.01 1.49-3.09-.03-.01-2.85-1.1-2.88-4.35zm-2.73-8c.75-.91 1.26-2.18 1.12-3.44-1.08.04-2.4.72-3.18 1.62-.7.8-1.31 2.09-1.15 3.33 1.21.1 2.45-.61 3.21-1.51z"/></svg>
+        Download on App Store
+      </a>
+      <a class="btn btn-secondary" href="https://instagram.com/runitup_dallas">Follow @runitup_dallas</a>
+    </div>
+  </main>
+
+  <section class="run-list">
+    <h2>Where We Run</h2>
+    <div class="run-row"><div class="run-day">Mon</div><div class="run-location">Trinity Groves · 3118 Gulden Ln</div><div class="run-time">7:00 PM</div></div>
+    <div class="run-row"><div class="run-day">Tue</div><div class="run-location">Deep Ellum · 2823 Main St</div><div class="run-time">7:00 PM</div></div>
+    <div class="run-row"><div class="run-day">Sat</div><div class="run-location">Fair Oaks Park · 7621 Fair Oaks Ave</div><div class="run-time">8:30 AM</div></div>
+    <div class="run-row"><div class="run-day">Sun</div><div class="run-location">Levy Event Plaza, Irving · 501 E Las Colinas Blvd</div><div class="run-time">8:30 AM</div></div>
+  </section>
+
+  <section class="grid">
+    <div class="card"><span class="emoji">🏁</span><h3>Lock In Check-Ins</h3><p>Tap to check in before every run. Build your streak. Stack badges.</p></div>
+    <div class="card"><span class="emoji">🤝</span><h3>Find a Running Buddy</h3><p>Never run alone. Match with someone at your pace before you show up.</p></div>
+    <div class="card"><span class="emoji">💬</span><h3>12 Community Channels</h3><p>Connect with the crew. Real-time chat by pace group, by run night, by vibe.</p></div>
+    <div class="card"><span class="emoji">📍</span><h3>Live GPS Tracking</h3><p>Start a run, track your distance and pace, share your summary to your stories.</p></div>
+  </section>
+
+  <footer>
+    <div>&copy; 2026 Run It UP! Dallas · All runs, all paces, all community.</div>
+    <div style="margin-top: 12px;">
+      <a href="/privacy.html">Privacy</a>·
+      <a href="/terms.html">Terms</a>·
+      <a href="mailto:contactus@runitupdallas.com">Contact</a>
+    </div>
+  </footer>
+
+  <script>
+    // ===== AUTH DEEP-LINK CALLBACK HANDLER =====
+    // Supabase email confirmation, password reset, magic link all redirect here.
+    // We preserve the hash/query and forward to the iOS deep link scheme.
+    (function() {
+      const hash = window.location.hash || '';
+      const search = window.location.search || '';
+      const path = window.location.pathname || '/';
+
+      const isAuthCallback = path.includes('/auth/callback') || hash.includes('access_token') || hash.includes('error_code') || search.includes('code=') || search.includes('token_hash=');
+
+      if (isAuthCallback) {
+        const cb = document.getElementById('callback');
+        cb.classList.add('active');
+
+        // Build deep link preserving params
+        const deepLink = 'com.runitupdallas.app://auth/callback' + search + hash;
+        const manual = document.getElementById('cb-manual');
+        manual.href = deepLink;
+
+        // Try automatic open
+        window.location.replace(deepLink);
+
+        // If we're still here in 2s, show manual button
+        setTimeout(() => {
+          document.getElementById('cb-title').textContent = 'Almost there';
+          document.getElementById('cb-text').textContent = 'If the app didn\'t open, tap below.';
+          manual.style.display = 'inline-flex';
+        }, 2000);
+        return;
+      }
+
+      // ===== REFERRAL LINK HANDLING =====
+      const params = new URLSearchParams(search);
+      const ref = params.get('ref');
+      if (ref) {
+        // Store ref for attribution (read by app on first launch via pasteboard sharing)
+        try { localStorage.setItem('riu_ref', ref); } catch {}
+        // Show personalized banner
+        const note = document.getElementById('ref-note');
+        note.innerHTML = '<strong>A friend invited you.</strong> Download the app and you\'ll show up in their crew.';
+        note.style.display = 'block';
+      }
+    })();
+  </script>
+</body>
+</html>

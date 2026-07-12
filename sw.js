@@ -1,4 +1,4 @@
-const CACHE_NAME = 'runitup-v14';
+const CACHE_NAME = 'runitup-v15';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -12,6 +12,7 @@ const STATIC_ASSETS = [
   './css/community.css',
   './css/stats.css',
   './css/profile.css',
+  './assets/vendor/supabase.min.js',
   './js/app.js',
   './js/supabase.js',
   './js/auth.js',
@@ -19,6 +20,8 @@ const STATIC_ASSETS = [
   './js/events.js',
   './js/buddy.js',
   './js/community.js',
+  './js/dms.js',
+  './js/run-tracker.js',
   './js/stats.js',
   './js/profile.js',
   './js/checkin.js',
@@ -58,8 +61,23 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  if (event.request.url.includes('supabase')) return;
+  const url = event.request.url;
+  if (url.includes('supabase') || url.includes('open-meteo')) return;
+
+  // Stale-while-revalidate for fonts and same-origin GETs: serve cache fast,
+  // refresh it in the background so updates still land.
   event.respondWith(
-    caches.match(event.request).then((cached) => cached || fetch(event.request))
+    caches.match(event.request).then((cached) => {
+      const refresh = fetch(event.request)
+        .then((res) => {
+          if (res && res.ok && event.request.method === 'GET') {
+            const copy = res.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, copy)).catch(() => {});
+          }
+          return res;
+        })
+        .catch(() => cached); // offline: fall back to whatever we have
+      return cached || refresh;
+    })
   );
 });

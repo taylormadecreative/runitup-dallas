@@ -2,6 +2,26 @@
 let currentUser = null;
 let currentProfile = null;
 
+// Google works on web AND native: native uses the plugin's ID-token flow, web
+// uses the OAuth redirect (Supabase's Google provider lists the web client
+// first, and the consent screen is published to production).
+function googleBtnHTML() {
+  return `<button type="button" class="btn-google" onclick="handleGoogleAuth()">
+          <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/><path d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
+          Continue with Google
+        </button>`;
+}
+
+// Apple sign-in uses the native plugin's ID-token flow — web would need an
+// Apple Services ID + signing key, which isn't set up yet.
+function appleBtnHTML() {
+  if (!window.Capacitor?.isNativePlatform()) return '';
+  return `<button type="button" class="btn-apple" onclick="handleAppleAuth()">
+          <svg width="18" height="18" viewBox="0 0 18 18"><path d="M13.545 8.32c-.023-2.147 1.752-3.179 1.832-3.229-1-1.46-2.552-1.66-3.103-1.683-1.318-.134-2.578.778-3.248.778-.671 0-1.707-.759-2.808-.738C4.858 3.47 3.62 4.298 2.93 5.564c-1.397 2.424-.357 6.014.998 7.98.666.96 1.458 2.04 2.5 2.001 1.003-.04 1.382-.648 2.596-.648 1.213 0 1.553.648 2.611.627 1.082-.018 1.765-1.001 2.424-1.963.764-1.112 1.079-2.19 1.098-2.247-.024-.01-2.107-.809-2.131-3.207v.213zM11.525 2.507C12.07 1.846 12.44.954 12.34.05c-.765.031-1.691.51-2.24 1.152-.493.57-.924 1.48-.808 2.353.853.066 1.724-.434 2.233-1.048z" fill="#FFFFFF"/></svg>
+          Continue with Apple
+        </button>`;
+}
+
 // ===== RENDER SPLASH =====
 function renderSplash() {
   document.getElementById('screen-splash').innerHTML = `
@@ -46,15 +66,9 @@ function renderLogin() {
       <div id="login-error" class="form-error hidden"></div>
       <div class="auth-actions">
         <button type="submit" class="btn-primary" id="btn-login">Log In</button>
-        <div class="auth-divider">or</div>
-        <button type="button" class="btn-google" onclick="handleGoogleAuth()">
-          <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/><path d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
-          Continue with Google
-        </button>
-        <button type="button" class="btn-apple" onclick="handleAppleAuth()">
-          <svg width="18" height="18" viewBox="0 0 18 18"><path d="M13.545 8.32c-.023-2.147 1.752-3.179 1.832-3.229-1-1.46-2.552-1.66-3.103-1.683-1.318-.134-2.578.778-3.248.778-.671 0-1.707-.759-2.808-.738C4.858 3.47 3.62 4.298 2.93 5.564c-1.397 2.424-.357 6.014.998 7.98.666.96 1.458 2.04 2.5 2.001 1.003-.04 1.382-.648 2.596-.648 1.213 0 1.553.648 2.611.627 1.082-.018 1.765-1.001 2.424-1.963.764-1.112 1.079-2.19 1.098-2.247-.024-.01-2.107-.809-2.131-3.207v.213zM11.525 2.507C12.07 1.846 12.44.954 12.34.05c-.765.031-1.691.51-2.24 1.152-.493.57-.924 1.48-.808 2.353.853.066 1.724-.434 2.233-1.048z" fill="#FFFFFF"/></svg>
-          Continue with Apple
-        </button>
+        ${(googleBtnHTML() || appleBtnHTML()) ? '<div class="auth-divider">or</div>' : ''}
+        ${googleBtnHTML()}
+        ${appleBtnHTML()}
         <p class="auth-switch">Don't have an account? <a href="#" onclick="showScreen('signup'); return false;">Sign Up</a></p>
       </div>
     </form>
@@ -101,15 +115,9 @@ function renderSignup() {
       <div id="signup-error" class="form-error hidden"></div>
       <div class="auth-actions">
         <button type="submit" class="btn-primary" id="btn-signup">Create Account</button>
-        <div class="auth-divider">or</div>
-        <button type="button" class="btn-google" onclick="handleGoogleAuth()">
-          <svg width="18" height="18" viewBox="0 0 18 18"><path d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z" fill="#4285F4"/><path d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z" fill="#34A853"/><path d="M3.964 10.71c-.18-.54-.282-1.117-.282-1.71s.102-1.17.282-1.71V4.958H.957C.347 6.173 0 7.548 0 9s.348 2.827.957 4.042l3.007-2.332z" fill="#FBBC05"/><path d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.958L3.964 7.29C4.672 5.163 6.656 3.58 9 3.58z" fill="#EA4335"/></svg>
-          Continue with Google
-        </button>
-        <button type="button" class="btn-apple" onclick="handleAppleAuth()">
-          <svg width="18" height="18" viewBox="0 0 18 18"><path d="M13.545 8.32c-.023-2.147 1.752-3.179 1.832-3.229-1-1.46-2.552-1.66-3.103-1.683-1.318-.134-2.578.778-3.248.778-.671 0-1.707-.759-2.808-.738C4.858 3.47 3.62 4.298 2.93 5.564c-1.397 2.424-.357 6.014.998 7.98.666.96 1.458 2.04 2.5 2.001 1.003-.04 1.382-.648 2.596-.648 1.213 0 1.553.648 2.611.627 1.082-.018 1.765-1.001 2.424-1.963.764-1.112 1.079-2.19 1.098-2.247-.024-.01-2.107-.809-2.131-3.207v.213zM11.525 2.507C12.07 1.846 12.44.954 12.34.05c-.765.031-1.691.51-2.24 1.152-.493.57-.924 1.48-.808 2.353.853.066 1.724-.434 2.233-1.048z" fill="#FFFFFF"/></svg>
-          Continue with Apple
-        </button>
+        ${(googleBtnHTML() || appleBtnHTML()) ? '<div class="auth-divider">or</div>' : ''}
+        ${googleBtnHTML()}
+        ${appleBtnHTML()}
         <p class="auth-switch">Already have an account? <a href="#" onclick="showScreen('login'); return false;">Log In</a></p>
         <p class="auth-legal">By signing up, you agree to our <a href="terms.html" target="_blank">Terms of Service</a> and <a href="privacy.html" target="_blank">Privacy Policy</a></p>
       </div>
@@ -238,12 +246,31 @@ function renderOnboarding() {
 }
 
 // ===== FRIENDLY ERROR MESSAGES =====
+// WKWebView reports any failed fetch as "Load failed" — never show that raw.
+function isNetworkError(err) {
+  if (err?.name === 'AuthRetryableFetchError') return true;
+  const msg = (err?.message || String(err)).toLowerCase();
+  return msg.includes('load failed') ||
+    msg.includes('failed to fetch') ||
+    msg.includes('networkerror') ||
+    msg.includes('network request failed') ||
+    msg.includes('timed out') ||
+    msg.includes('timeout') ||
+    msg.includes('offline');
+}
+
 function friendlyError(err) {
   const msg = err?.message || String(err);
   if (msg.includes('Invalid login credentials')) return "That didn't match. Double-check your email and password.";
   if (msg.includes('already registered') || msg.includes('already been registered')) return "Looks like you already have an account. Try logging in!";
   if (msg.includes('Password should be')) return "Password needs to be at least 6 characters.";
   if (msg.includes('valid email')) return "Please enter a valid email address.";
+  if (msg.includes('rate limit') || msg.includes('Too many requests')) return "Too many tries — give it a minute, then try again.";
+  if (isNetworkError(err)) {
+    return navigator.onLine === false
+      ? "You're offline. Reconnect and try again."
+      : "Can't reach the server right now. Give it a minute and try again.";
+  }
   return "Something went wrong. Try again in a sec.";
 }
 
@@ -303,7 +330,10 @@ async function handleGoogleAuth() {
   try {
     await signInWithGoogle();
   } catch (err) {
-    showToast("Google didn't connect — try again.", 'error');
+    console.error('[google] sign-in failed:', err);
+    // User-cancelled: silently ignore
+    if (err?.message?.toLowerCase().includes('cancel')) return;
+    showToast(isNetworkError(err) ? friendlyError(err) : "Google sign-in didn't go through. Try again in a sec.", 'error');
   }
 }
 
@@ -311,7 +341,10 @@ async function handleAppleAuth() {
   try {
     await signInWithApple();
   } catch (err) {
-    showToast("Apple sign-in didn't connect — try again.", 'error');
+    console.error('[apple] sign-in failed:', err);
+    // User-cancelled: silently ignore
+    if (err?.message?.toLowerCase().includes('cancel')) return;
+    showToast(isNetworkError(err) ? friendlyError(err) : "Apple sign-in didn't go through. Try again in a sec.", 'error');
   }
 }
 
@@ -436,43 +469,70 @@ function showYoureInReveal() {
   });
 }
 
+function withTimeout(promise, ms, label) {
+  return Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(`${label} timed out after ${ms}ms`)), ms))
+  ]);
+}
+
 async function completeOnboarding() {
   const btn = document.getElementById('btn-days-done');
   btn.disabled = true;
   btn.textContent = 'Setting up...';
 
   try {
-    const session = await getSession();
+    console.log('[onboarding] getSession…');
+    const session = await withTimeout(getSession(), 10000, 'getSession');
+    console.log('[onboarding] session:', !!session, session?.user?.id);
     if (!session) throw new Error('No session — please try signing up again.');
 
-    // Upload avatar if selected
     let avatarUrl = null;
     if (onboardingData._avatarFile) {
+      console.log('[onboarding] uploading avatar…');
       const ext = onboardingData._avatarFile.name.split('.').pop();
       const path = `${session.user.id}/avatar.${ext}`;
-      avatarUrl = await uploadFile('avatars', path, onboardingData._avatarFile);
+      try {
+        avatarUrl = await withTimeout(uploadFile('avatars', path, onboardingData._avatarFile), 15000, 'avatar upload');
+        console.log('[onboarding] avatar uploaded:', avatarUrl);
+      } catch (uploadErr) {
+        console.warn('[onboarding] avatar upload failed, continuing without:', uploadErr.message);
+        avatarUrl = null;
+      }
     }
 
-    // Create user profile
-    const profile = await createUserProfile({
-      id: session.user.id,
-      display_name: onboardingData.display_name,
-      avatar_url: avatarUrl,
-      pace_group: onboardingData.pace_group,
-      run_days: onboardingData.run_days,
-      role: 'member'
-    });
+    console.log('[onboarding] upserting user profile…');
+    const profile = await withTimeout(
+      supabaseClient.from('users').upsert({
+        id: session.user.id,
+        display_name: onboardingData.display_name,
+        avatar_url: avatarUrl,
+        pace_group: onboardingData.pace_group,
+        run_days: onboardingData.run_days,
+        role: 'member'
+      }, { onConflict: 'id' }).select().single().then(r => {
+        if (r.error) throw r.error;
+        return r.data;
+      }),
+      15000, 'profile upsert'
+    );
+    console.log('[onboarding] profile created:', profile.id);
 
-    // Auto-join channels
-    await autoJoinChannels(profile);
+    try {
+      await withTimeout(autoJoinChannels(profile), 10000, 'autoJoinChannels');
+      console.log('[onboarding] channels joined');
+    } catch (channelErr) {
+      console.warn('[onboarding] channel join failed, continuing:', channelErr.message);
+    }
 
     currentProfile = profile;
-
-    // Celebratory reveal before entering the app
+    try { await Promise.all([checkAndAwardBadges(), loadBlockLists()]); } catch (e) { console.warn('[onboarding] background tasks', e); }
+    if (typeof startGpsWarmer === 'function') startGpsWarmer();
     await showYoureInReveal();
     enterApp();
   } catch (err) {
-    showToast(err.message || 'Setup hit a snag — try again.', 'error');
+    console.error('[onboarding] ERROR:', err);
+    showToast(isNetworkError(err) ? friendlyError(err) : (err.message || 'Setup hit a snag — try again.'), 'error');
     btn.disabled = false;
     btn.textContent = "Let's Run";
   }
@@ -527,6 +587,9 @@ async function loadUserAndEnterApp() {
       return;
     }
     currentProfile = profile;
+    // Parallel: backfill welcome badge + load block list + detect guest state
+    try { await Promise.all([checkAndAwardBadges(), loadBlockLists(), isGuestUser()]); } catch {}
+    if (typeof startGpsWarmer === 'function') startGpsWarmer();
     enterApp();
   } catch (err) {
     console.error('Failed to load user:', err);
@@ -571,58 +634,60 @@ function showScreen(name) {
 }
 
 // ===== GUEST LOGIN =====
+const GUEST_PROFILE_DEFAULTS = {
+  display_name: 'Guest Runner',
+  avatar_url: null,
+  pace_group: 'jog_it_up',
+  run_days: ['tuesday', 'saturday'],
+  role: 'member'
+};
+
 async function loginAsGuest() {
+  // Sign in anonymously using Supabase anonymous auth
+  let session;
   try {
-    // Sign in anonymously using Supabase anonymous auth
     const { data, error } = await supabaseClient.auth.signInAnonymously();
     if (error) throw error;
+    session = data.session;
+  } catch (err) {
+    console.error('[guest] anonymous sign-in failed:', err);
+    // Only fall back to a throwaway email account when anonymous auth is
+    // actually disabled — not for network blips (that minted junk accounts).
+    const msg = (err?.message || '').toLowerCase();
+    if (msg.includes('anonymous') && (msg.includes('disabled') || msg.includes('not enabled'))) {
+      return loginAsGuestEmailFallback();
+    }
+    showToast(isNetworkError(err) ? friendlyError(err) : 'Guest login not available right now — try signing up.', 'info');
+    return;
+  }
 
-    // Create a guest profile
-    const guestProfile = await createUserProfile({
-      id: data.session.user.id,
-      display_name: 'Guest Runner',
-      avatar_url: null,
-      pace_group: 'jog_it_up',
-      run_days: ['tuesday', 'saturday'],
-      role: 'member'
-    });
-
-    // Auto-join default channels
+  try {
+    const guestProfile = await createUserProfile({ id: session.user.id, ...GUEST_PROFILE_DEFAULTS });
     await autoJoinChannels(guestProfile);
-
     currentProfile = guestProfile;
     enterApp();
   } catch (err) {
-    // Fallback: if anonymous auth is not enabled, create a temp guest session
-    // by signing up with a random guest email
-    try {
-      const guestId = Math.random().toString(36).substring(2, 10);
-      const guestEmail = `guest_${guestId}@runitup.demo`;
-      const guestPass = `guest_${guestId}_pass`;
+    console.error('[guest] profile setup failed:', err);
+    showToast(isNetworkError(err) ? friendlyError(err) : 'Guest login hit a snag — try again in a minute.', 'error');
+  }
+}
 
-      await signUp(guestEmail, guestPass);
-      const session = await getSession();
-
-      if (!session) {
-        showToast('Guest login not available right now — try signing up.', 'info');
-        return;
-      }
-
-      const guestProfile = await createUserProfile({
-        id: session.user.id,
-        display_name: 'Guest Runner',
-        avatar_url: null,
-        pace_group: 'jog_it_up',
-        run_days: ['tuesday', 'saturday'],
-        role: 'member'
-      });
-
-      await autoJoinChannels(guestProfile);
-      currentProfile = guestProfile;
-      enterApp();
-    } catch (err2) {
+// Legacy fallback for when anonymous auth is disabled on the project
+async function loginAsGuestEmailFallback() {
+  try {
+    const guestId = Math.random().toString(36).substring(2, 10);
+    await signUp(`guest_${guestId}@runitup.demo`, `guest_${guestId}_pass`);
+    const session = await getSession();
+    if (!session) {
       showToast('Guest login not available right now — try signing up.', 'info');
+      return;
     }
+    const guestProfile = await createUserProfile({ id: session.user.id, ...GUEST_PROFILE_DEFAULTS });
+    await autoJoinChannels(guestProfile);
+    currentProfile = guestProfile;
+    enterApp();
+  } catch (err) {
+    showToast('Guest login not available right now — try signing up.', 'info');
   }
 }
 
@@ -636,7 +701,7 @@ function showEmailConfirmation(email) {
       <h2 style="margin-bottom: var(--space-sm);">Check Your Email</h2>
       <p style="color: var(--color-text-muted); margin-bottom: var(--space-md);">We sent a confirmation link to <strong style="color: var(--color-text);">${escapeHtml(email)}</strong></p>
       <p style="color: var(--color-text-muted); font-size: 0.875rem; margin-bottom: var(--space-xl);">Tap the link in your email, then come back here. The app will pick you up automatically.</p>
-      <button class="btn-secondary btn-sm" onclick="renderSplash(); showScreen('splash');">Back to Home</button>
+      <button class="btn-secondary btn-sm" onclick="renderSignup(); renderSplash(); showScreen('splash');">Back to Home</button>
     </div>
   `;
   showScreen('signup');

@@ -10,6 +10,8 @@
   <meta name="description" content="Run It UP! Dallas — Built By the Community, Powered by Purpose">
   <meta property="og:title" content="Run It UP! Dallas">
   <meta property="og:description" content="Run It UP! Dallas — Check in. Connect. Run together. The crew app for Dallas's biggest run club.">
+  <meta property="og:image" content="https://taylormadecreative.github.io/runitup-app-site/assets/og-image.jpg">
+  <meta property="og:url" content="https://taylormadecreative.github.io/runitup-app-site/">
   <title>Run It UP! | Dallas Run Club</title>
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="assets/logo-192.png">
@@ -69,6 +71,8 @@
       <div id="screen-chat" class="screen"></div>
       <div id="screen-buddy-board" class="screen"></div>
       <div id="screen-event-detail" class="screen"></div>
+      <div id="screen-dm-inbox" class="screen"></div>
+      <div id="screen-dm-thread" class="screen"></div>
     </main>
 
     <!-- Bottom Tab Bar -->
@@ -98,14 +102,17 @@
   </div>
 
   <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <!-- Bundled locally (v2.110.2) so the app boots without a CDN round-trip -->
+  <script src="assets/vendor/supabase.min.js"></script>
   <script src="js/supabase.js"></script>
   <script src="js/auth.js"></script>
   <script src="js/checkin.js"></script>
+  <script src="js/run-tracker.js"></script>
   <script src="js/home.js"></script>
   <script src="js/events.js"></script>
   <script src="js/buddy.js"></script>
   <script src="js/community.js"></script>
+  <script src="js/dms.js"></script>
   <script src="js/stats.js"></script>
   <script src="js/profile.js"></script>
   <script src="js/app.js"></script>

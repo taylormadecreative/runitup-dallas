@@ -160,7 +160,7 @@ function renderWeeklyRunCard(run, lastCount, buddyCount, checkedIn, nextDate) {
       <div class="weekly-run-actions">
         ${btnHtml}
         <button class="btn-buddy" onclick="openBuddyBoard('${run.day}', '${nextDate}')">
-          Looking for a buddy?
+          ${buddyCount > 0 ? `See Buddies (${buddyCount})` : 'Find a Buddy'}
         </button>
         <button class="btn-share" onclick="event.stopPropagation(); shareWeeklyRun('${run.label}', '${run.location}', '${run.time}', '${run.address}')" aria-label="Share this run">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
@@ -173,8 +173,8 @@ function renderWeeklyRunCard(run, lastCount, buddyCount, checkedIn, nextDate) {
 
 function renderSpecialEventCard(event, rsvpCount, isPast) {
   return `
-    <div class="special-event-card" onclick="viewEventDetail('${event.id}')">
-      ${event.cover_image_url ? `<img src="${event.cover_image_url}" alt="${escapeHtml(event.title)}">` : `<div class="event-no-cover">RIU</div>`}
+    <div class="special-event-card" onclick="viewEventDetail(${jsArg(event.id)})">
+      ${safeImageUrl(event.cover_image_url) ? `<img src="${safeImageUrl(event.cover_image_url)}" alt="${escapeAttr(event.title)}">` : `<div class="event-no-cover">RIU</div>`}
       <div class="special-event-body">
         <h3>${escapeHtml(event.title)}</h3>
         <div class="special-event-meta">
@@ -183,10 +183,10 @@ function renderSpecialEventCard(event, rsvpCount, isPast) {
         </div>
         <div class="special-event-actions">
           <div class="rsvp-count"><strong>${rsvpCount}</strong> going</div>
-          <button class="btn-share" onclick="event.stopPropagation(); shareSpecialEvent('${escapeHtml(event.title)}', '${formatDate(event.event_date)}', '${escapeHtml(event.location_name)}')" aria-label="Share event">
+          <button class="btn-share" onclick="event.stopPropagation(); shareSpecialEvent(${jsArg(event.title)}, ${jsArg(formatDate(event.event_date))}, ${jsArg(event.location_name)})" aria-label="Share event">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
           </button>
-          ${!isPast ? `<button class="btn-primary btn-sm btn-orange" onclick="event.stopPropagation(); toggleRSVP('${event.id}')">RSVP</button>` : `<span style="font-size: 0.75rem; color: var(--color-text-muted);">Event ended</span>`}
+          ${!isPast ? `<button class="btn-primary btn-sm btn-orange" onclick="event.stopPropagation(); toggleRSVP(${jsArg(event.id)})">RSVP</button>` : `<span style="font-size: 0.75rem; color: var(--color-text-muted);">Event ended</span>`}
         </div>
       </div>
     </div>
@@ -305,13 +305,18 @@ async function viewEventDetail(eventId) {
   const isPast = new Date(event.event_date) < new Date();
   const userRsvp = (rsvps || []).find(r => r.user_id === currentProfile?.id);
 
+  // Special-event check-in: window opens 4h before the event through 11:59 PM
+  // Chicago that day (same rules as weekly runs). Feeds the day_one badge.
+  const checkInOpen = isCheckInWindow(new Date(event.event_date));
+  const specialCheckedIn = checkInOpen ? await hasCheckedInToday('special') : false;
+
   const container = document.getElementById('screen-event-detail');
   container.innerHTML = `
     <button class="auth-back" onclick="navigateTo('events')">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
       Events
     </button>
-    ${event.cover_image_url ? `<img src="${event.cover_image_url}" alt="${escapeHtml(event.title)}" class="event-detail-cover">` : ''}
+    ${safeImageUrl(event.cover_image_url) ? `<img src="${safeImageUrl(event.cover_image_url)}" alt="${escapeAttr(event.title)}" class="event-detail-cover">` : ''}
     <h2 style="margin-bottom: var(--space-sm);">${escapeHtml(event.title)}</h2>
     <div class="event-detail-meta">
       ${formatDate(event.event_date)} &middot; ${formatTime(event.event_date)}<br>
@@ -321,12 +326,15 @@ async function viewEventDetail(eventId) {
     ${event.description ? `<p class="event-detail-description">${escapeHtml(event.description)}</p>` : ''}
 
     <div style="display: flex; gap: var(--space-sm); margin-top: var(--space-md);">
+      ${checkInOpen ? (specialCheckedIn
+        ? `<button class="btn-primary btn-sm checked" style="flex: 1;" disabled>✓ Checked In</button>`
+        : `<button class="btn-primary btn-sm" style="flex: 1;" onclick="handleSpecialCheckIn(${jsArg(event.id)})">Check In</button>`) : ''}
       ${!isPast ? `
-        <button class="btn-primary ${userRsvp ? 'btn-orange' : ''}" style="flex: 1;" onclick="(async()=>{await toggleRSVP('${event.id}');viewEventDetail('${event.id}')})()">
+        <button class="btn-primary ${userRsvp ? 'btn-orange' : ''}" style="flex: 1;" onclick="(async()=>{await toggleRSVP(${jsArg(event.id)});viewEventDetail(${jsArg(event.id)})})()">
           ${userRsvp ? "Cancel RSVP" : "RSVP — I'm Going!"}
         </button>
       ` : ''}
-      <button class="btn-secondary btn-sm" onclick="shareSpecialEvent('${escapeHtml(event.title)}', '${formatDate(event.event_date)}', '${escapeHtml(event.location_name)}')">
+      <button class="btn-secondary btn-sm" onclick="shareSpecialEvent(${jsArg(event.title)}, ${jsArg(formatDate(event.event_date))}, ${jsArg(event.location_name)})">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 4px;"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
         Invite a Friend
       </button>
@@ -352,11 +360,23 @@ async function viewEventDetail(eventId) {
           Photos
         </h3>
         <div class="event-photos-grid">
-          ${(photos || []).map(p => `<img src="${p.photo_url}">`).join('')}
+          ${(photos || []).map(p => safeImageUrl(p.photo_url) ? `<img src="${safeImageUrl(p.photo_url)}">` : '').join('')}
         </div>
       </div>
     ` : ''}
   `;
 
   navigateToSub('event-detail');
+}
+
+// Check in to a special event — records event_type 'special' with the event's
+// id so the Day One badge is earnable. The DB's one-per-Chicago-day unique
+// index (handled as 23505 inside checkIn) guards against duplicates.
+async function handleSpecialCheckIn(eventId) {
+  try {
+    await checkIn('special', eventId);
+  } catch (err) {
+    return; // checkIn already showed the error toast
+  }
+  viewEventDetail(eventId);
 }

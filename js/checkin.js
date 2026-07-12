@@ -1,20 +1,10 @@
 // ===== CHECK-IN SYSTEM =====
+// Chicago date helpers (chicagoDateStr / chicagoDay) live in js/supabase.js.
 
 async function checkIn(eventType, eventId = null) {
   if (!currentProfile) return;
 
-  // Check if already checked in today for this event type
-  const today = new Date().toISOString().split('T')[0];
-  const { data: existing } = await supabaseClient
-    .from('check_ins')
-    .select('id')
-    .eq('user_id', currentProfile.id)
-    .eq('event_type', eventType)
-    .gte('checked_in_at', today + 'T00:00:00')
-    .lte('checked_in_at', today + 'T23:59:59')
-    .maybeSingle();
-
-  if (existing) {
+  if (await hasCheckedInToday(eventType)) {
     showToast("You're already locked in for this one! See you out there.", 'info');
     return null;
   }
@@ -31,6 +21,11 @@ async function checkIn(eventType, eventId = null) {
     .single();
 
   if (error) {
+    // 23505 = the DB's one-per-day guard caught a race — treat as already in
+    if (error.code === '23505') {
+      showToast("You're already locked in for this one! See you out there.", 'info');
+      return null;
+    }
     haptic('error');
     showToast('Check-in didn\'t go through — try again.', 'error');
     throw error;
@@ -76,16 +71,15 @@ async function getCheckInCountForEvent(eventType, daysBack = 7) {
 
 async function hasCheckedInToday(eventType) {
   if (!currentProfile) return false;
-  const today = new Date().toISOString().split('T')[0];
   const { data } = await supabaseClient
     .from('check_ins')
-    .select('id')
+    .select('checked_in_at')
     .eq('user_id', currentProfile.id)
     .eq('event_type', eventType)
-    .gte('checked_in_at', today + 'T00:00:00')
-    .lte('checked_in_at', today + 'T23:59:59')
+    .order('checked_in_at', { ascending: false })
+    .limit(1)
     .maybeSingle();
-  return !!data;
+  return !!data && chicagoDateStr(new Date(data.checked_in_at)) === chicagoDateStr();
 }
 
 async function getUserCheckIns(userId) {
@@ -111,19 +105,22 @@ async function getUserStats(userId) {
 function calculateStreak(checkIns) {
   if (checkIns.length === 0) return 0;
 
-  // Group check-ins by week (Mon-Sun)
+  // Group check-ins by week (Mon-Sun), Chicago-aligned
   const weeks = new Map();
   checkIns.forEach(ci => {
-    const date = new Date(ci.checked_in_at);
-    const weekStart = getWeekStart(date);
+    const weekStart = getWeekStart(chicagoDay(ci.checked_in_at));
     const key = weekStart.toISOString().split('T')[0];
     weeks.set(key, true);
   });
 
-  // Count consecutive weeks from current week backwards
+  // Count consecutive weeks backwards. Grace: not having checked in YET this
+  // week doesn't break the streak (otherwise every streak reads 0 from Monday
+  // morning until the member's first run of the week).
   let streak = 0;
-  const now = new Date();
-  let weekStart = getWeekStart(now);
+  let weekStart = getWeekStart(chicagoDay(new Date()));
+  if (!weeks.has(weekStart.toISOString().split('T')[0])) {
+    weekStart.setDate(weekStart.getDate() - 7);
+  }
 
   while (true) {
     const key = weekStart.toISOString().split('T')[0];
@@ -156,7 +153,7 @@ function getWeekHistory(checkIns, numWeeks) {
     const weekEnd = new Date(weekStart.getTime() + 7 * 24 * 60 * 60 * 1000);
 
     const attended = checkIns.some(ci => {
-      const d = new Date(ci.checked_in_at);
+      const d = chicagoDay(ci.checked_in_at);
       return d >= weekStart && d < weekEnd;
     });
 
@@ -412,10 +409,10 @@ async function shareCheckInCard() {
       ctx.fillText(statLabels[i], statX[i], statY + 45);
     }
 
-    // Runner name
+    // Runner name (maxWidth keeps long names inside the 1080px canvas)
     ctx.fillStyle = '#FFFFFF';
     ctx.font = `800 56px ${displayFont}`;
-    ctx.fillText(currentProfile.display_name, 540, 1170);
+    ctx.fillText(currentProfile.display_name, 540, 1170, 960);
 
     // Pace group
     ctx.fillStyle = '#BFFF00';
@@ -473,12 +470,140 @@ function downloadCheckInCard(canvas) {
   showToast('Card saved — post it to your stories!', 'success');
 }
 
+// ===== STATS SHARE CARD (streak brag) =====
+async function shareStatsCard() {
+  if (!currentProfile) return;
+  try {
+    const [, logoImg, bgImg] = await Promise.all([
+      loadBigShouldersFont(),
+      loadImageSafe('./assets/logo.png'),
+      loadImageSafe('./assets/photos/above-crowd.jpg')
+    ]);
+    const displayFont = '"Big Shoulders Display", "Arial Black", Impact, sans-serif';
+    const stats = await getUserStats(currentProfile.id);
+    const paceLabel = PACE_GROUPS[currentProfile.pace_group]?.label || 'Runner';
+
+    const canvas = document.createElement('canvas');
+    canvas.width = 1080; canvas.height = 1920;
+    const ctx = canvas.getContext('2d');
+
+    ctx.fillStyle = '#0A0A0A'; ctx.fillRect(0, 0, 1080, 1920);
+    if (bgImg) {
+      ctx.globalAlpha = 0.28;
+      const r = bgImg.width / bgImg.height, cr = 1080/1920;
+      let w,h,x,y;
+      if (r > cr) { h=1920; w=h*r; x=(1080-w)/2; y=0; } else { w=1080; h=w/r; x=0; y=(1920-h)/2; }
+      ctx.drawImage(bgImg, x, y, w, h); ctx.globalAlpha = 1;
+    }
+    const grad = ctx.createLinearGradient(0, 0, 0, 1920);
+    grad.addColorStop(0, 'rgba(10,10,10,0.5)');
+    grad.addColorStop(0.45, 'rgba(10,10,10,0.85)');
+    grad.addColorStop(1, 'rgba(10,10,10,0.95)');
+    ctx.fillStyle = grad; ctx.fillRect(0, 0, 1080, 1920);
+
+    if (logoImg) ctx.drawImage(logoImg, 470, 220, 140, 140);
+
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#BFFF00';
+    ctx.font = `900 140px ${displayFont}`;
+    ctx.fillText('STILL RUNNIN', 540, 500);
+    ctx.fillStyle = 'rgba(255,255,255,0.7)';
+    ctx.font = '500 32px Inter, sans-serif';
+    ctx.fillText("Here's the damage", 540, 560);
+
+    ctx.fillStyle = '#BFFF00';
+    ctx.font = `900 280px ${displayFont}`;
+    ctx.fillText(stats.streak.toString(), 540, 880);
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = `800 72px ${displayFont}`;
+    ctx.fillText('WEEK STREAK', 540, 970);
+
+    ctx.strokeStyle = '#BFFF00'; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.moveTo(340, 1050); ctx.lineTo(740, 1050); ctx.stroke();
+
+    const stY = 1180, stLabels = ['Check-ins', 'Miles', 'Pace'];
+    const stVals = [stats.totalCheckIns.toString(), stats.totalMiles.toFixed(1), paceLabel.split(' ')[0]];
+    const stX = [270, 540, 810];
+    for (let i = 0; i < 3; i++) {
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = `900 72px ${displayFont}`;
+      ctx.fillText(stVals[i], stX[i], stY);
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      ctx.font = '500 26px Inter, sans-serif';
+      ctx.fillText(stLabels[i], stX[i], stY + 45);
+    }
+
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = `800 56px ${displayFont}`;
+    ctx.fillText(currentProfile.display_name, 540, 1400, 960);
+
+    ctx.fillStyle = '#BFFF00'; ctx.fillRect(440, 1680, 200, 3);
+    ctx.fillStyle = 'rgba(255,255,255,0.6)';
+    ctx.font = `700 32px ${displayFont}`;
+    ctx.fillText('RUN IT UP! DALLAS', 540, 1740);
+    ctx.fillStyle = 'rgba(255,255,255,0.4)';
+    ctx.font = '400 24px Inter, sans-serif';
+    ctx.fillText('@runitupdallas', 540, 1790);
+
+    canvas.toBlob(async (blob) => {
+      if (!blob) { showToast('Could not generate image — try again.', 'error'); return; }
+      const file = new File([blob], 'runitup-streak.png', { type: 'image/png' });
+      if (navigator.share && navigator.canShare?.({ files: [file] })) {
+        try {
+          await navigator.share({
+            title: 'Run It UP! Dallas',
+            text: `${stats.streak} weeks deep. Still runnin with Run It UP! Dallas. #RunItUpDallas`,
+            files: [file]
+          });
+        } catch (err) {
+          if (err.name !== 'AbortError') downloadCheckInCard(canvas);
+        }
+      } else {
+        const link = document.createElement('a');
+        link.download = 'runitup-streak.png';
+        link.href = canvas.toDataURL('image/png');
+        link.click();
+        showToast('Card saved — post it to your stories!', 'success');
+      }
+    }, 'image/png');
+  } catch (err) {
+    console.error('shareStatsCard error:', err);
+    showToast('Could not share — try again.', 'error');
+  }
+}
+
+// ===== CREW REFERRAL (invite outsiders to the crew) =====
+async function shareCrewInvite() {
+  if (!currentProfile) return;
+  if (guardGuest('crew invites')) return;
+  const inviterName = currentProfile.display_name;
+  const refLink = `https://taylormadecreative.github.io/runitup-app-site/?ref=${encodeURIComponent(currentProfile.id)}`;
+  const text = `${inviterName} invited you to Run It UP! Dallas 🏃🏾‍♂️💨\n\nWe run every week — all paces welcome. No wrong levels, no fees, just community.\n\nMonday Trinity Groves · Tuesday Deep Ellum · Saturday Fair Oaks · Sunday Levy Plaza\n\nPull up: ${refLink}`;
+  try {
+    if (navigator.share) {
+      await navigator.share({ title: 'Run It UP! Dallas', text, url: refLink });
+      return;
+    }
+  } catch (err) {
+    if (err.name === 'AbortError') return;
+  }
+  try {
+    await navigator.clipboard.writeText(text);
+    showToast('Invite copied — send it to your people!', 'success');
+  } catch {
+    showToast('Could not share — try again.', 'error');
+  }
+}
+
 // ===== BADGE SYSTEM =====
 // Badges are typographic lockups using Big Shoulders Display — the brand
 // typeface IS the badge. Each badge has a hero numeral + contextual mark
 // (subscript or suffix). Three rarity tiers: common, rare, legendary.
 function getBadgeIcon(badgeType) {
   const icons = {
+    // Welcome — "RIU" wordmark. Everyone gets this on day one.
+    welcome: `<span class="badge-lockup"><span class="badge-word">RIU</span></span>`,
+
     // First Step — "01" with "MI" subscript. Common tier.
     first_step: `<svg class="badge-stamp" viewBox="0 0 12 12" aria-hidden="true"><path d="M2 9h8M3 6l2 1 1-2 2 1 1-1" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg><span class="badge-lockup"><span class="badge-num">01</span><span class="badge-mark">MI</span></span>`,
 
@@ -513,6 +638,7 @@ function getBadgeIcon(badgeType) {
 }
 
 const BADGE_DEFINITIONS = [
+  { type: 'welcome', label: 'Welcome', description: 'Joined the crew', get icon() { return getBadgeIcon('welcome'); } },
   { type: 'first_step', label: 'First Step', description: 'First check-in', get icon() { return getBadgeIcon('first_step'); } },
   { type: 'early_bird', label: 'Early Bird', description: '5 Saturday morning runs', get icon() { return getBadgeIcon('early_bird'); } },
   { type: 'night_runner', label: 'Night Runner', description: '5 Tuesday evening runs', get icon() { return getBadgeIcon('night_runner'); } },
@@ -550,7 +676,7 @@ async function checkAndAwardBadges() {
   let hasBothSides = false;
   const weekMap = new Map();
   checkIns.forEach(ci => {
-    const weekKey = getWeekStart(new Date(ci.checked_in_at)).toISOString().split('T')[0];
+    const weekKey = getWeekStart(chicagoDay(ci.checked_in_at)).toISOString().split('T')[0];
     if (!weekMap.has(weekKey)) weekMap.set(weekKey, new Set());
     weekMap.get(weekKey).add(ci.event_type);
   });
@@ -576,6 +702,7 @@ async function checkAndAwardBadges() {
 
   // Award badges
   const toAward = [];
+  if (!earned.has('welcome')) toAward.push('welcome');
   if (!earned.has('first_step') && stats.totalCheckIns >= 1) toAward.push('first_step');
   if (!earned.has('early_bird') && saturdayCount >= 5) toAward.push('early_bird');
   if (!earned.has('night_runner') && tuesdayCount >= 5) toAward.push('night_runner');
@@ -589,7 +716,11 @@ async function checkAndAwardBadges() {
 
   const unlockedDefs = [];
   for (const badgeType of toAward) {
-    await supabaseClient.from('badges').insert({ user_id: userId, badge_type: badgeType });
+    const { error } = await supabaseClient.from('badges').insert({ user_id: userId, badge_type: badgeType });
+    // Only celebrate badges that actually persisted — a failed insert (offline,
+    // or a concurrent session already awarded it via the UNIQUE constraint)
+    // used to fire the confetti anyway, then repeat on every login.
+    if (error) continue;
     const def = BADGE_DEFINITIONS.find(b => b.type === badgeType);
     if (def) unlockedDefs.push(def);
   }
@@ -705,6 +836,7 @@ function closeBadgeUnlock() {
 // Canvas-rendered 1080x1920 IG Stories card for any earned badge.
 // Maps each badge type to a hero element + tier styling.
 const BADGE_CARD_HERO = {
+  welcome:          { hero: 'RIU',         tier: 'common' },
   first_step:       { hero: '01 MI',       tier: 'common' },
   early_bird:       { hero: '5AM',         tier: 'common' },
   night_runner:     { hero: '11 PM',       tier: 'common' },
@@ -971,7 +1103,7 @@ function checkPerfectWeek(checkIns) {
 
   const weekMap = new Map();
   monthCheckIns.forEach(ci => {
-    const d = new Date(ci.checked_in_at);
+    const d = chicagoDay(ci.checked_in_at);
     const weekKey = getWeekStart(d).toISOString().split('T')[0];
     if (!weekMap.has(weekKey)) weekMap.set(weekKey, new Set());
     weekMap.get(weekKey).add(d.getDay());
@@ -1109,7 +1241,7 @@ function closeMilestoneCelebration() {
 
 function shareMilestone(threshold, name) {
   const text = `Just hit ${threshold} check-ins with Run It UP! Dallas — ${name}! Who's running with me next?`;
-  const url = 'https://taylormadecreative.github.io/runitup-dallas/';
+  const url = 'https://taylormadecreative.github.io/runitup-app-site/';
   shareRun('Run It UP! Milestone', text, url);
   closeMilestoneCelebration();
 }

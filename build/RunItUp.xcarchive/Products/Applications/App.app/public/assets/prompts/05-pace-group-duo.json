@@ -1,0 +1,62 @@
+{
+  "user_intent": "Two runners side by side mid-stride on an urban Dallas street. One glances at the other mid-conversation. The energy of running with someone — the pace group, the buddy system. Hard athletic lighting, sweating, Nike campaign feel. This represents the Run Buddy feature.",
+  "meta": {
+    "aspect_ratio": "4:5",
+    "quality": "ultra_photorealistic",
+    "steps": 40,
+    "guidance_scale": 7.5
+  },
+  "subject": [
+    {
+      "id": "runner_1",
+      "type": "person",
+      "description": "Black woman, early 30s, fit build, warm brown skin with sweat sheen, natural TWA (teeny weeny afro) hairstyle, laughing mid-sentence while running, turning her head slightly toward runner_2, natural joy and connection visible in her expression",
+      "clothing": ["neon lime green fitted running tank", "black running leggings with a thin orange stripe down the outer seam", "black running shoes"],
+      "accessories": ["small wireless earbuds with one out hanging on her collar", "Garmin running watch"]
+    },
+    {
+      "id": "runner_2",
+      "type": "person",
+      "description": "Black man, late 20s, lean runner build, dark brown skin glistening with sweat, wide grin reacting to whatever she just said, matching her stride perfectly, arms pumping in sync, short locs tied back",
+      "clothing": ["black dri-fit tee with small orange graphic on chest", "black running shorts", "neon lime green shoes"],
+      "accessories": ["Apple Watch with black band"]
+    }
+  ],
+  "scene": {
+    "location": "Wide downtown Dallas sidewalk at night alongside a glass-fronted building, neon signs from bars and restaurants reflecting in the glass, the street visible to their left with car headlight trails, urban energy all around them",
+    "time": "8:30 PM evening",
+    "weather": "warm clear summer evening",
+    "lighting": {
+      "type": "dramatic",
+      "color_temperature": "4200K",
+      "intensity": 0.85,
+      "direction": "hard side light from neon storefronts camera right creating split lighting on their faces, rim light from a streetlight behind them, orange accent from a traffic light in the distance"
+    }
+  },
+  "technical": {
+    "camera_model": "Sony A7R V",
+    "lens": "50mm",
+    "aperture": "f/2.0",
+    "iso": "1000"
+  },
+  "materials": {
+    "primary": "concrete sidewalk",
+    "secondary": "glass building facade with neon reflections",
+    "texture": "glossy glass reflections contrasting with rough sidewalk and matte sweaty skin"
+  },
+  "composition": {
+    "framing": "shot through a gap between parked cars or a fence railing in the foreground creating natural framing layers, runners visible through the gap, adding voyeuristic documentary energy",
+    "angle": "low angle from across the street, shooting through foreground urban elements like a fire hydrant or bike rack that frame the runners, cinematic depth layering",
+    "focus_subject": "both runners sharp in the mid-ground, foreground elements soft and dark creating natural vignette, background neon bokeh"
+  },
+  "color_restriction": {
+    "palette": ["#BFFF00", "#FF6B2B", "#0A0A0A", "#1A1A1A", "#FFFFFF"],
+    "allow_blending": true
+  },
+  "quality": {
+    "resolution": "4K",
+    "sharpness": "razor-sharp on both subjects, slight motion blur on their feet and arms to convey speed",
+    "post_processing": "cinematic color grading, warm neon tones, film grain, high contrast with rich shadows, the connection between them should feel real and warm not staged, Nike We Run campaign energy"
+  },
+  "negative_prompt": "blurry, low quality, watermark, text overlay, distorted hands, extra fingers, cartoon, illustration, flat lighting, daytime, stock photo, posed, stiff, looking at camera, gym, treadmill, corporate"
+}

@@ -79,26 +79,42 @@ async function refreshCommunity() {
     .eq('user_id', currentProfile.id);
 
   const channels = (memberships || []).map(m => m.channels).filter(Boolean);
+  const channelIds = channels.map(ch => ch.id);
 
-  // Get last message for each channel
-  const channelData = await Promise.all(channels.map(async (ch) => {
-    const { data: lastMsg } = await supabaseClient
-      .from('messages')
-      .select('content, created_at, users(display_name)')
-      .eq('channel_id', ch.id)
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle();
+  // Batch: latest message per channel + unread rows — 2 queries total instead of 2 per channel
+  const lastMsgByChannel = {};
+  const unreadByChannel = {};
+  if (channelIds.length) {
+    const unreadFilter = channels
+      .map(ch => `and(channel_id.eq.${ch.id},created_at.gt."${lastReadTimestamps[ch.id] || '1970-01-01'}")`)
+      .join(',');
 
-    // Count unread
-    const lastRead = lastReadTimestamps[ch.id] || '1970-01-01';
-    const { count: unread } = await supabaseClient
-      .from('messages')
-      .select('*', { count: 'exact', head: true })
-      .eq('channel_id', ch.id)
-      .gt('created_at', lastRead);
+    const [{ data: lastMsgRows }, { data: unreadRows }] = await Promise.all([
+      supabaseClient
+        .from('channels')
+        .select('id, messages(content, created_at, users(display_name))')
+        .in('id', channelIds)
+        .order('created_at', { foreignTable: 'messages', ascending: false })
+        .limit(1, { foreignTable: 'messages' }),
+      supabaseClient
+        .from('messages')
+        .select('channel_id')
+        .or(unreadFilter)
+        .limit(1000)
+    ]);
 
-    return { ...ch, lastMsg, unread: unread || 0 };
+    (lastMsgRows || []).forEach(row => {
+      lastMsgByChannel[row.id] = row.messages?.[0] || null;
+    });
+    (unreadRows || []).forEach(row => {
+      unreadByChannel[row.channel_id] = (unreadByChannel[row.channel_id] || 0) + 1;
+    });
+  }
+
+  const channelData = channels.map(ch => ({
+    ...ch,
+    lastMsg: lastMsgByChannel[ch.id] || null,
+    unread: unreadByChannel[ch.id] || 0
   }));
 
   // Sort: channels with unread first, then by last message time
@@ -122,9 +138,37 @@ async function refreshCommunity() {
     }
   }
 
+  // Count DM unread
+  let dmUnread = 0;
+  try {
+    const { data: threads } = await supabaseClient
+      .from('dm_threads')
+      .select('id')
+      .or(`user_a.eq.${currentProfile.id},user_b.eq.${currentProfile.id}`);
+    if (threads?.length) {
+      const { count } = await supabaseClient
+        .from('dm_messages')
+        .select('id', { count: 'exact', head: true })
+        .in('thread_id', threads.map(t => t.id))
+        .neq('user_id', currentProfile.id)
+        .is('read_at', null);
+      dmUnread = count || 0;
+    }
+  } catch {}
+
   container.innerHTML = `
     <div class="channel-list-header">
       <h2>Community</h2>
+    </div>
+    <div class="dm-entry-card" onclick="openDmInbox()">
+      <div class="dm-entry-icon">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
+      </div>
+      <div class="dm-entry-text">
+        <div class="dm-entry-title">Direct Messages</div>
+        <div class="dm-entry-sub">Private 1:1 with other runners</div>
+      </div>
+      ${dmUnread > 0 ? `<span class="badge dm-unread-badge">${dmUnread}</span>` : '<svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="opacity:0.4;"><path d="M8.59 16.59 13.17 12 8.59 7.41 10 6l6 6-6 6z"/></svg>'}
     </div>
     <div class="channel-list">
       ${channelData.map(ch => {
@@ -202,9 +246,16 @@ async function openChat(channelId, channelName) {
     }, async (payload) => {
       await appendMessage(payload.new);
       scrollToBottom();
-      // Update last read
       lastReadTimestamps[channelId] = new Date().toISOString();
       localStorage.setItem('riu_last_read', JSON.stringify(lastReadTimestamps));
+    })
+    .on('postgres_changes', {
+      event: 'DELETE',
+      schema: 'public',
+      table: 'messages',
+      filter: `channel_id=eq.${channelId}`
+    }, (payload) => {
+      document.querySelector(`[data-message-id="${payload.old.id}"]`)?.remove();
     })
     .subscribe();
 }
@@ -253,23 +304,47 @@ async function loadMessages() {
 
 function renderMessage(msg) {
   const isMine = msg.user_id === currentProfile?.id;
+  const isAdmin = currentProfile?.role === 'admin';
+  const canDelete = isMine || isAdmin;
+  const imageUrl = safeImageUrl(msg.image_url);
+  // Hide messages from anyone I've blocked (or who blocked me)
+  if (!isMine && typeof isBlocked === 'function' && isBlocked(msg.user_id)) {
+    return `<div class="message-row message-hidden" data-message-id="${msg.id}"><em>Message hidden</em></div>`;
+  }
 
   return `
-    <div class="message-row ${isMine ? 'mine' : ''}">
-      <img src="${safeAvatarUrl(msg.users?.avatar_url)}" class="avatar-sm message-avatar" alt="">
+    <div class="message-row ${isMine ? 'mine' : ''}" data-message-id="${msg.id}">
+      <img src="${safeAvatarUrl(msg.users?.avatar_url)}" class="avatar-sm message-avatar" alt="" onclick="viewMemberProfile('${msg.user_id}')" style="cursor: pointer;">
       <div>
-        <div class="message-sender">
+        <div class="message-sender" ${!isMine ? `onclick="viewMemberProfile('${msg.user_id}')" style="cursor: pointer;"` : ''}>
           ${escapeHtml(msg.users?.display_name || 'Member')}
           ${paceGroupBadgeHTML(msg.users?.pace_group)}
         </div>
         <div class="message-bubble">
           ${escapeHtml(msg.content)}
-          ${msg.image_url ? `<img src="${msg.image_url}" class="message-image" alt="Shared photo">` : ''}
+          ${imageUrl ? `<img src="${imageUrl}" class="message-image" alt="Shared photo">` : ''}
+          ${canDelete ? `<button class="message-delete-btn" onclick="deleteMessage('${msg.id}')" aria-label="Delete message" title="Delete"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>` : ''}
         </div>
         <div class="message-time">${formatRelativeTime(msg.created_at)}</div>
       </div>
     </div>
   `;
+}
+
+async function deleteMessage(messageId) {
+  if (!(await confirmNative('Delete this message?', 'Delete', 'Keep'))) return;
+  const { error } = await supabaseClient
+    .from('messages')
+    .delete()
+    .eq('id', messageId);
+  if (error) {
+    console.error('[deleteMessage]', error);
+    showToast('Could not delete — try again.', 'error');
+    return;
+  }
+  // Remove from UI immediately
+  document.querySelector(`[data-message-id="${messageId}"]`)?.remove();
+  haptic('success');
 }
 
 async function appendMessage(msg) {
@@ -296,13 +371,13 @@ async function sendMessage() {
 
   input.value = '';
 
-  try {
-    await supabaseClient.from('messages').insert({
-      channel_id: activeChannelId,
-      user_id: currentProfile.id,
-      content: content
-    });
-  } catch (err) {
+  const { error } = await supabaseClient.from('messages').insert({
+    channel_id: activeChannelId,
+    user_id: currentProfile.id,
+    content: content
+  });
+  if (error) {
+    console.error('[sendMessage]', error);
     showToast("That message didn't go through — try one more time.", 'error');
     input.value = content;
   }
@@ -317,12 +392,13 @@ async function handleChatPhoto(event) {
     const path = `${activeChannelId}/${Date.now()}.${ext}`;
     const url = await uploadFile('chat-images', path, file);
 
-    await supabaseClient.from('messages').insert({
+    const { error } = await supabaseClient.from('messages').insert({
       channel_id: activeChannelId,
       user_id: currentProfile.id,
       content: 'Photo',
       image_url: url
     });
+    if (error) throw error;
   } catch (err) {
     showToast("Photo didn't upload — try again.", 'error');
   }
