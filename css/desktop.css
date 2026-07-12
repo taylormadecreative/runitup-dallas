@@ -1,0 +1,150 @@
+/* ===== DESKTOP STAGE =====
+   On wide screens (web only — inside the iOS app the viewport is always
+   phone-width, so none of this applies) the app renders as a centered
+   phone-width column on a branded stage, instead of stretching a phone
+   layout across a monitor. */
+
+@media (min-width: 940px) {
+  :root {
+    --stage-w: 430px;
+  }
+
+  /* Stage backdrop: campaign photo, heavily dimmed, with a vignette */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background: url('../assets/photos/pack-street.jpg') center 30% / cover no-repeat;
+    filter: brightness(0.22) saturate(0.85);
+  }
+  body::after {
+    content: '';
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    background: radial-gradient(ellipse at center, transparent 30%, rgba(10, 10, 10, 0.75) 100%);
+  }
+
+  /* The app itself becomes a centered phone column with its own frame.
+     Everything inside (header, tab bar, screens) is laid out relative to
+     these containers already, so nothing else changes. */
+  #app-shell,
+  #screen-splash.active,
+  #screen-login.active,
+  #screen-signup.active,
+  #screen-onboarding.active {
+    position: fixed;
+    inset: auto;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: var(--stage-w);
+    height: min(880px, calc(100vh - 48px));
+    border-radius: 28px;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    box-shadow: 0 40px 120px rgba(0, 0, 0, 0.75), 0 0 80px rgba(191, 255, 0, 0.06);
+    z-index: 1;
+  }
+
+  /* Auth screens that aren't flex by default need block/flex display kept —
+     they already set their own display when .active; only geometry changes. */
+
+  /* Toasts + offline banner follow the phone column instead of the viewport */
+  #toast-container {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: calc(var(--stage-w) - 32px);
+    top: calc(50% - min(440px, 50vh - 24px) + var(--header-height) + var(--space-md));
+  }
+  #offline-banner {
+    left: 50%;
+    right: auto;
+    transform: translateX(-50%);
+    width: var(--stage-w);
+    top: calc(50% - min(440px, 50vh - 24px) + var(--header-height));
+  }
+
+  /* Full-screen overlays (confirm, badge unlock, share cards) keep dimming
+     the whole desktop — their modals are already max-width constrained. */
+}
+
+/* Brand rail beside the phone — only when there's real room for it */
+#desktop-rail { display: none; }
+
+@media (min-width: 1200px) {
+  #desktop-rail {
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    position: fixed;
+    z-index: 1;
+    top: 50%;
+    transform: translateY(-50%);
+    right: calc(50% + var(--stage-w) / 2 + 56px);
+    width: 300px;
+  }
+  #desktop-rail .rail-logo {
+    width: 76px;
+    height: 76px;
+    border-radius: 50%;
+    box-shadow: 0 0 40px rgba(191, 255, 0, 0.25);
+  }
+  #desktop-rail .rail-word {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 2.6rem;
+    line-height: 0.95;
+    text-transform: uppercase;
+    letter-spacing: -0.01em;
+    color: var(--color-text);
+  }
+  #desktop-rail .rail-word span { color: var(--color-primary); }
+  #desktop-rail .rail-tag {
+    color: rgba(255, 255, 255, 0.72);
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    max-width: 260px;
+  }
+  #desktop-rail .rail-links {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 6px;
+  }
+  #desktop-rail .rail-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    width: fit-content;
+    font-family: var(--font-display);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    font-size: 0.875rem;
+    padding: 13px 22px;
+    border-radius: 12px;
+    text-decoration: none;
+    background: var(--color-primary);
+    color: var(--color-bg);
+    box-shadow: 0 0 22px rgba(191, 255, 0, 0.25);
+    transition: box-shadow 0.2s ease, transform 0.15s ease;
+  }
+  #desktop-rail .rail-btn:hover { box-shadow: 0 0 40px rgba(191, 255, 0, 0.45); }
+  #desktop-rail .rail-btn:active { transform: scale(0.97); }
+  #desktop-rail .rail-btn.ghost {
+    background: rgba(10, 10, 10, 0.5);
+    color: var(--color-text);
+    border: 2px solid rgba(255, 255, 255, 0.25);
+    box-shadow: none;
+  }
+  #desktop-rail .rail-btn.ghost:hover { border-color: var(--color-primary); color: var(--color-primary); }
+  #desktop-rail .rail-note {
+    color: rgba(255, 255, 255, 0.45);
+    font-size: 0.75rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+}

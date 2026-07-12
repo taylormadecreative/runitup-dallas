@@ -1,4 +1,4 @@
-const CACHE_NAME = 'runitup-v15';
+const CACHE_NAME = 'runitup-v16';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -12,6 +12,7 @@ const STATIC_ASSETS = [
   './css/community.css',
   './css/stats.css',
   './css/profile.css',
+  './css/desktop.css',
   './assets/vendor/supabase.min.js',
   './js/app.js',
   './js/supabase.js',
