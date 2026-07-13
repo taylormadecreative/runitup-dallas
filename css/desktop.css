@@ -1,150 +1,180 @@
-/* ===== DESKTOP STAGE =====
-   On wide screens (web only — inside the iOS app the viewport is always
-   phone-width, so none of this applies) the app renders as a centered
-   phone-width column on a branded stage, instead of stretching a phone
-   layout across a monitor. */
+/* ===== DESKTOP WEB LAYOUT =====
+   The app, laid out for a real browser window: left sidebar nav, wide content
+   area. Only applies on the web at >=940px — inside the iOS app the viewport is
+   always phone-width, so none of this ever activates. */
 
 @media (min-width: 940px) {
-  :root {
-    --stage-w: 430px;
-  }
 
-  /* Stage backdrop: campaign photo, heavily dimmed, with a vignette */
-  body::before {
-    content: '';
+  /* ---- Shell: sidebar + header + content grid ---- */
+  #app-shell {
+    display: grid;
+    grid-template-columns: 248px minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr);
+    grid-template-areas: "sidebar main";
     position: fixed;
     inset: 0;
-    z-index: 0;
-    background: url('../assets/photos/pack-street.jpg') center 30% / cover no-repeat;
-    filter: brightness(0.22) saturate(0.85);
   }
-  body::after {
+
+  /* The mobile top bar is redundant on desktop — the sidebar carries the logo
+     and the Profile nav item. Content gets the full height instead. */
+  #app-header { display: none; }
+
+  /* ---- Bottom tab bar becomes the left sidebar ---- */
+  #tab-bar {
+    grid-area: sidebar;
+    flex-direction: column;
+    align-items: stretch;
+    justify-content: flex-start;
+    gap: 4px;
+    height: 100%;
+    padding: 0 12px 24px;
+    border-top: 0;
+    border-right: 1px solid var(--color-surface-hover);
+    background: var(--color-surface);
+    overflow-y: auto;
+  }
+  /* Brand lockup above the nav */
+  #tab-bar::before {
     content: '';
-    position: fixed;
-    inset: 0;
-    z-index: 0;
-    background: radial-gradient(ellipse at center, transparent 30%, rgba(10, 10, 10, 0.75) 100%);
+    display: block;
+    height: 72px;
+    margin: 0 -12px 12px;
+    border-bottom: 1px solid var(--color-surface-hover);
+    background: url('../assets/logo.png') 20px center / 40px 40px no-repeat;
+    flex: none;
   }
-
-  /* The app itself becomes a centered phone column with its own frame.
-     Everything inside (header, tab bar, screens) is laid out relative to
-     these containers already, so nothing else changes. */
-  #app-shell,
-  #screen-splash.active,
-  #screen-login.active,
-  #screen-signup.active,
-  #screen-onboarding.active {
-    position: fixed;
-    inset: auto;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    width: var(--stage-w);
-    height: min(880px, calc(100vh - 48px));
-    border-radius: 28px;
-    overflow: hidden;
-    border: 1px solid rgba(255, 255, 255, 0.14);
-    box-shadow: 0 40px 120px rgba(0, 0, 0, 0.75), 0 0 80px rgba(191, 255, 0, 0.06);
-    z-index: 1;
-  }
-
-  /* Auth screens that aren't flex by default need block/flex display kept —
-     they already set their own display when .active; only geometry changes. */
-
-  /* Toasts + offline banner follow the phone column instead of the viewport */
-  #toast-container {
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-    width: calc(var(--stage-w) - 32px);
-    top: calc(50% - min(440px, 50vh - 24px) + var(--header-height) + var(--space-md));
-  }
-  #offline-banner {
-    left: 50%;
-    right: auto;
-    transform: translateX(-50%);
-    width: var(--stage-w);
-    top: calc(50% - min(440px, 50vh - 24px) + var(--header-height));
-  }
-
-  /* Full-screen overlays (confirm, badge unlock, share cards) keep dimming
-     the whole desktop — their modals are already max-width constrained. */
-}
-
-/* Brand rail beside the phone — only when there's real room for it */
-#desktop-rail { display: none; }
-
-@media (min-width: 1200px) {
-  #desktop-rail {
-    display: flex;
-    flex-direction: column;
-    gap: 18px;
-    position: fixed;
-    z-index: 1;
-    top: 50%;
-    transform: translateY(-50%);
-    right: calc(50% + var(--stage-w) / 2 + 56px);
-    width: 300px;
-  }
-  #desktop-rail .rail-logo {
-    width: 76px;
-    height: 76px;
-    border-radius: 50%;
-    box-shadow: 0 0 40px rgba(191, 255, 0, 0.25);
-  }
-  #desktop-rail .rail-word {
-    font-family: var(--font-display);
-    font-weight: 900;
-    font-size: 2.6rem;
-    line-height: 0.95;
-    text-transform: uppercase;
-    letter-spacing: -0.01em;
-    color: var(--color-text);
-  }
-  #desktop-rail .rail-word span { color: var(--color-primary); }
-  #desktop-rail .rail-tag {
-    color: rgba(255, 255, 255, 0.72);
-    font-size: 0.9375rem;
-    line-height: 1.55;
-    max-width: 260px;
-  }
-  #desktop-rail .rail-links {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    margin-top: 6px;
-  }
-  #desktop-rail .rail-btn {
-    display: inline-flex;
+  #tab-bar .tab {
+    flex-direction: row;
     align-items: center;
-    gap: 10px;
-    width: fit-content;
+    justify-content: flex-start;
+    gap: 14px;
+    width: 100%;
+    padding: 13px 16px;
+    border-radius: 12px;
+    color: var(--color-text-muted);
+    transition: background 0.18s ease, color 0.18s ease;
+  }
+  #tab-bar .tab:hover { background: var(--color-surface-hover); color: var(--color-text); }
+  #tab-bar .tab.active { background: rgba(191, 255, 0, 0.12); color: var(--color-primary); }
+  #tab-bar .tab .tab-icon { width: 22px; height: 22px; flex: none; }
+  #tab-bar .tab .tab-label {
     font-family: var(--font-display);
     font-weight: 800;
     text-transform: uppercase;
-    letter-spacing: 0.05em;
-    font-size: 0.875rem;
-    padding: 13px 22px;
-    border-radius: 12px;
-    text-decoration: none;
-    background: var(--color-primary);
-    color: var(--color-bg);
-    box-shadow: 0 0 22px rgba(191, 255, 0, 0.25);
-    transition: box-shadow 0.2s ease, transform 0.15s ease;
+    letter-spacing: 0.04em;
+    font-size: 0.9375rem;
   }
-  #desktop-rail .rail-btn:hover { box-shadow: 0 0 40px rgba(191, 255, 0, 0.45); }
-  #desktop-rail .rail-btn:active { transform: scale(0.97); }
-  #desktop-rail .rail-btn.ghost {
-    background: rgba(10, 10, 10, 0.5);
-    color: var(--color-text);
-    border: 2px solid rgba(255, 255, 255, 0.25);
-    box-shadow: none;
+  /* Unread badge rides the right edge of the row */
+  #tab-bar .tab .badge { position: static; margin-left: auto; }
+
+  /* ---- Content area: centered, capped, generous gutters ---- */
+  #app-main { grid-area: main; }
+  #app-main > .screen {
+    padding: 32px max(40px, calc(50% - 560px)) 64px;
   }
-  #desktop-rail .rail-btn.ghost:hover { border-color: var(--color-primary); color: var(--color-primary); }
-  #desktop-rail .rail-note {
-    color: rgba(255, 255, 255, 0.45);
-    font-size: 0.75rem;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
+
+  /* Wide-screen home: hero spans, cards flow in columns */
+  #screen-home .quick-stats-row { gap: var(--space-md); }
+  #screen-home .home-hero { border-radius: 20px; overflow: hidden; }
+  #screen-home .highlights-scroll { flex-wrap: wrap; overflow: visible; }
+  /* Buttons shouldn't stretch the full width of a monitor */
+  #screen-home .hero-action-row { max-width: 460px; }
+  #screen-home .hero-action-primary { flex: 1; }
+
+  /* Chat + DM threads get real height on a big screen */
+  #screen-chat .chat-messages,
+  #screen-dm-thread .dm-messages { max-height: none; }
+
+  /* Community + chat force `padding: 0 !important` (full-bleed on a phone),
+     so cap and center their content instead of padding the screen. */
+  #screen-community.active > *,
+  #screen-chat.active > *,
+  #screen-dm-inbox.active > *,
+  #screen-dm-thread.active > * {
+    width: 100%;
+    max-width: 1120px;
+    margin-left: auto;
+    margin-right: auto;
   }
+  #screen-chat.active > .chat-messages,
+  #screen-dm-thread.active > .dm-messages { max-width: 900px; }
+  #screen-community.active { padding-top: 24px !important; }
+
+  /* Full-width CTAs look broken on a monitor — cap them */
+  #app-main > .screen .btn-primary:not(.btn-sm):not(.hero-action-primary),
+  #app-main > .screen .btn-secondary:not(.btn-sm) {
+    max-width: 460px;
+  }
+  #screen-stats .btn-primary { margin-left: auto; margin-right: auto; }
+  /* Profile action stack: one centered column of equal-width buttons */
+  #screen-profile .btn-primary,
+  #screen-profile .btn-secondary,
+  #screen-profile .btn-logout {
+    max-width: 460px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  /* ---- Toasts / offline banner respect the sidebar ---- */
+  #toast-container {
+    left: calc(248px + 40px);
+    right: 40px;
+    top: var(--space-md);
+    max-width: 460px;
+  }
+  #offline-banner {
+    left: 248px;
+    top: 0;
+  }
+
+  /* ---- Auth screens: centered card over the crew photo ---- */
+  #screen-login.active,
+  #screen-signup.active,
+  #screen-onboarding.active {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 48px 24px;
+    background: linear-gradient(rgba(10, 10, 10, 0.86), rgba(10, 10, 10, 0.94)),
+                url('../assets/photos/pack-street.jpg') center 30% / cover no-repeat fixed;
+  }
+  #screen-login.active > *,
+  #screen-signup.active > * { width: 100%; }
+  #screen-login.active,
+  #screen-signup.active { flex-direction: column; }
+  #screen-login .auth-form,
+  #screen-signup .auth-form,
+  #screen-login .auth-header,
+  #screen-signup .auth-header,
+  #screen-login .signup-benefits,
+  #screen-signup .signup-benefits {
+    width: 100%;
+    max-width: 440px;
+    margin-left: auto;
+    margin-right: auto;
+  }
+  #screen-onboarding .onboarding-step {
+    max-width: 520px;
+    margin: 0 auto;
+  }
+
+  /* Splash: two-column — brand statement beside the entry buttons */
+  #screen-splash.active .splash-hero {
+    background-position: center 25%;
+  }
+  #screen-splash.active .splash-hero-overlay {
+    max-width: 720px;
+    margin: 0 auto;
+  }
+  #screen-splash.active .splash-buttons { max-width: 420px; margin: 0 auto; }
 }
+
+/* ===== WEB-ONLY: no GPS run tracking in the browser =====
+   The run tracker is an iPhone-app feature (background GPS). On the web the
+   START RUN button is hidden entirely rather than half-working. */
+html.web .hero-action-run,
+html.web .btn-start-run {
+  display: none !important;
+}
+/* Check In then takes the full hero action row */
+html.web .hero-action-row .hero-action-primary { flex: 1; }

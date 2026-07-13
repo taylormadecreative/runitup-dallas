@@ -162,6 +162,12 @@ async function _releaseWakeLock() {
 // Show a pre-run screen with GPS warm-up + explicit START button.
 // Nothing is tracked until the user confirms they're ready.
 async function openRunTrackerPrep() {
+  // GPS run tracking is an iPhone-app feature — the browser can't track a run
+  // reliably with the screen off. Everything else in the app works on the web.
+  if (!window.Capacitor?.isNativePlatform()) {
+    showToast('Run tracking lives in the iPhone app — everything else works right here.', 'info');
+    return;
+  }
   if (RUN_STATE.status !== 'idle') {
     // Already tracking — just reopen the tracker
     showRunTrackerUI();

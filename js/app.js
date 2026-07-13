@@ -89,29 +89,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Offline banner — listeners registered once here
   initOfflineBanner();
-
-  // Desktop brand rail (web only; CSS hides it below 1200px)
-  if (!window.Capacitor?.isNativePlatform()) initDesktopRail();
 });
 
-// ===== DESKTOP BRAND RAIL =====
-// Sits beside the phone column on wide screens (see css/desktop.css).
-function initDesktopRail() {
-  if (document.getElementById('desktop-rail')) return;
-  const rail = document.createElement('aside');
-  rail.id = 'desktop-rail';
-  rail.innerHTML = `
-    <img class="rail-logo" src="assets/logo.png" alt="">
-    <div class="rail-word">Run It <span>UP!</span></div>
-    <p class="rail-tag">Dallas's social run club. Four runs a week, every pace welcome — no fees, just community.</p>
-    <div class="rail-links">
-      <a class="rail-btn" href="https://apps.apple.com/us/app/run-it-up-dallas/id6761876137" target="_blank" rel="noopener">Get the iPhone app</a>
-      <a class="rail-btn ghost" href="about.html">Runs &amp; schedule</a>
-      <a class="rail-btn ghost" href="https://instagram.com/runitupdallas" target="_blank" rel="noopener">@runitupdallas</a>
-    </div>
-    <p class="rail-note">Works right here in your browser too</p>
-  `;
-  document.body.appendChild(rail);
+// Mark the web build so CSS can hide iPhone-only features (GPS run tracking).
+// Runs immediately — before first paint — so the button never flashes.
+if (!window.Capacitor?.isNativePlatform()) {
+  document.documentElement.classList.add('web');
 }
 
 // ===== OFFLINE BANNER =====
