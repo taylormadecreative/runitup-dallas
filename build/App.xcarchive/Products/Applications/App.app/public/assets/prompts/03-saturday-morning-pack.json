@@ -1,0 +1,76 @@
+{
+  "user_intent": "Pack of runners on a Saturday morning run at golden hour. Low angle power shot making them look heroic. Urban park trail with city visible in the background. Hard dramatic morning light. Sweat and energy. Nike ad campaign style.",
+  "meta": {
+    "aspect_ratio": "9:16",
+    "quality": "ultra_photorealistic",
+    "steps": 40,
+    "guidance_scale": 7.5
+  },
+  "subject": [
+    {
+      "id": "runner_1",
+      "type": "person",
+      "description": "Black man, early 30s, muscular build, dark brown skin drenched in sweat, sweat flying off his arms mid-stride, shaved head glistening, powerful running form with high knee drive, mouth slightly open breathing hard",
+      "clothing": ["neon lime green moisture-wicking tank top darkened with sweat patches", "black running shorts", "white Nike Pegasus shoes"],
+      "accessories": ["black Oakley sport sunglasses pushed up on forehead"]
+    },
+    {
+      "id": "runner_2",
+      "type": "person",
+      "description": "Black woman, mid 30s, strong build, medium brown skin with visible sweat, bright genuine smile showing she is in her element, cornrows pulled into a low bun, running in sync with the group",
+      "clothing": ["orange racerback tank top", "black bike shorts", "neon lime green running shoes"],
+      "accessories": ["Apple Watch with orange band"]
+    },
+    {
+      "id": "runner_3",
+      "type": "person",
+      "description": "Black man, early 20s, lean distance runner build, light brown skin, focused straight-ahead gaze, slight sweat sheen on forehead, natural hair in a short fade",
+      "clothing": ["black sleeveless compression shirt", "lime green running shorts", "black shoes"],
+      "accessories": []
+    },
+    {
+      "id": "runner_4",
+      "type": "person",
+      "description": "Black woman, late 20s, curvy athletic build, dark skin, joyful expression, loc bun on top of her head, mid-stride slightly behind the front runners",
+      "clothing": ["black sports bra with orange band", "black leggings", "white shoes"],
+      "accessories": ["small hydration belt"]
+    }
+  ],
+  "scene": {
+    "location": "Wide concrete trail through Fair Oaks Park in Dallas Texas with mature trees lining both sides, Dallas skyline visible in the far background through golden morning haze, park benches and grass flanking the trail",
+    "time": "7:45 AM early morning golden hour",
+    "weather": "clear summer morning, golden haze hanging in the air, warm light cutting through tree canopy creating god rays",
+    "lighting": {
+      "type": "golden hour",
+      "color_temperature": "3200K",
+      "intensity": 0.85,
+      "direction": "hard directional golden light from camera right at a low angle, creating long dramatic shadows stretching left across the trail, backlighting sweat and creating halo rim light on hair and shoulders"
+    }
+  },
+  "technical": {
+    "camera_model": "Sony A1",
+    "lens": "24mm",
+    "aperture": "f/2.8",
+    "iso": "200"
+  },
+  "materials": {
+    "primary": "concrete trail surface",
+    "secondary": "green grass and mature oak trees",
+    "texture": "rough concrete contrasting with smooth sweaty athletic skin and soft morning light"
+  },
+  "composition": {
+    "framing": "overhead drone shot looking straight down, runners casting long dramatic morning shadows on the trail, their shadows stretching twice their body length",
+    "angle": "bird's eye view, camera directly overhead looking down at the pack of runners from 30 feet up, their shadows radiating outward like a starburst pattern on the trail",
+    "focus_subject": "the geometric pattern of runners and their long golden shadows, the contrast between the dark figures and bright trail surface"
+  },
+  "color_restriction": {
+    "palette": ["#BFFF00", "#FF6B2B", "#0A0A0A", "#FFD700", "#FFFFFF"],
+    "allow_blending": true
+  },
+  "quality": {
+    "resolution": "4K",
+    "sharpness": "tack-sharp on lead runners, natural depth fall-off on trailing pack",
+    "post_processing": "warm cinematic color grading, golden tones, lifted shadows with retained contrast, slight film grain, Nike Running editorial grade, the golden morning light should feel almost holy"
+  },
+  "negative_prompt": "blurry, low quality, watermark, text overlay, distorted hands, extra fingers, cartoon, illustration, flat lighting, overcast dull sky, treadmill, gym, stock photo, posed group shot, standing still, corporate"
+}

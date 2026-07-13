@@ -1,0 +1,55 @@
+{
+  "user_intent": "Solo female runner at night in downtown Dallas. Hard rim lighting like Oakley campaign. She is mid-run, sweating, powerful. Dallas skyline visible behind her. Neon lime green light accents. Athletic ad campaign photography.",
+  "meta": {
+    "aspect_ratio": "9:16",
+    "quality": "ultra_photorealistic",
+    "steps": 40,
+    "guidance_scale": 7.5
+  },
+  "subject": [
+    {
+      "id": "runner_1",
+      "type": "person",
+      "description": "Black woman, late 20s, athletic build, deep dark brown skin covered in a visible layer of sweat, beads of sweat running down her temples and neck, expression of fierce determination and focus, mid-stride with one foot off the ground, defined arm muscles catching hard light, box braids pulled back into a high ponytail swinging with motion",
+      "clothing": ["fitted black long-sleeve crop top with mesh ventilation panels", "neon lime green high-waisted running shorts", "black Nike ZoomX running shoes with lime green swoosh"],
+      "accessories": ["reflective running vest with thin orange piping", "Garmin watch on left wrist glowing green"]
+    }
+  ],
+  "scene": {
+    "location": "Downtown Dallas Texas street at night, Reunion Tower and Dallas skyline silhouetted in the background, urban concrete sidewalk with a commercial district feel, glass building facades reflecting neon, streetlights casting hard pools of light on the sidewalk",
+    "time": "10 PM night",
+    "weather": "warm and humid, slight atmospheric haze from summer heat, no rain",
+    "lighting": {
+      "type": "rim",
+      "color_temperature": "4000K",
+      "intensity": 0.95,
+      "direction": "hard rim light from directly behind creating a bright edge outline around her entire silhouette, secondary lime green neon fill from a storefront sign camera left, faint orange accent light from a crosswalk signal camera right"
+    }
+  },
+  "technical": {
+    "camera_model": "Canon EOS R3",
+    "lens": "85mm",
+    "aperture": "f/1.8",
+    "iso": "1250"
+  },
+  "materials": {
+    "primary": "concrete sidewalk with painted lane markings",
+    "secondary": "glass and steel building facades",
+    "texture": "smooth sweaty skin contrasting with rough urban concrete"
+  },
+  "composition": {
+    "framing": "dutch angle tilted 15 degrees, runner filling the left side of frame, city lights streaking diagonally across the background",
+    "angle": "worm's eye view, camera on the ground shooting straight up at her as she runs over the camera, dramatic foreshortening of her legs, her face powerful above",
+    "focus_subject": "her leading foot and lower leg razor sharp in foreground with her determined face sharp above, extreme depth and drama"
+  },
+  "color_restriction": {
+    "palette": ["#BFFF00", "#FF6B2B", "#0A0A0A", "#1A1A1A"],
+    "allow_blending": true
+  },
+  "quality": {
+    "resolution": "4K",
+    "sharpness": "razor-sharp on subject, creamy bokeh background",
+    "post_processing": "cinematic color grading, deep crushed blacks, neon lime green and orange accent tones, slight film grain, high contrast with retained shadow detail, Oakley campaign grade processing"
+  },
+  "negative_prompt": "blurry, low quality, watermark, text overlay, distorted hands, extra fingers, cartoon, illustration, soft flat lighting, overexposed, stock photo, posed, stiff, smiling, casual, gym interior, treadmill"
+}

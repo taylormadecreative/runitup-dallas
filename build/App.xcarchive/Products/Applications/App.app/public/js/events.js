@@ -1,0 +1,382 @@
+// ===== EVENTS SCREEN =====
+let eventsView = 'list'; // 'list' or 'calendar'
+let calendarMonth = new Date().getMonth();
+let calendarYear = new Date().getFullYear();
+
+async function initEvents() {
+  await refreshEvents();
+}
+
+async function refreshEvents() {
+  const container = document.getElementById('screen-events');
+  if (!currentProfile) return;
+  container.innerHTML = '<div class="loading-screen"><div class="spinner"></div></div>';
+
+  // Get buddy count dates for next runs
+  const nextMondayDate = getNextRunDate(1).toISOString().split('T')[0];
+  const nextTuesdayDate = getNextRunDate(2).toISOString().split('T')[0];
+  const nextSaturdayDate = getNextRunDate(6).toISOString().split('T')[0];
+  const nextSundayDate = getNextRunDate(0).toISOString().split('T')[0];
+
+  // Helper to build a buddy count query
+  const buddyCountQuery = (day, date) => supabaseClient
+    .from('buddy_requests')
+    .select('*', { count: 'exact', head: true })
+    .eq('run_day', day)
+    .eq('run_date', date)
+    .is('matched_with', null);
+
+  // Run all independent queries in parallel
+  const [
+    mondayCount,
+    tuesdayCount,
+    saturdayCount,
+    sundayCount,
+    mondayBuddiesRes,
+    tuesdayBuddiesRes,
+    saturdayBuddiesRes,
+    sundayBuddiesRes,
+    mondayChecked,
+    tuesdayChecked,
+    saturdayChecked,
+    sundayChecked
+  ] = await Promise.all([
+    getCheckInCountForEvent('weekly_monday', 7),
+    getCheckInCountForEvent('weekly_tuesday', 7),
+    getCheckInCountForEvent('weekly_saturday', 7),
+    getCheckInCountForEvent('weekly_sunday', 7),
+    buddyCountQuery('monday', nextMondayDate),
+    buddyCountQuery('tuesday', nextTuesdayDate),
+    buddyCountQuery('saturday', nextSaturdayDate),
+    buddyCountQuery('sunday', nextSundayDate),
+    hasCheckedInToday('weekly_monday'),
+    hasCheckedInToday('weekly_tuesday'),
+    hasCheckedInToday('weekly_saturday'),
+    hasCheckedInToday('weekly_sunday')
+  ]);
+
+  const mondayBuddies = mondayBuddiesRes.count;
+  const tuesdayBuddies = tuesdayBuddiesRes.count;
+  const saturdayBuddies = saturdayBuddiesRes.count;
+  const sundayBuddies = sundayBuddiesRes.count;
+
+  // Get special events
+  const { data: specialEvents } = await supabaseClient
+    .from('special_events')
+    .select('*')
+    .order('event_date');
+
+  const now = new Date();
+  const upcoming = (specialEvents || []).filter(e => new Date(e.event_date) >= now);
+  const past = (specialEvents || []).filter(e => new Date(e.event_date) < now);
+
+  // Get RSVP counts
+  const rsvpCounts = {};
+  if (specialEvents?.length) {
+    const { data: rsvps } = await supabaseClient
+      .from('event_rsvps')
+      .select('event_id')
+      .in('event_id', specialEvents.map(e => e.id));
+    (rsvps || []).forEach(r => {
+      rsvpCounts[r.event_id] = (rsvpCounts[r.event_id] || 0) + 1;
+    });
+  }
+
+  container.innerHTML = `
+    <!-- Weekly Runs -->
+    <div>
+      <div class="events-section-header">
+        <h2>Weekly Runs</h2>
+      </div>
+      <div class="weekly-runs">
+        ${renderWeeklyRunCard(WEEKLY_RUNS[0], mondayCount, mondayBuddies || 0, mondayChecked, nextMondayDate)}
+        ${renderWeeklyRunCard(WEEKLY_RUNS[1], tuesdayCount, tuesdayBuddies || 0, tuesdayChecked, nextTuesdayDate)}
+        ${renderWeeklyRunCard(WEEKLY_RUNS[2], saturdayCount, saturdayBuddies || 0, saturdayChecked, nextSaturdayDate)}
+        ${renderWeeklyRunCard(WEEKLY_RUNS[3], sundayCount, sundayBuddies || 0, sundayChecked, nextSundayDate)}
+      </div>
+    </div>
+
+    <!-- Special Events -->
+    <div>
+      <div class="events-section-header">
+        <h2>Special Events</h2>
+        <div class="calendar-toggle">
+          <button class="${eventsView === 'list' ? 'active' : ''}" onclick="setEventsView('list')">List</button>
+          <button class="${eventsView === 'calendar' ? 'active' : ''}" onclick="setEventsView('calendar')">Calendar</button>
+        </div>
+      </div>
+
+      ${eventsView === 'list' ? `
+        <div class="special-events">
+          ${upcoming.length === 0 && past.length === 0 ? `
+            <div class="empty-state">
+              <p>No special events on the calendar yet. Weekly runs are still going strong — pull up Monday, Tuesday, Saturday, or Sunday!</p>
+            </div>
+          ` : ''}
+          ${upcoming.map(e => renderSpecialEventCard(e, rsvpCounts[e.id] || 0, false)).join('')}
+          ${past.length > 0 ? `
+            <h3 class="past-events-header">Past Events</h3>
+            ${past.map(e => renderSpecialEventCard(e, rsvpCounts[e.id] || 0, true)).join('')}
+          ` : ''}
+        </div>
+      ` : renderCalendarView(specialEvents || [])}
+    </div>
+  `;
+}
+
+// Photo map for weekly run cards
+const WEEKLY_RUN_PHOTOS = {
+  'monday': './assets/photos/motion-blur.jpg',
+  'tuesday': './assets/photos/night-sprint.jpg',
+  'saturday': './assets/photos/solo-skyline.jpg',
+  'sunday': './assets/photos/low-angle-film.jpg'
+};
+
+function renderWeeklyRunCard(run, lastCount, buddyCount, checkedIn, nextDate) {
+  const nextRunDate = getNextRunDate(run.dayOfWeek);
+  const windowOpen = isCheckInWindow(nextRunDate);
+  const photo = WEEKLY_RUN_PHOTOS[run.day] || '';
+
+  let btnHtml = '';
+  if (checkedIn) {
+    btnHtml = `<button class="btn-primary btn-sm checked" disabled>✓ Checked In</button>`;
+  } else if (windowOpen) {
+    btnHtml = `<button class="btn-primary btn-sm" onclick="handleCheckIn('${run.eventType}')">Check In</button>`;
+  } else {
+    btnHtml = `<button class="btn-primary btn-sm" disabled>Check In</button>`;
+  }
+
+  return `
+    <div class="weekly-run-card">
+      ${photo ? `<img src="${photo}" alt="${run.location}" class="weekly-run-img">` : ''}
+      <div class="weekly-run-header">
+        <span class="weekly-run-day">${run.label}</span>
+        <span class="weekly-run-time">${run.time}</span>
+      </div>
+      <div class="weekly-run-details">
+        ${run.location} &middot; ${run.distance} &middot; <a href="${run.mapsUrl}" target="_blank">Directions</a>
+      </div>
+      <div class="weekly-run-stats">${lastCount} showed up last week</div>
+      <div class="weekly-run-actions">
+        ${btnHtml}
+        <button class="btn-buddy" onclick="openBuddyBoard('${run.day}', '${nextDate}')">
+          ${buddyCount > 0 ? `See Buddies (${buddyCount})` : 'Find a Buddy'}
+        </button>
+        <button class="btn-share" onclick="event.stopPropagation(); shareWeeklyRun('${run.label}', '${run.location}', '${run.time}', '${run.address}')" aria-label="Share this run">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+        </button>
+      </div>
+      ${buddyCount > 0 ? `<div class="buddy-count">${buddyCount} looking for a buddy</div>` : ''}
+    </div>
+  `;
+}
+
+function renderSpecialEventCard(event, rsvpCount, isPast) {
+  return `
+    <div class="special-event-card" onclick="viewEventDetail(${jsArg(event.id)})">
+      ${safeImageUrl(event.cover_image_url) ? `<img src="${safeImageUrl(event.cover_image_url)}" alt="${escapeAttr(event.title)}">` : `<div class="event-no-cover">RIU</div>`}
+      <div class="special-event-body">
+        <h3>${escapeHtml(event.title)}</h3>
+        <div class="special-event-meta">
+          <span>${formatDate(event.event_date)} &middot; ${formatTime(event.event_date)}</span>
+          <span>${escapeHtml(event.location_name)}</span>
+        </div>
+        <div class="special-event-actions">
+          <div class="rsvp-count"><strong>${rsvpCount}</strong> going</div>
+          <button class="btn-share" onclick="event.stopPropagation(); shareSpecialEvent(${jsArg(event.title)}, ${jsArg(formatDate(event.event_date))}, ${jsArg(event.location_name)})" aria-label="Share event">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+          </button>
+          ${!isPast ? `<button class="btn-primary btn-sm btn-orange" onclick="event.stopPropagation(); toggleRSVP(${jsArg(event.id)})">RSVP</button>` : `<span style="font-size: 0.75rem; color: var(--color-text-muted);">Event ended</span>`}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderCalendarView(events) {
+  const monthNames = ['January', 'February', 'March', 'April', 'May', 'June',
+    'July', 'August', 'September', 'October', 'November', 'December'];
+  const dayLabels = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
+
+  const firstDay = new Date(calendarYear, calendarMonth, 1);
+  const lastDay = new Date(calendarYear, calendarMonth + 1, 0);
+  let startDay = firstDay.getDay() - 1;
+  if (startDay < 0) startDay = 6; // Monday = 0
+
+  const today = new Date();
+
+  let daysHtml = dayLabels.map(d => `<div class="calendar-day-label">${d}</div>`).join('');
+
+  // Empty cells for days before month starts
+  for (let i = 0; i < startDay; i++) {
+    daysHtml += `<div class="calendar-day"></div>`;
+  }
+
+  for (let day = 1; day <= lastDay.getDate(); day++) {
+    const date = new Date(calendarYear, calendarMonth, day);
+    const dow = date.getDay();
+    const isToday = date.toDateString() === today.toDateString();
+    const isMonday = dow === 1;
+    const isTuesday = dow === 2;
+    const isSaturday = dow === 6;
+    const isSunday = dow === 0;
+    const hasSpecialEvent = events.some(e => new Date(e.event_date).toDateString() === date.toDateString());
+
+    let dotHtml = '';
+    if (isMonday || isTuesday || isSaturday || isSunday) dotHtml += `<div class="cal-dot weekly"></div>`;
+    if (hasSpecialEvent) dotHtml += `<div class="cal-dot special" style="left: calc(50% + 4px);"></div>`;
+
+    daysHtml += `<div class="calendar-day ${isToday ? 'today' : ''}">${day}${dotHtml}</div>`;
+  }
+
+  return `
+    <div class="mini-calendar">
+      <div class="calendar-header">
+        <h3>${monthNames[calendarMonth]} ${calendarYear}</h3>
+        <div class="calendar-nav">
+          <button onclick="changeCalendarMonth(-1)">‹</button>
+          <button onclick="changeCalendarMonth(1)">›</button>
+        </div>
+      </div>
+      <div class="calendar-grid">${daysHtml}</div>
+    </div>
+  `;
+}
+
+function setEventsView(view) {
+  eventsView = view;
+  refreshEvents();
+}
+
+function changeCalendarMonth(delta) {
+  calendarMonth += delta;
+  if (calendarMonth > 11) { calendarMonth = 0; calendarYear++; }
+  if (calendarMonth < 0) { calendarMonth = 11; calendarYear--; }
+  refreshEvents();
+}
+
+async function toggleRSVP(eventId) {
+  if (!currentProfile) return;
+  try {
+    const { data: existing } = await supabaseClient
+      .from('event_rsvps')
+      .select('id')
+      .eq('event_id', eventId)
+      .eq('user_id', currentProfile.id)
+      .maybeSingle();
+
+    if (existing) {
+      await supabaseClient.from('event_rsvps').delete().eq('id', existing.id);
+      showToast('No worries — maybe next time!', 'info');
+    } else {
+      await supabaseClient.from('event_rsvps').insert({
+        event_id: eventId,
+        user_id: currentProfile.id
+      });
+      showToast("Locked in! See you out there — let's run it up!", 'success');
+    }
+
+    refreshEvents();
+  } catch (err) {
+    showToast("RSVP didn't go through — try again.", 'error');
+  }
+}
+
+async function viewEventDetail(eventId) {
+  const { data: event } = await supabaseClient
+    .from('special_events')
+    .select('*')
+    .eq('id', eventId)
+    .single();
+
+  if (!event) return;
+
+  const { data: rsvps } = await supabaseClient
+    .from('event_rsvps')
+    .select('user_id, users(display_name, avatar_url)')
+    .eq('event_id', eventId);
+
+  const { data: photos } = await supabaseClient
+    .from('event_photos')
+    .select('*')
+    .eq('event_id', eventId)
+    .order('created_at', { ascending: false });
+
+  const isPast = new Date(event.event_date) < new Date();
+  const userRsvp = (rsvps || []).find(r => r.user_id === currentProfile?.id);
+
+  // Special-event check-in: window opens 4h before the event through 11:59 PM
+  // Chicago that day (same rules as weekly runs). Feeds the day_one badge.
+  const checkInOpen = isCheckInWindow(new Date(event.event_date));
+  const specialCheckedIn = checkInOpen ? await hasCheckedInToday('special') : false;
+
+  const container = document.getElementById('screen-event-detail');
+  container.innerHTML = `
+    <button class="auth-back" onclick="navigateTo('events')">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
+      Events
+    </button>
+    ${safeImageUrl(event.cover_image_url) ? `<img src="${safeImageUrl(event.cover_image_url)}" alt="${escapeAttr(event.title)}" class="event-detail-cover">` : ''}
+    <h2 style="margin-bottom: var(--space-sm);">${escapeHtml(event.title)}</h2>
+    <div class="event-detail-meta">
+      ${formatDate(event.event_date)} &middot; ${formatTime(event.event_date)}<br>
+      ${escapeHtml(event.location_name)} &mdash; ${escapeHtml(event.location_address)}
+      <br><a href="https://maps.google.com/?q=${encodeURIComponent(event.location_address)}" target="_blank">Get Directions</a>
+    </div>
+    ${event.description ? `<p class="event-detail-description">${escapeHtml(event.description)}</p>` : ''}
+
+    <div style="display: flex; gap: var(--space-sm); margin-top: var(--space-md);">
+      ${checkInOpen ? (specialCheckedIn
+        ? `<button class="btn-primary btn-sm checked" style="flex: 1;" disabled>✓ Checked In</button>`
+        : `<button class="btn-primary btn-sm" style="flex: 1;" onclick="handleSpecialCheckIn(${jsArg(event.id)})">Check In</button>`) : ''}
+      ${!isPast ? `
+        <button class="btn-primary ${userRsvp ? 'btn-orange' : ''}" style="flex: 1;" onclick="(async()=>{await toggleRSVP(${jsArg(event.id)});viewEventDetail(${jsArg(event.id)})})()">
+          ${userRsvp ? "Cancel RSVP" : "RSVP — I'm Going!"}
+        </button>
+      ` : ''}
+      <button class="btn-secondary btn-sm" onclick="shareSpecialEvent(${jsArg(event.title)}, ${jsArg(formatDate(event.event_date))}, ${jsArg(event.location_name)})">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: middle; margin-right: 4px;"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
+        Invite a Friend
+      </button>
+    </div>
+
+    <div style="margin-top: var(--space-lg);">
+      <h3 class="event-attendees-header">
+        ${(rsvps || []).length} Going
+      </h3>
+      <div class="event-attendees-list">
+        ${(rsvps || []).map(r => `
+          <div class="event-attendee-chip">
+            <img src="${safeAvatarUrl(r.users?.avatar_url)}" class="avatar-sm" alt="">
+            ${escapeHtml(r.users?.display_name || 'Member')}
+          </div>
+        `).join('')}
+      </div>
+    </div>
+
+    ${isPast && (photos || []).length > 0 ? `
+      <div style="margin-top: var(--space-lg);">
+        <h3 class="event-photos-header">
+          Photos
+        </h3>
+        <div class="event-photos-grid">
+          ${(photos || []).map(p => safeImageUrl(p.photo_url) ? `<img src="${safeImageUrl(p.photo_url)}">` : '').join('')}
+        </div>
+      </div>
+    ` : ''}
+  `;
+
+  navigateToSub('event-detail');
+}
+
+// Check in to a special event — records event_type 'special' with the event's
+// id so the Day One badge is earnable. The DB's one-per-Chicago-day unique
+// index (handled as 23505 inside checkIn) guards against duplicates.
+async function handleSpecialCheckIn(eventId) {
+  try {
+    await checkIn('special', eventId);
+  } catch (err) {
+    return; // checkIn already showed the error toast
+  }
+  viewEventDetail(eventId);
+}
