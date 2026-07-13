@@ -160,7 +160,7 @@ async function refreshHome() {
 
   container.innerHTML = `
     <!-- Hero Banner -->
-    <div class="home-hero" style="background-image: url('./assets/photos/hero.jpg');">
+    <div class="home-hero" style="background-image: url('./assets/photos/crew-hero.jpg');">
       <div class="home-hero-overlay">
         <div class="next-run-label">Next Run</div>
         <div class="next-run-title">${nextRun.label} \u2014 <span>${nextRun.location}</span></div>
