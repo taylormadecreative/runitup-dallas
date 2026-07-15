@@ -1,14 +1,21 @@
-/* ===== DESKTOP WEB LAYOUT =====
+/* ===== DESKTOP WEB LAYOUT — SHELL =====
    The app, laid out for a real browser window: left sidebar nav, wide content
    area. Only applies on the web at >=940px — inside the iOS app the viewport is
-   always phone-width, so none of this ever activates. */
+   always phone-width, so none of this ever activates.
+
+   Per-screen desktop treatments live in desktop-home/-stats/-community/
+   -events/-auth.css. Shared design language:
+   · cards: surface bg, 1px hairline rgba(255,255,255,.08), radius 16-20px
+   · hover: border-color rgba(191,255,0,.35), translateY(-2px), .2s ease
+   · headings: Big Shoulders Display 800/900 uppercase
+   · gutters: 20-24px, content capped at 1120px */
 
 @media (min-width: 940px) {
 
-  /* ---- Shell: sidebar + header + content grid ---- */
+  /* ---- Shell: sidebar + content grid ---- */
   #app-shell {
     display: grid;
-    grid-template-columns: 248px minmax(0, 1fr);
+    grid-template-columns: 264px minmax(0, 1fr);
     grid-template-rows: minmax(0, 1fr);
     grid-template-areas: "sidebar main";
     position: fixed;
@@ -27,20 +34,27 @@
     justify-content: flex-start;
     gap: 4px;
     height: 100%;
-    padding: 0 12px 24px;
+    padding: 0 14px 20px;
     border-top: 0;
     border-right: 1px solid var(--color-surface-hover);
-    background: var(--color-surface);
+    background: linear-gradient(180deg, #141414 0%, #101010 100%);
     overflow-y: auto;
   }
   /* Brand lockup above the nav */
   #tab-bar::before {
-    content: '';
-    display: block;
-    height: 72px;
-    margin: 0 -12px 12px;
+    content: 'RUN IT UP!';
+    display: flex;
+    align-items: center;
+    height: 84px;
+    margin: 0 -14px 14px;
+    padding-left: 74px;
     border-bottom: 1px solid var(--color-surface-hover);
-    background: url('../assets/logo.png') 20px center / 40px 40px no-repeat;
+    background: url('../assets/logo.png') 22px center / 40px 40px no-repeat;
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 1.25rem;
+    letter-spacing: 0.03em;
+    color: var(--color-text);
     flex: none;
   }
   #tab-bar .tab {
@@ -52,10 +66,10 @@
     padding: 13px 16px;
     border-radius: 12px;
     color: var(--color-text-muted);
-    transition: background 0.18s ease, color 0.18s ease;
+    transition: background 0.18s ease, color 0.18s ease, transform 0.18s ease;
   }
-  #tab-bar .tab:hover { background: var(--color-surface-hover); color: var(--color-text); }
-  #tab-bar .tab.active { background: rgba(191, 255, 0, 0.12); color: var(--color-primary); }
+  #tab-bar .tab:hover { background: var(--color-surface-hover); color: var(--color-text); transform: translateX(2px); }
+  #tab-bar .tab.active { background: rgba(191, 255, 0, 0.12); color: var(--color-primary); transform: none; }
   #tab-bar .tab .tab-icon { width: 22px; height: 22px; flex: none; }
   #tab-bar .tab .tab-label {
     font-family: var(--font-display);
@@ -67,23 +81,65 @@
   /* Unread badge rides the right edge of the row */
   #tab-bar .tab .badge { position: static; margin-left: auto; }
 
-  /* ---- Content area: centered, capped, generous gutters ---- */
-  #app-main { grid-area: main; }
-  #app-main > .screen {
-    padding: 32px max(40px, calc(50% - 560px)) 64px;
+  /* ---- Sidebar footer: live next-run card (injected on web by app.js) ---- */
+  #sidebar-nextrun {
+    margin-top: auto;
+    padding: 16px;
+    border: 1px solid rgba(191, 255, 0, 0.25);
+    border-radius: 14px;
+    background: rgba(191, 255, 0, 0.05);
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease;
   }
+  #sidebar-nextrun:hover { border-color: rgba(191, 255, 0, 0.5); background: rgba(191, 255, 0, 0.09); }
+  #sidebar-nextrun .snr-label {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 0.625rem;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--color-text-muted);
+  }
+  #sidebar-nextrun .snr-label .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--color-primary);
+    animation: snrPulse 2s ease-in-out infinite;
+  }
+  #sidebar-nextrun .snr-run {
+    margin-top: 7px;
+    font-family: var(--font-display);
+    font-weight: 900;
+    text-transform: uppercase;
+    font-size: 1rem;
+    line-height: 1.15;
+    color: var(--color-text);
+  }
+  #sidebar-nextrun .snr-run em { font-style: normal; color: var(--color-primary); }
+  #sidebar-nextrun .snr-count {
+    margin-top: 5px;
+    font-size: 0.75rem;
+    color: var(--color-text-muted);
+    font-variant-numeric: tabular-nums;
+  }
+  @keyframes snrPulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.3; } }
 
-  /* Wide-screen home: hero spans, cards flow in columns */
-  #screen-home .quick-stats-row { gap: var(--space-md); }
-  #screen-home .home-hero { border-radius: 20px; overflow: hidden; }
-  #screen-home .highlights-scroll { flex-wrap: wrap; overflow: visible; }
-  /* Buttons shouldn't stretch the full width of a monitor */
-  #screen-home .hero-action-row { max-width: 460px; }
-  #screen-home .hero-action-primary { flex: 1; }
-
-  /* Chat + DM threads get real height on a big screen */
-  #screen-chat .chat-messages,
-  #screen-dm-thread .dm-messages { max-height: none; }
+  /* ---- Content area ---- */
+  #app-main { grid-area: main; position: relative; }
+  /* Ambient volt glow behind everything in the content column */
+  #app-main::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(900px 420px at 75% -140px, rgba(191, 255, 0, 0.055), transparent 68%),
+      radial-gradient(700px 500px at -10% 110%, rgba(191, 255, 0, 0.03), transparent 60%);
+  }
+  #app-main > .screen {
+    padding: 36px max(44px, calc(50% - 560px)) 72px;
+  }
 
   /* Community + chat force `padding: 0 !important` (full-bleed on a phone),
      so cap and center their content instead of padding the screen. */
@@ -96,9 +152,7 @@
     margin-left: auto;
     margin-right: auto;
   }
-  #screen-chat.active > .chat-messages,
-  #screen-dm-thread.active > .dm-messages { max-width: 900px; }
-  #screen-community.active { padding-top: 24px !important; }
+  #screen-community.active { padding-top: 28px !important; }
 
   /* Full-width CTAs look broken on a monitor — cap them */
   #app-main > .screen .btn-primary:not(.btn-sm):not(.hero-action-primary),
@@ -117,56 +171,28 @@
 
   /* ---- Toasts / offline banner respect the sidebar ---- */
   #toast-container {
-    left: calc(248px + 40px);
-    right: 40px;
+    left: calc(264px + 44px);
+    right: 44px;
     top: var(--space-md);
     max-width: 460px;
   }
   #offline-banner {
-    left: 248px;
+    left: 264px;
     top: 0;
   }
 
-  /* ---- Auth screens: centered card over the crew photo ---- */
-  #screen-login.active,
-  #screen-signup.active,
-  #screen-onboarding.active {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    padding: 48px 24px;
-    background: linear-gradient(rgba(10, 10, 10, 0.86), rgba(10, 10, 10, 0.94)),
-                url('../assets/photos/pack-street.jpg') center 30% / cover no-repeat fixed;
+  /* ---- Desktop scrollbars: thin, dark, quiet ---- */
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb {
+    background: #2A2A2A;
+    border-radius: 5px;
+    border: 2px solid var(--color-bg);
   }
-  #screen-login.active > *,
-  #screen-signup.active > * { width: 100%; }
-  #screen-login.active,
-  #screen-signup.active { flex-direction: column; }
-  #screen-login .auth-form,
-  #screen-signup .auth-form,
-  #screen-login .auth-header,
-  #screen-signup .auth-header,
-  #screen-login .signup-benefits,
-  #screen-signup .signup-benefits {
-    width: 100%;
-    max-width: 440px;
-    margin-left: auto;
-    margin-right: auto;
-  }
-  #screen-onboarding .onboarding-step {
-    max-width: 520px;
-    margin: 0 auto;
-  }
+  ::-webkit-scrollbar-thumb:hover { background: #3A3A3A; }
 
-  /* Splash: two-column — brand statement beside the entry buttons */
-  #screen-splash.active .splash-hero {
-    background-position: center 25%;
-  }
-  #screen-splash.active .splash-hero-overlay {
-    max-width: 720px;
-    margin: 0 auto;
-  }
-  #screen-splash.active .splash-buttons { max-width: 420px; margin: 0 auto; }
+  /* ---- Keyboard focus that actually shows ---- */
+  :focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; border-radius: 4px; }
 }
 
 /* ===== WEB-ONLY: no GPS run tracking in the browser =====

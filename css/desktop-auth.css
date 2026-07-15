@@ -1,0 +1,460 @@
+/* ===== DESKTOP WEB LAYOUT — AUTH (splash / login / signup / onboarding) =====
+   First impressions, sized for a real monitor. Splash becomes a cinematic
+   left-aligned hero; login/signup become a split-screen (photo left, 560px
+   form pane right); onboarding centers into a 560px column with a 2-across
+   option grid. Everything lives inside the >=940px media query — inside the
+   iOS app the viewport is always phone-width, so none of this activates. */
+
+@media (min-width: 940px) {
+
+  /* =====================================================================
+     SPLASH — cinematic, left-aligned editorial hero
+     ===================================================================== */
+  #screen-splash.active {
+    text-align: left;
+  }
+
+  #screen-splash.active .splash-hero {
+    background-position: center 30%;
+  }
+
+  /* Overlay: horizontal scrim reading left → right, content in a left column */
+  #screen-splash.active .splash-hero-overlay {
+    align-items: flex-start;
+    gap: 0;
+    padding: clamp(40px, 6vh, 72px) clamp(48px, 7vw, 110px);
+    background:
+      linear-gradient(90deg,
+        rgba(10, 10, 10, 0.92) 0%,
+        rgba(10, 10, 10, 0.66) 36%,
+        rgba(10, 10, 10, 0.22) 68%,
+        rgba(10, 10, 10, 0.05) 100%),
+      linear-gradient(0deg,
+        rgba(10, 10, 10, 0.85) 0%,
+        rgba(10, 10, 10, 0.25) 38%,
+        rgba(10, 10, 10, 0) 62%);
+  }
+
+  /* Logo rides top-left; everything else settles to the lower-left */
+  #screen-splash.active .splash-logo {
+    order: 1;
+    width: 88px;
+    height: 88px;
+    margin: 0 0 auto;
+  }
+
+  /* "Dallas's biggest run club." — promoted to an eyebrow kicker above the
+     headline. It carries inline styles from the renderer, hence !important. */
+  #screen-splash.active .splash-hero-overlay > p[style] {
+    order: 2;
+    font-size: 1rem !important;
+    font-weight: 700 !important;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    margin-bottom: 18px !important;
+    text-shadow: 0 2px 12px rgba(0, 0, 0, 0.7);
+  }
+
+  /* Tagline becomes the massive display headline */
+  #screen-splash.active .splash-tagline {
+    order: 3;
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: clamp(3.25rem, 5.4vw, 5.25rem);
+    line-height: 0.96;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    color: var(--color-text);
+    max-width: 720px;
+    margin-bottom: var(--space-lg);
+    text-shadow: 0 4px 32px rgba(0, 0, 0, 0.55);
+  }
+
+  /* CTAs: side-by-side row with fixed widths, login link on its own line */
+  #screen-splash.active .splash-buttons {
+    order: 4;
+    margin-top: var(--space-lg);
+    width: auto;
+    max-width: none;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--space-md);
+  }
+  #screen-splash.active .splash-buttons .btn-primary {
+    width: 250px;
+    max-width: none;
+    padding: 16px 24px;
+    font-size: 1.05rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  }
+  #screen-splash.active .splash-buttons .btn-primary:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 32px rgba(191, 255, 0, 0.3);
+  }
+  #screen-splash.active .splash-buttons .btn-secondary {
+    width: 230px;
+    max-width: none;
+    margin-top: 0 !important; /* beats the renderer's inline margin-top */
+    padding: 16px 24px;
+    font-size: 1.05rem;
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  }
+  #screen-splash.active .splash-buttons .btn-secondary:hover {
+    transform: translateY(-2px);
+    border-color: rgba(191, 255, 0, 0.5);
+    background: rgba(191, 255, 0, 0.06);
+  }
+  #screen-splash.active .splash-login-link {
+    flex-basis: 100%;
+    text-align: left;
+    margin-top: var(--space-sm);
+    font-size: 0.9375rem;
+  }
+  #screen-splash.active .splash-login-link a:hover {
+    text-decoration: underline;
+  }
+
+  /* =====================================================================
+     LOGIN + SIGNUP — split screen: crew photo left, 560px form pane right
+     ===================================================================== */
+  #screen-login.active,
+  #screen-signup.active {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 560px;
+    align-content: center;
+    align-content: safe center;
+    justify-items: center;
+    padding: 56px 0;
+    position: relative;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background: var(--color-bg);
+  }
+
+  /* Photo panel fills the left column (viewport-anchored so it never
+     scrolls away), with an ink scrim baked into the background stack */
+  #screen-login.active::before,
+  #screen-signup.active::before {
+    content: '';
+    position: fixed;
+    inset: 0 560px 0 0;
+    z-index: 0;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    background:
+      linear-gradient(to right,
+        rgba(10, 10, 10, 0.3) 0%,
+        rgba(10, 10, 10, 0.05) 45%,
+        rgba(10, 10, 10, 0.55) 100%),
+      linear-gradient(to top,
+        rgba(10, 10, 10, 0.92) 0%,
+        rgba(10, 10, 10, 0.3) 42%,
+        rgba(10, 10, 10, 0.35) 100%),
+      url('../assets/photos/pack-street.jpg') center 30% / cover no-repeat;
+  }
+  #screen-signup.active::before {
+    background:
+      linear-gradient(to right,
+        rgba(10, 10, 10, 0.3) 0%,
+        rgba(10, 10, 10, 0.05) 45%,
+        rgba(10, 10, 10, 0.55) 100%),
+      linear-gradient(to top,
+        rgba(10, 10, 10, 0.92) 0%,
+        rgba(10, 10, 10, 0.3) 42%,
+        rgba(10, 10, 10, 0.35) 100%),
+      url('../assets/photos/hero.jpg') center 30% / cover no-repeat;
+  }
+
+  /* Big display quote over the photo, bottom-left */
+  #screen-login.active::after,
+  #screen-signup.active::after {
+    position: fixed;
+    left: clamp(44px, 5vw, 84px);
+    bottom: clamp(40px, 7vh, 72px);
+    right: calc(560px + 48px);
+    z-index: 1;
+    pointer-events: none;
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: clamp(2.75rem, 4.4vw, 4.25rem);
+    line-height: 0.95;
+    letter-spacing: 0;
+    text-transform: uppercase;
+    color: var(--color-text);
+    white-space: pre-line;
+    text-shadow: 0 6px 40px rgba(0, 0, 0, 0.65);
+  }
+  #screen-login.active::after { content: 'THE STREETS\AMISSED YOU.'; }
+  #screen-signup.active::after { content: 'PULL UP.\ARUN IT UP.'; }
+
+  /* Every real child goes to the right pane, capped at a 420px form column */
+  #screen-login.active > *,
+  #screen-signup.active > * {
+    grid-column: 2;
+    width: 100%;
+    max-width: 420px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Back button floats top-left over the photo as a frosted pill */
+  #screen-login.active > .auth-back,
+  #screen-signup.active > .auth-back {
+    position: fixed;
+    top: 32px;
+    left: 36px;
+    z-index: 2;
+    width: auto;
+    max-width: none;
+    margin: 0;
+    padding: 10px 18px 10px 14px;
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    border-radius: 999px;
+    background: rgba(10, 10, 10, 0.5);
+    -webkit-backdrop-filter: blur(10px);
+    backdrop-filter: blur(10px);
+    color: var(--color-text);
+    transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+  }
+  #screen-login.active > .auth-back:hover,
+  #screen-signup.active > .auth-back:hover {
+    border-color: rgba(191, 255, 0, 0.5);
+    background: rgba(10, 10, 10, 0.72);
+    transform: translateX(-2px);
+  }
+
+  /* Headers sized up to desktop display scale */
+  #screen-login.active .auth-header,
+  #screen-signup.active .auth-header {
+    margin-bottom: var(--space-lg);
+  }
+  #screen-login.active .auth-header h1 {
+    font-size: 2.75rem;
+    line-height: 0.98;
+    margin-bottom: var(--space-sm);
+  }
+  #screen-login.active .auth-header p {
+    font-size: 1rem;
+  }
+  #screen-signup.active .signup-hero-headline {
+    font-size: 3rem;
+    line-height: 0.95;
+  }
+  #screen-signup.active .signup-hero-sub {
+    font-size: 1rem;
+  }
+
+  /* Benefits compress into a tidy 2-across grid */
+  #screen-signup.active .signup-benefits {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 20px;
+    margin: 0 0 var(--space-lg) 0;
+  }
+  #screen-signup.active .signup-benefits li {
+    font-size: 0.8125rem;
+    line-height: 1.45;
+  }
+
+  /* Form stops stretching to fill the phone screen */
+  #screen-login.active .auth-form,
+  #screen-signup.active .auth-form {
+    flex: none;
+  }
+  #screen-login.active .auth-actions,
+  #screen-signup.active .auth-actions {
+    margin-top: var(--space-lg);
+    padding-bottom: 0;
+  }
+
+  /* Inputs: bigger targets + volt focus glow */
+  #screen-login.active .form-input,
+  #screen-signup.active .form-input,
+  #screen-onboarding.active .form-input {
+    padding: 15px 16px;
+    font-size: 1rem;
+    background: #151515;
+    border-radius: 12px;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+  }
+  #screen-login.active .form-input:focus,
+  #screen-signup.active .form-input:focus,
+  #screen-onboarding.active .form-input:focus {
+    border-color: var(--color-primary);
+    background: #101010;
+    box-shadow:
+      0 0 0 4px rgba(191, 255, 0, 0.12),
+      0 12px 40px rgba(191, 255, 0, 0.08);
+  }
+
+  /* Buttons in the form pane get desktop hover states */
+  #screen-login.active .auth-actions .btn-primary,
+  #screen-signup.active .auth-actions .btn-primary {
+    padding: 15px 24px;
+    font-size: 1.05rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  }
+  #screen-login.active .auth-actions .btn-primary:hover:not(:disabled),
+  #screen-signup.active .auth-actions .btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 26px rgba(191, 255, 0, 0.28);
+  }
+  #screen-login.active .btn-google,
+  #screen-signup.active .btn-google {
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.14);
+    background: #151515;
+    cursor: pointer;
+    transition: border-color 0.2s ease, background 0.2s ease, transform 0.2s ease;
+  }
+  #screen-login.active .btn-google:hover,
+  #screen-signup.active .btn-google:hover {
+    border-color: rgba(255, 255, 255, 0.3);
+    background: #1A1A1A;
+    transform: translateY(-1px);
+  }
+  #screen-login.active .auth-switch a:hover,
+  #screen-signup.active .auth-switch a:hover,
+  #screen-splash.active .splash-buttons a:hover {
+    text-decoration: underline;
+  }
+
+  /* =====================================================================
+     ONBOARDING — centered 560px column, 2-across option grid
+     ===================================================================== */
+  #screen-onboarding.active {
+    padding: 56px 0 48px;
+    align-items: center;
+  }
+  #screen-onboarding.active > *:not(.onboarding-bg) {
+    width: 100%;
+    max-width: 560px;
+  }
+
+  /* Full-bleed step photo reads a touch stronger on a big dark canvas */
+  #screen-onboarding.active .onboarding-bg {
+    opacity: 0.15;
+  }
+
+  /* Progress bars: chunkier, more presence */
+  #screen-onboarding.active .onboarding-progress {
+    gap: 10px;
+    margin-bottom: var(--space-2xl);
+  }
+  #screen-onboarding.active .progress-dot {
+    height: 6px;
+    border-radius: 3px;
+  }
+
+  /* Step headings at desktop display scale */
+  #screen-onboarding.active .onboarding-headline {
+    font-size: 3rem;
+    line-height: 0.95;
+  }
+  #screen-onboarding.active .onboarding-step h2 {
+    font-size: 1.5rem;
+  }
+  #screen-onboarding.active .onboarding-step > p {
+    font-size: 1rem;
+  }
+
+  /* Option cards: 2-across grid, hairline borders, hover lift */
+  #screen-onboarding.active .option-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--space-md);
+  }
+  #screen-onboarding.active .option-card {
+    align-items: flex-start;
+    padding: 18px;
+    border-width: 1px;
+    border-color: rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    transition: border-color 0.2s ease, background 0.2s ease,
+      transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  #screen-onboarding.active .option-card:hover {
+    border-color: rgba(191, 255, 0, 0.35);
+    background: #1A1A1A;
+    transform: translateY(-2px);
+  }
+  /* Selected must win over hover — declared after, equal specificity */
+  #screen-onboarding.active .option-card.selected {
+    border-color: var(--color-primary);
+    background: rgba(191, 255, 0, 0.05);
+  }
+  #screen-onboarding.active .option-card .option-info h4 {
+    font-size: 1.0625rem;
+  }
+  #screen-onboarding.active .option-card .option-info p {
+    font-size: 0.8125rem;
+    margin-top: 2px;
+  }
+
+  /* Avatar drop target a touch larger, volt hint on hover */
+  #screen-onboarding.active .avatar-upload-preview {
+    width: 132px;
+    height: 132px;
+  }
+
+  /* Actions: keep the CTA anchored but give it breathing room */
+  #screen-onboarding.active .onboarding-actions {
+    margin-top: var(--space-xl);
+    padding-bottom: 0;
+  }
+  #screen-onboarding.active .onboarding-actions .btn-primary {
+    padding: 15px 24px;
+    font-size: 1.05rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  }
+  #screen-onboarding.active .onboarding-actions .btn-primary:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 8px 26px rgba(191, 255, 0, 0.28);
+  }
+  #screen-onboarding.active .onboarding-step .auth-back {
+    margin-bottom: var(--space-lg);
+    transition: color 0.2s ease;
+  }
+  #screen-onboarding.active .onboarding-step .auth-back:hover {
+    color: var(--color-text);
+  }
+
+  /* "YOU'RE IN!" reveal goes stadium-sized on a monitor */
+  .youre-in-text.youre-in-text {
+    font-size: 7.5rem;
+  }
+
+  /* =====================================================================
+     ENTRANCE MOTION — gentle rise, respects reduced-motion
+     ===================================================================== */
+  @media (prefers-reduced-motion: no-preference) {
+    #screen-splash.active .splash-tagline,
+    #screen-splash.active .splash-hero-overlay > p[style],
+    #screen-splash.active .splash-buttons,
+    #screen-login.active .auth-header,
+    #screen-login.active .auth-form,
+    #screen-signup.active .auth-header,
+    #screen-signup.active .signup-benefits,
+    #screen-signup.active .auth-form {
+      animation: authRise 0.55s cubic-bezier(0.2, 0.8, 0.2, 1) backwards;
+    }
+    #screen-splash.active .splash-hero-overlay > p[style],
+    #screen-login.active .auth-form,
+    #screen-signup.active .signup-benefits {
+      animation-delay: 0.08s;
+    }
+    #screen-splash.active .splash-tagline.splash-tagline {
+      animation-delay: 0.14s;
+    }
+    #screen-signup.active .auth-form {
+      animation-delay: 0.16s;
+    }
+    #screen-splash.active .splash-buttons {
+      animation-delay: 0.22s;
+    }
+    @keyframes authRise {
+      from { opacity: 0; transform: translateY(16px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+  }
+}

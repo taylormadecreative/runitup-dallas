@@ -1,0 +1,487 @@
+/* ===== DESKTOP WEB LAYOUT — EVENTS / EVENT DETAIL / BUDDY BOARD =====
+   Restyles the DOM rendered by js/events.js + js/buddy.js for a real browser
+   window. Every rule lives inside the >=940px media query — inside the iOS
+   app the viewport is phone-width, so none of this ever activates.
+
+   Layout moves:
+   · Weekly runs → 2×2 schedule board, huge day names, inline actions
+   · Special events → wide cards, 220px cover left / content right
+   · Event detail → 21:9 banner + 2-col grid (details | RSVP action card)
+   · Buddy board → 2-across runner cards */
+
+@media (min-width: 940px) {
+
+  /* ---------- EVENTS SCREEN: rhythm + section headers ---------- */
+  #screen-events.active {
+    gap: 56px;
+  }
+
+  .events-section-header {
+    margin-bottom: 20px;
+  }
+
+  .events-section-header h2 {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    font-size: 1.75rem;
+    letter-spacing: 0.02em;
+  }
+
+  /* Volt tick in front of each section title */
+  .events-section-header h2::before {
+    content: '';
+    width: 8px;
+    height: 26px;
+    border-radius: 2px;
+    background: var(--color-primary);
+    flex: none;
+  }
+
+  /* ---------- WEEKLY RUNS: 2-across schedule board ---------- */
+  .weekly-runs {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 24px;
+  }
+
+  .weekly-run-card {
+    height: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    background: linear-gradient(180deg, #181818 0%, #141414 100%);
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .weekly-run-card:hover {
+    border-color: rgba(191, 255, 0, 0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 20px 44px -24px rgba(0, 0, 0, 0.8);
+  }
+
+  .weekly-run-img {
+    height: 190px;
+    transition: transform 0.25s ease;
+  }
+
+  .weekly-run-card:hover .weekly-run-img {
+    transform: scale(1.03);
+  }
+
+  /* Roomier interior */
+  .weekly-run-card > *:not(.weekly-run-img) {
+    padding-left: 24px;
+    padding-right: 24px;
+  }
+  .weekly-run-card > .weekly-run-header { padding-top: 20px; }
+  .weekly-run-card > :last-child { padding-bottom: 22px; }
+
+  /* Day name goes HUGE; time becomes an eyebrow under it */
+  .weekly-run-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    margin-bottom: 8px;
+  }
+
+  .weekly-run-day {
+    font-size: 2.375rem;
+    font-weight: 900;
+    line-height: 0.95;
+    letter-spacing: 0.01em;
+  }
+
+  .weekly-run-time {
+    font-size: 0.8125rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+  }
+
+  /* Location · distance · directions as a quiet meta row */
+  .weekly-run-details {
+    font-size: 0.9375rem;
+    margin-bottom: 6px;
+  }
+
+  .weekly-run-details a {
+    font-weight: 600;
+    transition: opacity 0.18s ease;
+  }
+  .weekly-run-details a:hover { opacity: 0.75; text-decoration: underline; }
+
+  .weekly-run-stats {
+    font-size: 0.8125rem;
+    margin-bottom: 18px;
+  }
+
+  /* Actions: inline pills bottom-aligned across the row, never full-width */
+  .weekly-run-actions {
+    margin-top: auto;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+
+  .weekly-run-actions .btn-primary {
+    flex: 0 1 auto;
+    width: auto;
+    padding: 10px 24px;
+    font-size: 0.9375rem;
+  }
+
+  .weekly-run-actions .btn-primary:not(:disabled):hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+  }
+
+  .btn-buddy {
+    cursor: pointer;
+    transition: background 0.18s ease, color 0.18s ease;
+  }
+  .btn-buddy:hover {
+    background: rgba(255, 255, 255, 0.14);
+    color: var(--color-text);
+  }
+
+  .btn-share { cursor: pointer; }
+  .btn-share:hover {
+    background: var(--color-primary);
+    color: var(--color-bg);
+  }
+
+  .buddy-count { padding-top: 8px; }
+
+  /* ---------- SPECIAL EVENTS: wide cards, cover left / content right ---------- */
+  .special-events {
+    gap: 20px;
+  }
+
+  .special-event-card {
+    display: grid;
+    grid-template-columns: 220px minmax(0, 1fr);
+    min-height: 176px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    transition: border-color 0.2s ease, transform 0.2s ease, box-shadow 0.2s ease;
+  }
+
+  .special-event-card:hover {
+    border-color: rgba(191, 255, 0, 0.35);
+    transform: translateY(-2px);
+    box-shadow: 0 20px 44px -24px rgba(0, 0, 0, 0.8);
+  }
+
+  .special-event-card:active { opacity: 1; }
+
+  .special-event-card > img {
+    width: 100%;
+    height: 100%;
+    min-height: 176px;
+  }
+
+  .special-event-card > .event-no-cover {
+    width: 100%;
+    height: 100%;
+    min-height: 176px;
+    border-radius: 0;
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 2.5rem;
+    letter-spacing: 0.06em;
+    color: rgba(255, 255, 255, 0.25);
+  }
+
+  .special-event-body {
+    display: flex;
+    flex-direction: column;
+    padding: 24px 28px;
+  }
+
+  .special-event-body h3 {
+    font-family: var(--font-display);
+    text-transform: uppercase;
+    letter-spacing: 0.015em;
+    font-weight: 800;
+    font-size: 1.5rem;
+    line-height: 1.05;
+    margin-bottom: 8px;
+  }
+
+  .special-event-meta {
+    font-size: 0.875rem;
+    margin-bottom: 16px;
+  }
+
+  /* Count stays left, share + RSVP group to the right edge */
+  .special-event-actions {
+    margin-top: auto;
+    justify-content: flex-start;
+    gap: 12px;
+  }
+
+  .special-event-actions .btn-share { margin-left: auto; }
+
+  .special-event-actions .btn-primary {
+    width: auto;
+    flex: none;
+    padding: 10px 26px;
+    font-size: 0.9375rem;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+  .special-event-actions .btn-primary:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+  }
+
+  .past-events-header {
+    margin-top: 16px;
+    font-size: 0.8125rem;
+  }
+
+  /* ---------- LIST/CALENDAR TOGGLE ---------- */
+  .calendar-toggle {
+    border: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .calendar-toggle button {
+    flex: none;
+    padding: 9px 20px;
+    cursor: pointer;
+  }
+
+  .calendar-toggle button:not(.active):hover {
+    color: var(--color-text);
+    background: rgba(255, 255, 255, 0.06);
+  }
+
+  /* ---------- MINI CALENDAR: contained, not a 1120px wall ---------- */
+  .mini-calendar {
+    max-width: 660px;
+    padding: 24px 28px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+  }
+
+  .calendar-header h3 {
+    font-family: var(--font-display);
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    font-size: 1.25rem;
+  }
+
+  .calendar-nav button {
+    cursor: pointer;
+    transition: background 0.18s ease, color 0.18s ease;
+  }
+  .calendar-nav button:hover {
+    background: rgba(191, 255, 0, 0.15);
+    color: var(--color-primary);
+  }
+
+  .calendar-grid { gap: 4px; }
+
+  .calendar-day {
+    font-size: 0.875rem;
+    transition: background 0.18s ease, color 0.18s ease;
+  }
+  .calendar-day:not(:empty):hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--color-text);
+  }
+  .calendar-day.today {
+    background: rgba(191, 255, 0, 0.12);
+    color: var(--color-primary);
+  }
+
+  /* ---------- EVENT DETAIL: banner + 2-col (details | actions) ----------
+     DOM order: .auth-back → [cover] → h2 → .event-detail-meta →
+     [.event-detail-description] → actions row (flex div w/ share btn) →
+     attendees section → [photos section]. Cover + description are optional,
+     so the actions card spans rows 3-5 and everything below goes full-width. */
+  #screen-event-detail.active {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 380px;
+    column-gap: 40px;
+    align-content: start;
+  }
+
+  #screen-event-detail > .auth-back {
+    grid-column: 1 / -1;
+    justify-self: start;
+    margin-bottom: 12px;
+    transition: color 0.18s ease, transform 0.18s ease;
+  }
+  #screen-event-detail > .auth-back:hover {
+    color: var(--color-primary);
+    transform: translateX(-2px);
+  }
+
+  /* Cover becomes a wide 21:9 banner */
+  #screen-event-detail > .event-detail-cover {
+    grid-column: 1 / -1;
+    width: 100%;
+    height: auto;
+    aspect-ratio: 21 / 9;
+    max-height: 340px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    margin-bottom: 28px;
+  }
+
+  #screen-event-detail > h2 {
+    grid-column: 1;
+    font-size: 2.75rem;
+    line-height: 1;
+    letter-spacing: 0.01em;
+    max-width: 18ch;
+  }
+
+  #screen-event-detail .event-detail-meta {
+    grid-column: 1;
+    font-size: 1rem;
+    line-height: 1.75;
+  }
+
+  #screen-event-detail .event-detail-description {
+    grid-column: 1;
+    max-width: 62ch;
+    font-size: 1rem;
+    line-height: 1.7;
+  }
+
+  /* Action row → a volt-framed RSVP card in the right column.
+     Inline styles set margin-top + gap, so those two need !important. */
+  #screen-event-detail > div:has(> .btn-secondary) {
+    grid-column: 2;
+    grid-row: 3 / span 3;
+    align-self: start;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px !important;
+    margin-top: 0 !important;
+    padding: 24px;
+    border: 1px solid rgba(191, 255, 0, 0.25);
+    border-radius: 18px;
+    background: rgba(191, 255, 0, 0.04);
+    transition: border-color 0.2s ease;
+  }
+  #screen-event-detail > div:has(> .btn-secondary):hover {
+    border-color: rgba(191, 255, 0, 0.45);
+  }
+
+  #screen-event-detail > div:has(> .btn-secondary) .btn-primary,
+  #screen-event-detail > div:has(> .btn-secondary) .btn-secondary {
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+  #screen-event-detail > div:has(> .btn-secondary) .btn-primary:not(:disabled):hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+  }
+  #screen-event-detail > div:has(> .btn-secondary) .btn-secondary:hover {
+    background: rgba(191, 255, 0, 0.1);
+  }
+
+  /* Attendees + photos run full-width beneath the two columns */
+  #screen-event-detail > div:has(> .event-attendees-header),
+  #screen-event-detail > div:has(> .event-photos-header) {
+    grid-column: 1 / -1;
+  }
+
+  .event-attendee-chip {
+    padding: 8px 16px 8px 8px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    font-size: 0.8125rem;
+    gap: 8px;
+    transition: border-color 0.18s ease, transform 0.18s ease;
+  }
+  .event-attendee-chip:hover {
+    border-color: rgba(191, 255, 0, 0.35);
+    transform: translateY(-1px);
+  }
+
+  .event-attendee-chip img {
+    width: 26px;
+    height: 26px;
+  }
+
+  .event-photos-grid {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+  }
+
+  .event-photos-grid img {
+    border-radius: 12px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+  .event-photos-grid img:hover {
+    transform: scale(1.02);
+    opacity: 0.9;
+  }
+
+  /* ---------- BUDDY BOARD: 2-across runner cards ---------- */
+  #screen-buddy-board > .auth-back {
+    transition: color 0.18s ease, transform 0.18s ease;
+  }
+  #screen-buddy-board > .auth-back:hover {
+    color: var(--color-primary);
+    transform: translateX(-2px);
+  }
+
+  #screen-buddy-board > h2 {
+    font-size: 2.375rem;
+    line-height: 1;
+  }
+
+  #screen-buddy-board > p {
+    font-size: 1rem;
+    color: var(--color-text-muted);
+  }
+
+  /* The join / my-status card: contained, framed */
+  #screen-buddy-board > .card {
+    max-width: 640px;
+    padding: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+  }
+
+  /* The list container is an inline-styled flex column (no class) —
+     the last child div of the screen. Re-grid it 2-across. */
+  #screen-buddy-board#screen-buddy-board > div:last-child {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 20px !important;
+  }
+
+  #screen-buddy-board > div:last-child > .card {
+    padding: 24px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 18px;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+  #screen-buddy-board > div:last-child > .card:hover {
+    border-color: rgba(191, 255, 0, 0.35);
+    transform: translateY(-2px);
+  }
+
+  #screen-buddy-board > div:last-child .avatar-md {
+    width: 56px;
+    height: 56px;
+  }
+
+  #screen-buddy-board > div:last-child .btn-primary.btn-sm {
+    width: auto;
+    padding: 9px 20px;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+  }
+  #screen-buddy-board > div:last-child .btn-primary.btn-sm:hover {
+    opacity: 0.88;
+    transform: translateY(-1px);
+  }
+
+  #screen-buddy-board > div:last-child > .empty-state {
+    grid-column: 1 / -1;
+  }
+}

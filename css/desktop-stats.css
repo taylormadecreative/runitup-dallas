@@ -1,0 +1,409 @@
+/* ===== DESKTOP WEB LAYOUT — STATS =====
+   Athlete-profile treatment for #screen-stats at >=940px. Two-column grid:
+   main column (streak hero + leaderboard centerpiece) / 400px right rail
+   (monthly challenge + badge case). Everything here restyles the existing
+   DOM from js/stats.js — no new markup. Loaded after stats.css + desktop.css
+   so equal-specificity overrides win by source order. */
+
+@media (min-width: 940px) {
+
+  /* ---- Screen grid: main 1fr / rail 400px ---- */
+  #screen-stats.active {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 400px;
+    grid-template-rows: auto auto 1fr;
+    gap: 24px;
+    align-items: start;
+  }
+  /* Loading spinner + hard-error empty state span the full width */
+  #screen-stats.active > .loading-screen,
+  #screen-stats.active > .empty-state {
+    grid-column: 1 / -1;
+  }
+  #screen-stats .stats-hero          { grid-column: 1; grid-row: 1; }
+  #screen-stats .leaderboard-section { grid-column: 1; grid-row: 2 / span 2; }
+  #screen-stats .challenge-section   { grid-column: 2; grid-row: 1; align-self: stretch; }
+  #screen-stats .badges-section      { grid-column: 2; grid-row: 2; align-self: start; }
+
+  /* ---- Shared section chrome ---- */
+  #screen-stats .challenge-section,
+  #screen-stats .badges-section,
+  #screen-stats .leaderboard-section {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    padding: 26px 28px 28px;
+    min-width: 0;
+  }
+  /* Section titles graduate to display type */
+  #screen-stats .challenge-section h3,
+  #screen-stats .badges-section h3,
+  #screen-stats .leaderboard-section h3 {
+    font-family: var(--font-display);
+    font-weight: 900;
+    font-size: 1.5rem;
+    letter-spacing: 0.01em;
+    text-transform: uppercase;
+    color: var(--color-text);
+    margin-bottom: 18px;
+  }
+
+  /* ============================================================
+     STREAK HERO — big card, left identity block / right data block
+     ============================================================ */
+  #screen-stats .stats-hero {
+    display: grid;
+    grid-template-columns: max-content minmax(0, 1fr);
+    grid-template-rows: auto auto auto auto;
+    column-gap: 48px;
+    align-items: end;
+    text-align: left;
+    padding: 34px 40px 36px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 20px;
+    background:
+      radial-gradient(560px 300px at 0% 0%, rgba(191, 255, 0, 0.07), transparent 65%),
+      linear-gradient(150deg, #171717 0%, #101010 100%);
+    transition: border-color 0.2s ease;
+  }
+  #screen-stats .stats-hero:hover { border-color: rgba(191, 255, 0, 0.22); }
+
+  #screen-stats .stats-hero .flame {
+    grid-column: 1;
+    grid-row: 1;
+    justify-self: start;
+    margin-bottom: 2px;
+  }
+  #screen-stats .stats-hero .flame-svg { width: 60px; height: 60px; }
+
+  #screen-stats .stats-hero .streak-number {
+    grid-column: 1;
+    grid-row: 2;
+    font-size: 7.5rem;
+    font-weight: 900;
+    letter-spacing: -0.03em;
+    color: var(--color-primary);
+    text-shadow: 0 0 32px rgba(191, 255, 0, 0.28);
+  }
+  #screen-stats .stats-hero .streak-text {
+    grid-column: 1;
+    grid-row: 3;
+    font-size: 0.8125rem;
+    letter-spacing: 0.22em;
+    margin-top: 6px;
+  }
+
+  /* Right block, top: the three career stats with hairline dividers */
+  #screen-stats .stats-hero .stats-row {
+    grid-column: 2;
+    grid-row: 1 / 3;
+    align-self: start;
+    justify-self: end;
+    justify-content: flex-end;
+    gap: 0;
+    margin-top: 4px;
+  }
+  #screen-stats .stats-hero .stat-item {
+    text-align: right;
+    padding: 2px 32px;
+  }
+  #screen-stats .stats-hero .stat-item:last-child { padding-right: 0; }
+  #screen-stats .stats-hero .stat-item + .stat-item {
+    border-left: 1px solid rgba(255, 255, 255, 0.08);
+  }
+  #screen-stats .stats-hero .stat-value {
+    font-size: 2rem;
+    font-weight: 900;
+    line-height: 1.1;
+  }
+  #screen-stats .stats-hero .stat-label {
+    font-size: 0.6875rem;
+    letter-spacing: 0.14em;
+    margin-top: 2px;
+  }
+
+  /* Right block, bottom: 8-week history — taller bars + hover tooltips */
+  #screen-stats .stats-hero .wk-history {
+    grid-column: 2;
+    grid-row: 3;
+    align-self: end;
+    justify-self: end;
+    justify-content: flex-end;
+    gap: 8px;
+    margin-top: 24px;
+  }
+  #screen-stats .wk-bar {
+    position: relative;
+    width: 38px;
+    height: 48px;
+    border-radius: 8px;
+    transition: transform 0.2s ease, filter 0.2s ease, background 0.2s ease;
+  }
+  #screen-stats .wk-bar:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.14);
+  }
+  #screen-stats .wk-bar.filled:hover {
+    background: var(--color-primary);
+    filter: brightness(1.12) drop-shadow(0 0 10px rgba(191, 255, 0, 0.45));
+  }
+  /* Styled tooltip off the existing title="" attribute */
+  #screen-stats .wk-bar::after {
+    content: attr(title);
+    position: absolute;
+    bottom: calc(100% + 10px);
+    left: 50%;
+    transform: translate(-50%, 4px);
+    padding: 6px 11px;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 8px;
+    background: #1D1D1D;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+    color: var(--color-text);
+    font-size: 0.6875rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.18s ease, transform 0.18s ease;
+    z-index: 5;
+  }
+  #screen-stats .wk-bar:hover::after {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+
+  /* Share CTA sits bottom-left of the hero, sized to content */
+  #screen-stats .stats-hero .stats-hero-share {
+    grid-column: 1 / -1;
+    grid-row: 4;
+    justify-self: start;
+    width: auto;
+    min-width: 300px;
+    margin: 30px 0 0;
+    padding-left: 32px;
+    padding-right: 32px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  }
+  #screen-stats .stats-hero .stats-hero-share:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(191, 255, 0, 0.25);
+    filter: brightness(1.05);
+  }
+
+  /* ============================================================
+     LEADERBOARD — the centerpiece
+     ============================================================ */
+  #screen-stats .leaderboard-section {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+  }
+  #screen-stats .leaderboard-section h3 { grid-column: 1 / -1; }
+
+  /* Metric toggle → segmented control */
+  #screen-stats .leaderboard-tabs {
+    grid-column: 1;
+    justify-self: start;
+    display: inline-flex;
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.03);
+    margin-bottom: 20px;
+  }
+  #screen-stats .leaderboard-tabs button {
+    padding: 8px 20px;
+    font-size: 0.8125rem;
+    background: transparent;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: background 0.18s ease, color 0.18s ease;
+  }
+  #screen-stats .leaderboard-tabs button:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--color-text);
+  }
+  #screen-stats .leaderboard-tabs button.active {
+    background: var(--color-primary);
+    color: var(--color-bg);
+    box-shadow: 0 2px 12px rgba(191, 255, 0, 0.3);
+  }
+
+  /* Period toggle rides the same line, right-aligned */
+  #screen-stats .leaderboard-time-tabs {
+    grid-column: 2;
+    justify-self: end;
+    gap: 4px;
+    margin-bottom: 20px;
+  }
+  #screen-stats .leaderboard-time-tabs button {
+    padding: 8px 12px;
+    font-size: 0.6875rem;
+    cursor: pointer;
+    transition: color 0.18s ease, border-color 0.18s ease;
+  }
+  #screen-stats .leaderboard-time-tabs button:hover { color: var(--color-text); }
+  #screen-stats .leaderboard-time-tabs button.active { color: var(--color-primary); }
+
+  #screen-stats .leaderboard-list {
+    grid-column: 1 / -1;
+    gap: 8px;
+  }
+
+  /* Rows: hover lift, big display-font ranks, roomier rhythm */
+  #screen-stats .leaderboard-item {
+    gap: 18px;
+    padding: 13px 20px;
+    border: 1px solid transparent;
+    border-radius: 14px;
+    transition: transform 0.2s ease, border-color 0.2s ease,
+                background 0.2s ease, box-shadow 0.2s ease;
+  }
+  #screen-stats .leaderboard-item:hover {
+    transform: translateY(-2px);
+    border-color: rgba(191, 255, 0, 0.35);
+    background: var(--color-surface-hover);
+  }
+  #screen-stats .leaderboard-item .lb-rank {
+    font-size: 1.5rem;
+    font-weight: 900;
+    width: 40px;
+    font-variant-numeric: tabular-nums;
+  }
+  #screen-stats .leaderboard-item .avatar-sm {
+    width: 40px;
+    height: 40px;
+    flex: none;
+  }
+  #screen-stats .leaderboard-item .lb-name { font-size: 0.9375rem; }
+  #screen-stats .leaderboard-item .lb-stat {
+    font-size: 1.375rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Top-3 medal ranks: keep the metal colors, add a soft podium glow */
+  #screen-stats .leaderboard-item:nth-child(1) .lb-rank { text-shadow: 0 0 14px rgba(255, 215, 0, 0.45); }
+  #screen-stats .leaderboard-item:nth-child(2) .lb-rank { text-shadow: 0 0 14px rgba(192, 192, 192, 0.35); }
+  #screen-stats .leaderboard-item:nth-child(3) .lb-rank { text-shadow: 0 0 14px rgba(205, 127, 50, 0.4); }
+
+  /* Signed-in user's row glows volt — both in-list and pinned */
+  #screen-stats .leaderboard-item.me {
+    border-color: rgba(191, 255, 0, 0.55);
+    background: rgba(191, 255, 0, 0.06);
+    box-shadow: 0 0 20px rgba(191, 255, 0, 0.12);
+  }
+  #screen-stats .leaderboard-item.me:hover {
+    border-color: var(--color-primary);
+    background: rgba(191, 255, 0, 0.09);
+    box-shadow: 0 0 26px rgba(191, 255, 0, 0.2);
+  }
+  #screen-stats .leaderboard-item.lb-pinned {
+    box-shadow: 0 0 20px rgba(191, 255, 0, 0.16);
+  }
+
+  #screen-stats .lb-divider { padding: 6px 0 6px 0.3em; }
+  #screen-stats .lb-gap-hint {
+    font-size: 0.75rem;
+    padding-top: 4px;
+  }
+
+  /* Empty board: framed invitation instead of floating text */
+  #screen-stats .leaderboard-list .empty-state {
+    border: 1px dashed rgba(255, 255, 255, 0.12);
+    border-radius: 16px;
+    padding: 56px 24px;
+  }
+  #screen-stats .leaderboard-list .empty-state p {
+    font-size: 0.9375rem;
+    color: var(--color-text-muted);
+    max-width: 36ch;
+  }
+
+  /* ============================================================
+     RIGHT RAIL — monthly challenge + badge case
+     ============================================================ */
+
+  /* Challenge card fills its section so the rail tops off level
+     with the hero; progress anchors to the bottom edge. */
+  #screen-stats .challenge-section { display: flex; flex-direction: column; }
+  #screen-stats .challenge-card {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: var(--color-surface);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    padding: 22px 24px;
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+  #screen-stats .challenge-card:hover {
+    border-color: rgba(191, 255, 0, 0.35);
+    transform: translateY(-2px);
+  }
+  #screen-stats .challenge-card .challenge-title {
+    font-size: 1.5rem;
+    font-weight: 900;
+    flex: 1;
+    margin-bottom: 20px;
+  }
+  #screen-stats .challenge-card .challenge-progress-bar { height: 10px; }
+  #screen-stats .challenge-card .challenge-count { font-size: 0.8125rem; }
+
+  /* Badges: 3-across grid of square tiles */
+  #screen-stats .badges-section .badges-grid {
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  #screen-stats .badge-item {
+    aspect-ratio: 1 / 1;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 8px;
+    background: #131313;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 16px;
+    overflow: hidden;
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  }
+  /* Earned tiles pop volt on hover */
+  #screen-stats .badge-item:not(.locked):hover {
+    transform: translateY(-2px) scale(1.04);
+    border-color: rgba(191, 255, 0, 0.35);
+    background: #161616;
+  }
+  #screen-stats .badge-item:not(.locked):hover .badge-icon {
+    transform: scale(1.06);
+  }
+  /* Locked tiles stay dim — a whisper of lift, no volt */
+  #screen-stats .badge-item.locked {
+    background: #0F0F0F;
+  }
+  #screen-stats .badge-item.locked:hover {
+    transform: translateY(-1px) scale(1.02);
+    border-color: rgba(255, 255, 255, 0.16);
+  }
+  #screen-stats .badge-item .badge-label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  /* Keep the loading spinner from being squeezed by the 3-col grid */
+  #screen-stats .badges-grid .loading-inline { grid-column: 1 / -1; }
+
+  /* ---- Reduced motion: kill lifts/pops, keep color feedback ---- */
+  @media (prefers-reduced-motion: reduce) {
+    #screen-stats .leaderboard-item:hover,
+    #screen-stats .badge-item:not(.locked):hover,
+    #screen-stats .badge-item.locked:hover,
+    #screen-stats .badge-item:not(.locked):hover .badge-icon,
+    #screen-stats .challenge-card:hover,
+    #screen-stats .wk-bar:hover,
+    #screen-stats .stats-hero .stats-hero-share:hover {
+      transform: none;
+    }
+  }
+}

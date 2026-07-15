@@ -1,0 +1,389 @@
+/* ===== DESKTOP WEB LAYOUT — HOME =====
+   Home becomes a real dashboard at >=940px: full-width hero, then a
+   2-column grid — main content (1fr) on the left, a 360px utility rail
+   (weather / buddy status / streak / quick stats) on the right.
+
+   The DOM stays exactly what js/home.js renders; per-class grid-column
+   assignments + dense auto-flow mean every conditional variant (guest
+   welcome card, no weather, no buddy banner, no highlights, no event)
+   still packs cleanly. All rules live inside the media query — inside
+   the iOS app none of this ever activates. */
+
+@media (min-width: 940px) {
+
+  /* ---- Dashboard grid ---- */
+  #screen-home#screen-home.active {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 360px;
+    grid-auto-flow: dense;
+    align-items: start;
+    gap: 24px;
+  }
+
+  /* First-load spinner spans the whole canvas */
+  #screen-home .loading-screen { grid-column: 1 / -1; }
+
+  /* Column assignments — dense flow keeps rows packed whichever
+     conditional blocks are present */
+  #screen-home .home-hero { grid-column: 1 / -1; }
+
+  #screen-home .streak-saver-banner,
+  #screen-home .welcome-card,
+  #screen-home .challenge-card,
+  #screen-home .highlights-section,
+  #screen-home .upcoming-event-card { grid-column: 1; }
+
+  #screen-home #weather-slot,
+  #screen-home .buddy-active-banner,
+  #screen-home .streak-bar,
+  #screen-home .quick-stats-row { grid-column: 2; }
+
+  /* Community highlights is the tallest left block — let it ride
+     alongside TWO rail rows (streak card + quick stats) so the rail
+     stays packed instead of drifting apart */
+  #screen-home .highlights-section { grid-row: span 2; }
+
+  /* ============================================================
+     HERO — full-bleed banner across both columns
+     ============================================================ */
+  #screen-home .home-hero {
+    width: 100%;
+    margin: 0;
+    height: auto;
+    min-height: 540px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.3);
+    background-position: center 30%;
+  }
+
+  /* Wide crop: anchor content bottom-left, gradient sweeps from the
+     text corner instead of a phone-style bottom fade */
+  #screen-home .home-hero-overlay {
+    position: relative;
+    inset: auto;
+    flex: 1;
+    padding: 44px 48px 40px;
+    gap: 6px;
+    background:
+      linear-gradient(to right, rgba(10, 10, 10, 0.88) 0%, rgba(10, 10, 10, 0.55) 42%, rgba(10, 10, 10, 0.08) 100%),
+      linear-gradient(to top, rgba(10, 10, 10, 0.92) 0%, rgba(10, 10, 10, 0.25) 45%, transparent 70%);
+  }
+
+  #screen-home .next-run-label {
+    font-size: 0.8125rem;
+    letter-spacing: 0.22em;
+    color: var(--color-primary);
+    margin-bottom: var(--space-sm);
+  }
+
+  #screen-home .next-run-title {
+    font-size: 3.25rem;
+    font-weight: 900;
+    line-height: 1.02;
+    letter-spacing: 0.01em;
+    max-width: 780px;
+    margin-bottom: var(--space-md);
+  }
+
+  #screen-home .countdown {
+    gap: 36px;
+    margin-bottom: var(--space-md);
+  }
+  #screen-home .countdown-unit { text-align: left; }
+  #screen-home .countdown-value {
+    font-size: 2.75rem;
+    font-weight: 900;
+    letter-spacing: 0.01em;
+  }
+  #screen-home .countdown-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.18em;
+    margin-top: 4px;
+  }
+
+  #screen-home .next-run-meta {
+    font-size: 0.9375rem;
+    margin-bottom: var(--space-xs);
+  }
+
+  #screen-home .next-run-address {
+    font-size: 0.9375rem;
+    margin-bottom: var(--space-md);
+  }
+  #screen-home .next-run-address a {
+    transition: color 0.18s ease;
+  }
+  #screen-home .next-run-address a:hover { color: #fff; }
+
+  /* Live roll call — roomier strip on a big canvas */
+  #screen-home .rollcall-strip {
+    gap: var(--space-md);
+    min-height: 40px;
+    margin-bottom: var(--space-md);
+  }
+  #screen-home .rollcall-avatar {
+    width: 36px;
+    height: 36px;
+    margin-left: -12px;
+    border-width: 2px;
+  }
+  #screen-home .rollcall-avatar:first-child { margin-left: 0; }
+  #screen-home .rollcall-text {
+    font-size: 0.9375rem;
+    line-height: 1.4;
+  }
+  #screen-home .rollcall-text strong { letter-spacing: 0.06em; }
+
+  /* Action row: left-aligned block, never a monitor-wide button */
+  #screen-home .hero-action-row {
+    max-width: 460px;
+    gap: 12px;
+    margin-top: var(--space-xs);
+  }
+  #screen-home .hero-action-row .hero-action-primary {
+    font-size: 1rem;
+    padding: 16px 20px;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
+  }
+  #screen-home .btn-checkin:not(:disabled):hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 28px rgba(191, 255, 0, 0.28);
+  }
+  #screen-home .hero-action-run:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 0 20px rgba(191, 255, 0, 0.45);
+  }
+  #screen-home .btn-share-hero {
+    width: 52px;
+    height: 52px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+  }
+  #screen-home .btn-share-hero:hover {
+    background: var(--color-primary);
+    color: var(--color-bg);
+    transform: translateY(-2px);
+  }
+
+  /* ============================================================
+     RIGHT RAIL
+     ============================================================ */
+
+  /* Weather — first rail card. The slot itself is an empty div when
+     the forecast fails; zero height, the grid just packs past it. */
+  #screen-home .weather-card {
+    margin-bottom: 0;
+    padding: 18px 20px;
+    border-radius: 16px;
+    border-color: rgba(191, 255, 0, 0.22);
+    transition: border-color 0.2s ease;
+  }
+  #screen-home .weather-card:hover { border-color: rgba(191, 255, 0, 0.4); }
+  #screen-home .weather-icon { font-size: 2.25rem; }
+  #screen-home .weather-temp { font-size: 2rem; }
+  #screen-home .weather-label { font-size: 0.8125rem; margin-top: 4px; }
+  #screen-home .weather-side { font-size: 0.8125rem; }
+
+  /* Buddy status */
+  #screen-home .buddy-active-banner {
+    margin-bottom: 0;
+    gap: 12px;
+  }
+  #screen-home .buddy-active-card {
+    padding: 16px 18px;
+    border-radius: 16px;
+    transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease;
+  }
+  #screen-home .buddy-active-card:hover {
+    transform: translateY(-2px);
+    border-color: var(--color-primary);
+    background: var(--color-surface-hover);
+  }
+
+  /* Streak bar → proper rail card: big number up top, dots below */
+  #screen-home .streak-bar.streak-bar {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-md);
+    padding: 24px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(160deg, #1A1A1A 0%, #141414 100%);
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+  #screen-home .streak-bar:hover {
+    border-color: rgba(191, 255, 0, 0.35);
+    transform: translateY(-2px);
+  }
+  #screen-home .streak-info {
+    align-items: baseline;
+    gap: 10px;
+  }
+  #screen-home .streak-flame { font-size: 1.5rem; }
+  #screen-home .streak-count {
+    font-size: 3rem;
+    font-weight: 900;
+    line-height: 1;
+  }
+  #screen-home .streak-label {
+    font-size: 0.8125rem;
+    letter-spacing: 0.12em;
+    font-weight: 600;
+  }
+  #screen-home .streak-dots {
+    margin-left: 0;
+    gap: 8px;
+  }
+  #screen-home .streak-dot {
+    width: 14px;
+    height: 14px;
+    transition: transform 0.18s ease;
+  }
+  #screen-home .streak-bar:hover .streak-dot.filled { transform: scale(1.15); }
+
+  /* Quick stats → stacked stat tiles with big numerals */
+  #screen-home .quick-stats-row.quick-stats-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+  #screen-home .quick-stat-card {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-md);
+    text-align: left;
+    padding: 18px 22px;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+  #screen-home .quick-stat-card:hover {
+    border-color: rgba(191, 255, 0, 0.35);
+    transform: translateY(-2px);
+  }
+  #screen-home .quick-stat-value {
+    font-size: 2.5rem;
+    font-weight: 900;
+    margin-bottom: 0;
+  }
+  #screen-home .quick-stat-label {
+    font-size: 0.75rem;
+    letter-spacing: 0.14em;
+  }
+
+  /* ============================================================
+     LEFT COLUMN
+     ============================================================ */
+
+  /* Streak saver — urgent banner, keep it lean */
+  #screen-home .streak-saver-banner {
+    padding: 18px 22px;
+    border-radius: 16px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    transition: transform 0.2s ease, border-color 0.2s ease;
+  }
+  #screen-home .streak-saver-banner:hover {
+    transform: translateY(-2px);
+    border-top-color: rgba(191, 255, 0, 0.35);
+    border-right-color: rgba(191, 255, 0, 0.35);
+    border-bottom-color: rgba(191, 255, 0, 0.35);
+  }
+  #screen-home .streak-saver-flame { font-size: 1.75rem; }
+  #screen-home .streak-saver-title { font-size: 1.25rem; }
+  #screen-home .streak-saver-sub { font-size: 0.875rem; margin-top: 4px; }
+
+  /* First-run welcome (guest / zero check-ins variant) */
+  #screen-home .welcome-card {
+    padding: 28px 32px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    background: linear-gradient(160deg, #1A1A1A 0%, #141414 100%);
+  }
+  #screen-home .welcome-title { font-size: 2rem; }
+  #screen-home .welcome-copy {
+    font-size: 1rem;
+    max-width: 520px;
+  }
+  #screen-home .welcome-next-day { font-size: 1.25rem; }
+  #screen-home .welcome-next-detail { font-size: 0.875rem; }
+
+  /* Monthly challenge */
+  #screen-home .challenge-card {
+    padding: 24px 28px;
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: border-color 0.2s ease;
+  }
+  #screen-home .challenge-card:hover { border-color: rgba(191, 255, 0, 0.35); }
+  #screen-home .challenge-label,
+  #screen-home .challenge-days-left { font-size: 0.75rem; }
+  #screen-home .challenge-title { font-size: 1.5rem; }
+  #screen-home .challenge-progress-bar { height: 10px; }
+  #screen-home .challenge-count { font-size: 0.875rem; }
+
+  /* Community highlights: horizontal phone scroller → 2-up wrap grid */
+  #screen-home .highlights-section h3 {
+    font-family: var(--font-display);
+    font-size: 1.5rem;
+    font-weight: 800;
+    letter-spacing: 0.03em;
+    color: var(--color-text);
+    margin-bottom: var(--space-md);
+  }
+  #screen-home .highlights-scroll {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+    overflow-x: visible;
+    overflow-y: auto;
+    max-height: 640px;
+    scroll-snap-type: none;
+    padding-right: 4px;
+    padding-bottom: 4px;
+  }
+  #screen-home .highlight-card {
+    width: auto;
+    flex-shrink: 1;
+    border-radius: 16px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+  #screen-home .highlight-card:hover {
+    border-color: rgba(191, 255, 0, 0.35);
+    transform: translateY(-2px);
+  }
+  #screen-home .highlight-cover { height: 150px; }
+  #screen-home .highlight-body { padding: 16px 18px; }
+  #screen-home .highlight-card .highlight-text { font-size: 0.9375rem; }
+
+  /* Upcoming special event */
+  #screen-home .upcoming-event-card {
+    border-radius: 18px;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    transition: border-color 0.2s ease, transform 0.2s ease;
+  }
+  #screen-home .upcoming-event-card:hover {
+    border-color: rgba(191, 255, 0, 0.35);
+    transform: translateY(-2px);
+  }
+  #screen-home .upcoming-event-card img {
+    height: 220px;
+    object-fit: cover;
+  }
+  #screen-home .upcoming-event-info { padding: 20px 24px; }
+  #screen-home .upcoming-event-info h4 {
+    font-family: var(--font-display);
+    font-size: 1.375rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+  #screen-home .upcoming-event-meta { font-size: 0.875rem; }
+}

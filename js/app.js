@@ -89,12 +89,68 @@ document.addEventListener('DOMContentLoaded', async () => {
 
   // Offline banner — listeners registered once here
   initOfflineBanner();
+
+  // Desktop web extras (no-ops in the native app)
+  initSidebarNextRun();
+  initDesktopShortcuts();
 });
 
 // Mark the web build so CSS can hide iPhone-only features (GPS run tracking).
 // Runs immediately — before first paint — so the button never flashes.
 if (!window.Capacitor?.isNativePlatform()) {
   document.documentElement.classList.add('web');
+}
+
+// ===== DESKTOP EXTRAS (web only; CSS hides them below 940px) =====
+// Live next-run card pinned to the bottom of the sidebar.
+let _snrInterval = null;
+function initSidebarNextRun() {
+  if (window.Capacitor?.isNativePlatform()) return;
+  if (document.getElementById('sidebar-nextrun')) return;
+  const bar = document.getElementById('tab-bar');
+  if (!bar) return;
+  const card = document.createElement('div');
+  card.id = 'sidebar-nextrun';
+  card.setAttribute('role', 'button');
+  card.setAttribute('tabindex', '0');
+  card.addEventListener('click', () => navigateTo('home'));
+  bar.appendChild(card);
+
+  const render = () => {
+    const next = WEEKLY_RUNS
+      .map(r => ({ ...r, date: getNextRunDate(r.dayOfWeek) }))
+      .sort((a, b) => a.date - b.date)[0];
+    const diff = next.date - Date.now();
+    let count;
+    if (diff <= 0) {
+      count = 'Happening now — pull up';
+    } else {
+      const d = Math.floor(diff / 86400000);
+      const h = Math.floor((diff % 86400000) / 3600000);
+      const m = Math.floor((diff % 3600000) / 60000);
+      count = (d > 0 ? `${d}d ` : '') + `${h}h ${m}m to go`;
+    }
+    card.innerHTML = `
+      <div class="snr-label"><span class="dot"></span> Next run</div>
+      <div class="snr-run">${next.label} · <em>${next.location}</em></div>
+      <div class="snr-count">${next.time} · ${count}</div>
+    `;
+  };
+  render();
+  if (_snrInterval) clearInterval(_snrInterval);
+  _snrInterval = setInterval(render, 30000);
+}
+
+// Keyboard shortcuts: 1-5 switch tabs (ignored while typing).
+function initDesktopShortcuts() {
+  if (window.Capacitor?.isNativePlatform()) return;
+  const map = { '1': 'home', '2': 'events', '3': 'community', '4': 'stats', '5': 'profile' };
+  document.addEventListener('keydown', (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return;
+    if (e.target.closest('input, textarea, select, [contenteditable]')) return;
+    if (document.getElementById('app-shell').classList.contains('hidden')) return;
+    if (map[e.key]) { navigateTo(map[e.key]); haptic('light'); }
+  });
 }
 
 // ===== OFFLINE BANNER =====
