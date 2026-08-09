@@ -18,7 +18,7 @@ lock-screen presence.
    run-finished summary, pause/resume confirmations. **No hype/encouragement lines** (not selected).
 4. Auto-pause when GPS shows the runner stopped; auto-resume on movement.
 5. Live Activity: lock screen + Dynamic Island with live miles / time / pace / goal progress
-   (iOS 16.1+, availability-gated; no banner-notification fallback — not selected).
+   (iOS 16.2+, availability-gated; no banner-notification fallback — not selected).
 
 Non-goals: time-based goals, cloud TTS voices, Android parity (iOS-first; Android keeps current
 foreground behavior), push notifications, route maps.
@@ -32,7 +32,7 @@ auto-pause, persistence) stays in JS so the web build is untouched.
 ```
 js/run-tracker.js  ──┐                        ┌─ CLLocationManager (background fitness GPS)
 js/voice-coach.js  ──┼── RunEngine plugin ────┼─ AVSpeechSynthesizer + AVAudioSession (duck music)
-(milestone engine) ──┘   (Swift, app target)  └─ ActivityKit (Live Activity, iOS 16.1+ gated)
+(milestone engine) ──┘   (Swift, app target)  └─ ActivityKit (Live Activity, iOS 16.2+ gated)
                                               + RunItUpWidgets extension target (SwiftUI views)
 ```
 
@@ -46,7 +46,7 @@ js/voice-coach.js  ──┼── RunEngine plugin ────┼─ AVSpeechS
 - `speak({text})` — AVSpeechSynthesizer; best installed en-US voice (premium > enhanced > default).
   AVAudioSession `.playback` + `[.duckOthers, .mixWithOthers]`, activated per utterance queue,
   deactivated with `notifyOthersOnDeactivation` so music volume restores.
-- `startActivity/updateActivity/endActivity` — Live Activity lifecycle; `#available(iOS 16.1)` guarded.
+- `startActivity/updateActivity/endActivity` — Live Activity lifecycle; `#available(iOS 16.2)` guarded.
   ContentState: `{miles, pace, status, goalMiles, adjustedStart}` — elapsed time ticks natively via
   `Text(timerInterval:)` from `adjustedStart` (= now − elapsed, resent on each update), so the
   lock-screen clock runs smoothly between updates; paused states show a frozen elapsed string.
@@ -58,7 +58,7 @@ js/voice-coach.js  ──┼── RunEngine plugin ────┼─ AVSpeechS
 
 - `Info.plist`: add `audio` to `UIBackgroundModes` (voice while locked); add
   `NSSupportsLiveActivities=true`. (`location` mode + Always/WhenInUse strings already present.)
-- New target **RunItUpWidgets** (widget extension, min iOS 16.1): ActivityConfiguration lock-screen
+- New target **RunItUpWidgets** (widget extension, min iOS 16.2): ActivityConfiguration lock-screen
   view + DynamicIsland (compact: lime runner glyph + miles; expanded: miles/time/pace + goal bar).
   Brand: #0A0A0A / #BFFF00; Big Shoulders if the font file embeds cleanly, else SF heavy/condensed.
   `RunActivityAttributes.swift` shared between app + extension targets.
@@ -102,7 +102,7 @@ merge into one utterance. Numbers phrased for speech, never read as decimals. Se
 
 - GPS permission revoked mid-run → toast + voice "GPS lost", run keeps elapsed time, saves what it has.
 - Speech failure is always non-fatal (try/catch around every `speak`).
-- Live Activity start failure (disabled in Settings, < 16.1) → silent no-op; tracking unaffected.
+- Live Activity start failure (disabled in Settings, < 16.2) → silent no-op; tracking unaffected.
 - Save failure keeps existing pending-run localStorage retry path (unchanged).
 - App killed mid-run → resume prompt on next launch (persistence above).
 
