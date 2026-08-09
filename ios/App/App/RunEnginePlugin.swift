@@ -28,6 +28,36 @@ public class RunEnginePlugin: CAPPlugin, CAPBridgedPlugin, CLLocationManagerDele
         if #available(iOS 16.2, *) {
             LiveActivityBridge.shared.endStrays() // clear anything a killed run left on the lock screen
         }
+        // A phone call / Siri / alarm pauses AVSpeechSynthesizer and it never
+        // resumes on its own — cancel outright so every queued utterance drains
+        // through didCancel (resolving its call) and the next cue starts clean.
+        NotificationCenter.default.addObserver(
+            forName: AVAudioSession.interruptionNotification,
+            object: AVAudioSession.sharedInstance(),
+            queue: .main
+        ) { [weak self] note in
+            guard let self = self else { return }
+            let raw = note.userInfo?[AVAudioSessionInterruptionTypeKey] as? UInt
+            if raw == AVAudioSession.InterruptionType.began.rawValue {
+                self.synthesizer.stopSpeaking(at: .immediate)
+            }
+        }
+        NotificationCenter.default.addObserver(
+            forName: AVAudioSession.mediaServicesWereResetNotification,
+            object: AVAudioSession.sharedInstance(),
+            queue: .main
+        ) { [weak self] _ in
+            self?.drainSpeakCalls()
+        }
+    }
+
+    deinit {
+        NotificationCenter.default.removeObserver(self)
+    }
+
+    private func drainSpeakCalls() {
+        for (_, call) in speakCalls { call.resolve() }
+        speakCalls.removeAll()
     }
 
     // MARK: - Background GPS
@@ -45,6 +75,21 @@ public class RunEnginePlugin: CAPPlugin, CAPBridgedPlugin, CLLocationManagerDele
             if lm.authorizationStatus == .notDetermined {
                 lm.requestWhenInUseAuthorization()
             }
+            // Precise Location off = 1-3 km fixes the JS pipeline rightly drops,
+            // which would read as a run stuck at 0.00 — ask for temporary full
+            // accuracy and tell JS if the user declines.
+            if lm.accuracyAuthorization == .reducedAccuracy {
+                lm.requestTemporaryFullAccuracyAuthorization(withPurposeKey: "RunTracking") { [weak self] _ in
+                    DispatchQueue.main.async {
+                        if self?.locationManager?.accuracyAuthorization == .reducedAccuracy {
+                            self?.notifyListeners("locationError", data: [
+                                "message": "precise-location-off",
+                                "code": "reducedAccuracy"
+                            ])
+                        }
+                    }
+                }
+            }
             lm.startUpdatingLocation()
             self.locationManager = lm
             call.resolve()
@@ -55,6 +100,8 @@ public class RunEnginePlugin: CAPPlugin, CAPBridgedPlugin, CLLocationManagerDele
         DispatchQueue.main.async {
             self.locationManager?.stopUpdatingLocation()
             self.locationManager?.allowsBackgroundLocationUpdates = false
+            // End of run: never strand a queued utterance's pending call
+            self.synthesizer.stopSpeaking(at: .word)
             call.resolve()
         }
     }
@@ -88,22 +135,51 @@ public class RunEnginePlugin: CAPPlugin, CAPBridgedPlugin, CLLocationManagerDele
         DispatchQueue.main.async {
             let session = AVAudioSession.sharedInstance()
             try? session.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers, .mixWithOthers])
-            try? session.setActive(true)
+            do {
+                try session.setActive(true)
+            } catch {
+                // Mid-call etc. — speech is best-effort; never block the JS side.
+                CAPLog.print("RunEngine: audio session activate failed: \(error)")
+                call.resolve()
+                return
+            }
             let utterance = AVSpeechUtterance(string: text)
             utterance.voice = Self.bestVoice()
             if let rate = call.getDouble("rate") {
                 utterance.rate = Float(rate)
             }
-            self.speakCalls[ObjectIdentifier(utterance)] = call
+            let key = ObjectIdentifier(utterance)
+            self.speakCalls[key] = call
             self.synthesizer.speak(utterance)
+            // Watchdog: a stranded utterance (interruption edge cases) must
+            // never leave the countdown awaiting forever. Generous budget:
+            // ~12 chars/sec speech plus slack.
+            let budget = 4.0 + Double(text.count) / 8.0
+            DispatchQueue.main.asyncAfter(deadline: .now() + budget) { [weak self] in
+                self?.speakCalls.removeValue(forKey: key)?.resolve()
+            }
         }
     }
 
     private func finishUtterance(_ utterance: AVSpeechUtterance) {
         DispatchQueue.main.async {
             self.speakCalls.removeValue(forKey: ObjectIdentifier(utterance))?.resolve()
-            if !self.synthesizer.isSpeaking && self.speakCalls.isEmpty {
-                try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+            self.deactivateSessionWhenIdle(attempt: 0)
+        }
+    }
+
+    // Deactivating inside the didFinish hop commonly throws isBusy (560030580)
+    // while the synthesizer's I/O tears down — and .duckOthers keeps the user's
+    // music ducked until deactivation SUCCEEDS. Delay, re-check, retry.
+    private func deactivateSessionWhenIdle(attempt: Int) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            guard let self = self else { return }
+            guard !self.synthesizer.isSpeaking && self.speakCalls.isEmpty else { return }
+            do {
+                try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+            } catch {
+                CAPLog.print("RunEngine: audio session deactivate failed (attempt \(attempt)): \(error)")
+                if attempt < 3 { self.deactivateSessionWhenIdle(attempt: attempt + 1) }
             }
         }
     }

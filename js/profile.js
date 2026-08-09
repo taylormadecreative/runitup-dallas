@@ -79,6 +79,7 @@ async function refreshProfile() {
       <a href="#" onclick="window.open('./terms.html', '_blank'); return false;" style="font-size: 0.75rem; color: var(--color-text-muted); padding: var(--space-sm) 0;">Terms of Service</a>
     </div>
 
+    ${typeof hasRunEngine === 'function' && hasRunEngine() ? `
     <div class="profile-settings">
       <h3 class="profile-settings-title">RUN SETTINGS</h3>
       <label class="settings-toggle">
@@ -91,7 +92,7 @@ async function refreshProfile() {
         <input type="checkbox" ${riuSetting('riu_auto_pause') === 'on' ? 'checked' : ''}
           onchange="localStorage.setItem('riu_auto_pause', this.checked ? 'on' : 'off')">
       </label>
-    </div>
+    </div>` : ''}
 
     <div class="profile-actions">
       <button class="btn-primary" onclick="shareCrewInvite()">

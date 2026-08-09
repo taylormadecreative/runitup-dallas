@@ -52,7 +52,11 @@ eq(RunLogic.phraseMiles(3.1), '3.1 miles', 'phraseMiles 3.1');
   eq(at2.length, 2, '2mi: mile-2 + goal at 2.01');
   ok(at2[0].startsWith('Mile two.'), '2mi: mile-2 split before goal');
   eq(at2[1], 'Goal hit. Two miles. Way to run it up.', '2mi: goal phrase');
-  eq(m.onSample({ miles: 2.3, elapsedMs: 1400000 }), [], '2mi: silent after goal');
+  eq(m.onSample({ miles: 2.3, elapsedMs: 1400000 }), [], '2mi: quiet between miles after goal');
+  const at3 = m.onSample({ miles: 3.05, elapsedMs: 1900000 });
+  eq(at3.length, 1, '2mi: mile splits KEEP firing after goal');
+  ok(at3[0].startsWith('Mile three.'), '2mi: post-goal mile-3 split');
+  eq(m.onSample({ miles: 3.4, elapsedMs: 2100000 }), [], '2mi: goal line never repeats');
 }
 
 // ---------- milestone engine: no goal -> splits only ----------

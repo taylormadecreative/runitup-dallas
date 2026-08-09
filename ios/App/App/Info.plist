@@ -60,6 +60,11 @@
 	</array>
 	<key>NSSupportsLiveActivities</key>
 	<true/>
+	<key>NSLocationTemporaryUsageDescriptionDictionary</key>
+	<dict>
+		<key>RunTracking</key>
+		<string>Precise location is needed to measure your distance and pace during a run.</string>
+	</dict>
 	<key>NSCameraUsageDescription</key>
 	<string>Run It UP! needs camera access to take your profile photo.</string>
 	<key>NSPhotoLibraryUsageDescription</key>

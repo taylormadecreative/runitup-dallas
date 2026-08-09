@@ -18,18 +18,23 @@ final class LiveActivityBridge {
         }
     }
 
+    // Rolling staleDate: if the app dies mid-run, ActivityKit flips the widget
+    // to its stale rendering (~75s later) instead of ticking LIVE forever.
+    private var rollingStaleDate: Date { Date().addingTimeInterval(75) }
+
     func start(state: RunActivityAttributes.ContentState) {
         guard ActivityAuthorizationInfo().areActivitiesEnabled else { return }
         endStrays()
         activity = try? Activity.request(
             attributes: RunActivityAttributes(),
-            content: .init(state: state, staleDate: nil)
+            content: .init(state: state, staleDate: rollingStaleDate)
         )
     }
 
     func update(state: RunActivityAttributes.ContentState) {
         guard let activity = activity else { return }
-        Task { await activity.update(.init(state: state, staleDate: nil)) }
+        let staleDate = rollingStaleDate
+        Task { await activity.update(.init(state: state, staleDate: staleDate)) }
     }
 
     func end(finalState: RunActivityAttributes.ContentState?) {

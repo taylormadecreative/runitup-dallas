@@ -72,8 +72,9 @@ const RunLogic = (() => {
 
     function onSample({ miles, elapsedMs }) {
       const out = [];
-      if (st.goalDone) return out;
 
+      // Mile splits keep coaching past the goal — only the goal/halfway/final
+      // lines are one-shot.
       const wholeMile = Math.floor(miles + 1e-9);
       if (wholeMile >= 1 && wholeMile > st.milesAnnounced) {
         out.push(mileSplit(wholeMile, miles, elapsedMs)); // only the latest mile — no backlog spam
@@ -81,8 +82,8 @@ const RunLogic = (() => {
         st.lastMileElapsedMs = elapsedMs;
       }
 
-      const goalFires = goal !== null && miles >= goal;
-      if (goal !== null && !goalFires) {
+      const goalFires = goal !== null && miles >= goal && !st.goalDone;
+      if (goal !== null && !goalFires && !st.goalDone) {
         if (!st.halfwayDone && miles >= goal / 2) {
           st.halfwayDone = true;
           const remaining = Math.max(0.25, Math.round((goal - miles) * 4) / 4);

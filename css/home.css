@@ -334,7 +334,19 @@
 }
 
 /* ===== RUN TRACKER PREP ===== */
-.run-tracker-prep { justify-content: flex-start; gap: var(--space-md); }
+.run-tracker-prep {
+  justify-content: flex-start;
+  gap: var(--space-md);
+  overflow-y: auto; /* SE-class phones: chips + custom input must never push START off-screen */
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+@media (max-height: 700px) {
+  .run-tracker-prep { gap: var(--space-sm); }
+  .rt-prep-title { margin-top: var(--space-sm); font-size: 2rem; }
+  .rt-prep-hero .rt-value { font-size: 5rem; }
+}
 
 .rt-close {
   position: absolute;
@@ -388,6 +400,7 @@
   align-items: center;
   justify-content: center;
   flex: 1;
+  min-height: 0; /* let the hero shrink before anything overflows */
   width: 100%;
 }
 

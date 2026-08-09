@@ -6,7 +6,8 @@ const RUN_STATE = {
   status: 'idle', // 'idle' | 'tracking' | 'paused' (manual, sticky) | 'autopaused' (GPS says stopped)
   startedAt: null,
   pausedAt: null,
-  totalPausedMs: 0,
+  accumElapsedMs: 0, // monotonic elapsed accumulator — immune to wall-clock jumps
+  lastTickAt: null,
   distanceMeters: 0,
   lastPoint: null,      // { lat, lng, time }
   points: [],           // sampled route points
@@ -14,9 +15,11 @@ const RUN_STATE = {
   watchId: null,
   wakeLock: null,
   goalMiles: null,      // distance goal for this run (null = just run)
+  clientRunId: null,    // stable per-run id — the server dedupes saves on it
   milestone: null,      // RunLogic milestone engine
   autoPause: null,      // RunLogic auto-pause detector
   engineListener: null, // RunEngine 'location' listener handle
+  engineErrListener: null,
   lastSnapshotAt: 0,
   lastUI: { miles: 0, seconds: 0, paceSecPerMile: null }
 };
@@ -38,6 +41,12 @@ window.RunTrackerEvents = RunTrackerEvents;
 function riuSetting(key) {
   const v = localStorage.getItem(key);
   return v === null ? 'on' : v;
+}
+
+// True only where the native RunEngine exists (iOS). Android/web keep the
+// old foreground-only tracker and must never see iOS-only promises.
+function hasRunEngine() {
+  return !!(window.Capacitor?.isNativePlatform() && window.Capacitor.Plugins?.RunEngine);
 }
 
 function setRunGoal(v) {
@@ -72,11 +81,20 @@ function _haversineMeters(a, b) {
   return 2 * R * Math.asin(Math.sqrt(h));
 }
 
+// Elapsed time accumulates in capped forward steps instead of subtracting
+// wall-clock timestamps, so a manual clock change / NTP resync mid-run can
+// never corrupt the run (backward jumps add 0, forward jumps add <= 10s).
+const MAX_TICK_ADVANCE_MS = 10000;
 function _elapsedMs() {
   if (!RUN_STATE.startedAt) return 0;
-  const frozen = RUN_STATE.status === 'paused' || RUN_STATE.status === 'autopaused';
-  const now = frozen ? RUN_STATE.pausedAt : Date.now();
-  return now - RUN_STATE.startedAt - RUN_STATE.totalPausedMs;
+  if (RUN_STATE.status === 'tracking') {
+    const now = Date.now();
+    if (RUN_STATE.lastTickAt != null) {
+      RUN_STATE.accumElapsedMs += Math.min(Math.max(0, now - RUN_STATE.lastTickAt), MAX_TICK_ADVANCE_MS);
+    }
+    RUN_STATE.lastTickAt = now;
+  }
+  return RUN_STATE.accumElapsedMs;
 }
 
 function _formatDuration(ms) {
@@ -155,20 +173,25 @@ function _onPosition(coords, timestamp) {
 }
 
 // Native fixes from RunEngine: auto-pause decisions first, then the shared pipeline.
+const DERIVED_SPEED_MAX_ACCURACY_M = 20; // matches the detector's gate
+const DERIVED_SPEED_CEILING_MPS = 12;    // faster than any runner = GPS jump, not movement
 let _lastEngineFix = null;
 function _onEngineFix(fix) {
   if (RUN_STATE.status === 'idle') { _lastEngineFix = null; return; }
   const tMs = fix.timestamp || Date.now();
+  const accuracyOk = (fix.accuracy ?? 999) <= DERIVED_SPEED_MAX_ACCURACY_M;
   // iOS reports speed -1 when it can't estimate — derive from consecutive
-  // fixes so auto-pause still works (and so the simulator can exercise it).
+  // GOOD fixes so auto-pause still works. Bad-accuracy fixes neither derive
+  // nor move the anchor, so a noisy fix can't fabricate a phantom sprint.
   let speedMps = fix.speedMps ?? -1;
-  if (speedMps < 0 && _lastEngineFix) {
+  if (speedMps < 0 && accuracyOk && _lastEngineFix) {
     const dtSec = (tMs - _lastEngineFix.tMs) / 1000;
     if (dtSec >= 0.3 && dtSec <= 10) {
       speedMps = _haversineMeters(_lastEngineFix, { lat: fix.lat, lng: fix.lng }) / dtSec;
+      if (speedMps > DERIVED_SPEED_CEILING_MPS) speedMps = -1; // treat as no-signal
     }
   }
-  _lastEngineFix = { lat: fix.lat, lng: fix.lng, tMs };
+  if (accuracyOk) _lastEngineFix = { lat: fix.lat, lng: fix.lng, tMs };
   if (RUN_STATE.autoPause && riuSetting('riu_auto_pause') === 'on' &&
       (RUN_STATE.status === 'tracking' || RUN_STATE.status === 'autopaused')) {
     const action = RUN_STATE.autoPause.onFix({
@@ -191,6 +214,14 @@ async function _startWatchPosition() {
     const perm = await nativeGeo?.requestPermissions({ permissions: ['location'] });
     if (perm && perm.location === 'denied') throw new Error('Location permission denied');
     RUN_STATE.engineListener = await runEngine.addListener('location', _onEngineFix);
+    RUN_STATE.engineErrListener = await runEngine.addListener('locationError', (e) => {
+      if (RUN_STATE.status === 'idle') return;
+      if (e?.code === 'reducedAccuracy') {
+        showToast('Precise Location is off — turn it on in Settings so your miles count.', 'error');
+      } else {
+        console.warn('[run-tracker] native location error', e);
+      }
+    });
     await runEngine.startTracking();
     return;
   }
@@ -229,6 +260,8 @@ async function _stopWatchPosition() {
   if (RUN_STATE.engineListener) {
     try { await RUN_STATE.engineListener.remove(); } catch {}
     RUN_STATE.engineListener = null;
+    try { await RUN_STATE.engineErrListener?.remove(); } catch {}
+    RUN_STATE.engineErrListener = null;
     try { await runEngine?.stopTracking(); } catch {}
   }
   if (RUN_STATE.watchId != null) {
@@ -272,13 +305,12 @@ function _snapshotLiveRun(force) {
       v: 1,
       userId: currentProfile?.id,
       startedAt: RUN_STATE.startedAt,
-      pausedAt: RUN_STATE.pausedAt,
-      totalPausedMs: RUN_STATE.totalPausedMs,
       status: RUN_STATE.status,
       distanceMeters: RUN_STATE.distanceMeters,
       elapsedMs: _elapsedMs(),
       points: RUN_STATE.points,
       goalMiles: RUN_STATE.goalMiles,
+      clientRunId: RUN_STATE.clientRunId,
       milestoneState: RUN_STATE.milestone ? RUN_STATE.milestone.state() : null,
       t: now
     }));
@@ -314,7 +346,8 @@ async function checkLiveRunRecovery() {
         p_event_type: _runEventTypeFor(snap.startedAt, snap.t)
       };
       if (snap.goalMiles) { payload.p_goal_miles = snap.goalMiles; payload.p_goal_hit = miles >= snap.goalMiles; }
-      try { localStorage.setItem(PENDING_RUN_KEY, JSON.stringify({ userId: currentProfile.id, payload })); } catch {}
+      payload.p_client_run_id = snap.clientRunId || _newClientRunId();
+      _addPendingRun(currentProfile.id, payload); // queues alongside any other unsynced run
       retryPendingRunSave();
     }
     return;
@@ -325,21 +358,28 @@ async function checkLiveRunRecovery() {
 
   RUN_STATE.status = snap.status === 'tracking' ? 'tracking' : snap.status;
   RUN_STATE.startedAt = snap.startedAt;
-  RUN_STATE.pausedAt = snap.pausedAt || null;
-  // Time the app spent dead doesn't count as running — credit anything beyond
-  // a short crash-gap as paused so leaderboard paces stay honest.
-  RUN_STATE.totalPausedMs = (snap.totalPausedMs || 0) + (RUN_STATE.status === 'tracking' ? Math.max(0, age - 120000) : 0);
+  RUN_STATE.pausedAt = RUN_STATE.status === 'tracking' ? null : Date.now();
+  // The accumulator only advances while alive-and-tracking, so time the app
+  // spent dead never counts as running — no gap arithmetic needed.
+  RUN_STATE.accumElapsedMs = snap.elapsedMs || 0;
+  RUN_STATE.lastTickAt = Date.now();
   RUN_STATE.distanceMeters = snap.distanceMeters || 0;
   RUN_STATE.points = snap.points || [];
   RUN_STATE.lastPoint = null;
   RUN_STATE.goalMiles = snap.goalMiles || null;
+  RUN_STATE.clientRunId = snap.clientRunId || _newClientRunId();
   RUN_STATE.milestone = window.RunLogic ? RunLogic.createMilestoneEngine(RUN_STATE.goalMiles) : null;
   if (RUN_STATE.milestone && snap.milestoneState) RUN_STATE.milestone.restore(snap.milestoneState);
   RUN_STATE.autoPause = window.RunLogic ? RunLogic.createAutoPauseDetector() : null;
   RUN_STATE.timerInterval = setInterval(_runTick, 1000);
   await _requestWakeLock();
   try { await _startWatchPosition(); } catch (err) {
-    showToast('Could not restart GPS — check location permission.', 'error');
+    // No GPS = no honest tracking — freeze the clock instead of counting air
+    showToast('Could not restart GPS — run paused. Tap RESUME to try again.', 'error');
+    if (RUN_STATE.status === 'tracking') {
+      RUN_STATE.status = 'paused';
+      RUN_STATE.pausedAt = Date.now();
+    }
   }
   showRunTrackerUI();
   _updateTrackerUI();
@@ -397,8 +437,10 @@ async function openRunTrackerPrep() {
       </div>
     </div>
     <div class="rt-prep-tips">
+      ${hasRunEngine() ? `
       <div>· Lock your phone and pocket it — tracking keeps going</div>
-      <div>· Auto-pause covers stoplights and water breaks</div>
+      <div>· Auto-pause covers stoplights and water breaks</div>` : `
+      <div>· Keep your phone unlocked and the app open while you run</div>`}
       <div>· Pause anytime — stop when you're done</div>
     </div>
     <div class="rt-actions">
@@ -625,10 +667,12 @@ async function beginRun() {
     RUN_STATE.status = 'tracking';
     RUN_STATE.startedAt = Date.now();
     RUN_STATE.pausedAt = null;
-    RUN_STATE.totalPausedMs = 0;
+    RUN_STATE.accumElapsedMs = 0;
+    RUN_STATE.lastTickAt = Date.now();
     RUN_STATE.distanceMeters = 0;
     RUN_STATE.lastPoint = null;
     RUN_STATE.points = [];
+    RUN_STATE.clientRunId = _newClientRunId();
     RUN_STATE.milestone = window.RunLogic ? RunLogic.createMilestoneEngine(RUN_STATE.goalMiles) : null;
     RUN_STATE.autoPause = window.RunLogic ? RunLogic.createAutoPauseDetector() : null;
     RUN_STATE.timerInterval = setInterval(_runTick, 1000);
@@ -662,6 +706,7 @@ async function startRun() {
 function pauseRun() {
   if (RUN_STATE.status !== 'tracking' && RUN_STATE.status !== 'autopaused') return;
   const wasAuto = RUN_STATE.status === 'autopaused';
+  if (!wasAuto) _elapsedMs(); // bank running time up to the freeze point
   RUN_STATE.status = 'paused'; // manual pause is sticky — never auto-resumes
   if (!wasAuto) RUN_STATE.pausedAt = Date.now(); // upgrading from auto keeps the original freeze point
   haptic('light');
@@ -672,11 +717,19 @@ function pauseRun() {
   _snapshotLiveRun(true);
 }
 
-function resumeRun() {
+async function resumeRun() {
   if (RUN_STATE.status !== 'paused') return;
-  RUN_STATE.totalPausedMs += Date.now() - RUN_STATE.pausedAt;
+  // If the watch died (permission revoked, failed recovery), GPS must come
+  // back before the clock does.
+  if (RUN_STATE.engineListener == null && RUN_STATE.watchId == null) {
+    try { await _startWatchPosition(); } catch (err) {
+      showToast('Still no GPS — check location permission in Settings.', 'error');
+      return; // stay paused
+    }
+  }
   RUN_STATE.pausedAt = null;
   RUN_STATE.status = 'tracking';
+  RUN_STATE.lastTickAt = Date.now();
   RUN_STATE.lastPoint = null; // reset so we don't count teleport distance
   RUN_STATE.autoPause?.reset();
   haptic('light');
@@ -689,6 +742,7 @@ function resumeRun() {
 // GPS says the runner stopped moving — freeze time/distance until they move.
 function _autoPause() {
   if (RUN_STATE.status !== 'tracking') return;
+  _elapsedMs(); // bank running time up to the freeze point
   RUN_STATE.status = 'autopaused';
   RUN_STATE.pausedAt = Date.now();
   haptic('light');
@@ -701,9 +755,9 @@ function _autoPause() {
 
 function _autoResume() {
   if (RUN_STATE.status !== 'autopaused') return;
-  RUN_STATE.totalPausedMs += Date.now() - RUN_STATE.pausedAt;
   RUN_STATE.pausedAt = null;
   RUN_STATE.status = 'tracking';
+  RUN_STATE.lastTickAt = Date.now();
   RUN_STATE.lastPoint = null;
   RUN_STATE.autoPause?.reset();
   haptic('light');
@@ -743,27 +797,64 @@ async function _saveRunPayload(payload) {
   return error || null;
 }
 
-// Retry a run that finished but couldn't reach the server (kept in
-// localStorage until the save is confirmed).
+// Unsaved finished runs queue up in a list (never a single overwritable slot),
+// each carrying a client-generated id the server dedupes on — so neither a
+// retry racing the original save nor a lost response can double-count a run.
+function _newClientRunId() {
+  if (window.crypto?.randomUUID) return crypto.randomUUID();
+  return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+    const r = Math.random() * 16 | 0;
+    return (c === 'x' ? r : (r & 0x3 | 0x8)).toString(16);
+  });
+}
+
+function _readPendingRuns() {
+  try {
+    const raw = JSON.parse(localStorage.getItem(PENDING_RUN_KEY) || 'null');
+    if (!raw) return [];
+    if (Array.isArray(raw)) return raw;
+    return raw.payload ? [raw] : []; // legacy single-object form
+  } catch { return []; }
+}
+
+function _writePendingRuns(list) {
+  try {
+    if (!list.length) localStorage.removeItem(PENDING_RUN_KEY);
+    else localStorage.setItem(PENDING_RUN_KEY, JSON.stringify(list.slice(-10)));
+  } catch {}
+}
+
+function _addPendingRun(userId, payload) {
+  const list = _readPendingRuns().filter(e => e.payload?.p_client_run_id !== payload.p_client_run_id);
+  list.push({ userId, payload });
+  _writePendingRuns(list);
+}
+
+function _removePendingRun(payload) {
+  _writePendingRuns(_readPendingRuns().filter(e =>
+    e.payload?.p_client_run_id !== payload.p_client_run_id));
+}
+
+// Retry runs that finished but couldn't reach the server.
 let _retryPendingInFlight = false;
 async function retryPendingRunSave() {
-  if (_retryPendingInFlight) return;
-  let stored;
-  try { stored = JSON.parse(localStorage.getItem(PENDING_RUN_KEY) || 'null'); } catch { stored = null; }
-  if (!stored || !stored.payload) return;
+  if (_retryPendingInFlight || _stopRunInFlight) return; // never race a live stop-save
+  const list = _readPendingRuns();
+  if (!list.length) return;
   if (typeof currentProfile === 'undefined' || !currentProfile) return;
-  if (stored.userId && stored.userId !== currentProfile.id) return;
   _retryPendingInFlight = true;
   try {
-    const error = await _saveRunPayload(stored.payload);
-    if (!error) {
-      localStorage.removeItem(PENDING_RUN_KEY);
+    let savedAny = false;
+    for (const entry of list) {
+      if (entry.userId && entry.userId !== currentProfile.id) continue;
+      const error = await _saveRunPayload(entry.payload);
+      if (!error) { _removePendingRun(entry.payload); savedAny = true; }
+      else if (error.code === '23505') { _removePendingRun(entry.payload); } // already saved server-side
+    }
+    if (savedAny) {
       showToast('Your last run is saved — nice work.', 'success');
       try { if (typeof refreshHome === 'function') refreshHome(); } catch {}
       try { if (typeof refreshStats === 'function') refreshStats(); } catch {}
-    } else if (error.code === '23505') {
-      // Already saved server-side — drop the local copy so we don't loop
-      localStorage.removeItem(PENDING_RUN_KEY);
     }
   } catch (err) {
     console.warn('[run-tracker] pending run retry failed', err);
@@ -808,7 +899,8 @@ async function stopRun() {
       p_distance_miles: +miles.toFixed(2),
       p_pace_sec: paceSecPerMile ? Math.round(paceSecPerMile) : null,
       p_points: points.length > 0 ? points : null,
-      p_event_type: _runEventTypeFor(startedMs, Date.now())
+      p_event_type: _runEventTypeFor(startedMs, Date.now()),
+      p_client_run_id: RUN_STATE.clientRunId || _newClientRunId()
     };
     if (RUN_STATE.goalMiles) {
       payload.p_goal_miles = RUN_STATE.goalMiles;
@@ -818,11 +910,11 @@ async function stopRun() {
     try {
       // Keep a local copy until the save is confirmed — a failed save must
       // never destroy the finished run.
-      try { localStorage.setItem(PENDING_RUN_KEY, JSON.stringify({ userId: currentProfile?.id, payload })); } catch {}
+      _addPendingRun(currentProfile?.id, payload);
       const error = await _saveRunPayload(payload);
       if (error) throw error;
       saved = true;
-      try { localStorage.removeItem(PENDING_RUN_KEY); } catch {}
+      _removePendingRun(payload);
     } catch (err) {
       console.error('[run-tracker] save failed', err);
       showToast("Run saved on this phone — couldn't reach the server yet. It'll sync automatically.", 'error');
@@ -852,12 +944,14 @@ async function _resetRun() {
   RUN_STATE.status = 'idle';
   RUN_STATE.startedAt = null;
   RUN_STATE.pausedAt = null;
-  RUN_STATE.totalPausedMs = 0;
+  RUN_STATE.accumElapsedMs = 0;
+  RUN_STATE.lastTickAt = null;
   RUN_STATE.distanceMeters = 0;
   RUN_STATE.lastPoint = null;
   RUN_STATE.points = [];
   RUN_STATE.timerInterval = null;
   RUN_STATE.goalMiles = null;
+  RUN_STATE.clientRunId = null;
   RUN_STATE.milestone = null;
   RUN_STATE.autoPause = null;
   RUN_STATE.lastSnapshotAt = 0;
@@ -910,7 +1004,7 @@ function showRunTrackerUI() {
       <button id="rt-pause-btn" class="btn-secondary" onclick="toggleRunPause()">PAUSE</button>
       <button class="btn-primary rt-stop-btn" onclick="stopRun()">STOP RUN</button>
     </div>
-    <p class="rt-hint">Lock your phone and run — we've got you.</p>
+    <p class="rt-hint">${hasRunEngine() ? "Lock your phone and run — we've got you." : "Keep the screen on and the app open while you run."}</p>
   `;
   document.body.appendChild(overlay);
 }

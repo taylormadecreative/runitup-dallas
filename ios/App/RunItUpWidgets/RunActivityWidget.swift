@@ -11,7 +11,7 @@ private let riuMuted = Color.white.opacity(0.55)
 struct RunActivityWidget: Widget {
     var body: some WidgetConfiguration {
         ActivityConfiguration(for: RunActivityAttributes.self) { context in
-            LockScreenRunView(state: context.state)
+            LockScreenRunView(state: context.state, isStale: context.isStale)
                 .activityBackgroundTint(riuBlack)
                 .activitySystemActionForegroundColor(riuLime)
         } dynamicIsland: { context in
@@ -101,6 +101,10 @@ private struct GoalBar: View {
 
 private struct LockScreenRunView: View {
     let state: RunActivityAttributes.ContentState
+    var isStale: Bool = false
+    // Stale = the app stopped updating (killed / crashed) — stop claiming LIVE
+    // and freeze the natively-ticking clock so the lock screen can't lie.
+    private var statusLabel: String { isStale ? "OPEN APP TO RESUME" : state.statusText }
     var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             HStack {
@@ -110,12 +114,12 @@ private struct LockScreenRunView: View {
                     .kerning(1.5)
                 Spacer()
                 HStack(spacing: 5) {
-                    if state.statusText == "LIVE" {
+                    if state.statusText == "LIVE" && !isStale {
                         Circle().fill(riuLime).frame(width: 7, height: 7)
                     }
-                    Text(state.statusText)
+                    Text(statusLabel)
                         .font(.system(size: 11, weight: .heavy))
-                        .foregroundColor(state.statusText == "LIVE" ? riuLime : riuMuted)
+                        .foregroundColor(state.statusText == "LIVE" && !isStale ? riuLime : riuMuted)
                         .kerning(1.2)
                 }
             }
@@ -128,10 +132,16 @@ private struct LockScreenRunView: View {
                     .foregroundColor(riuMuted)
                 Spacer()
                 VStack(alignment: .trailing, spacing: 2) {
-                    ElapsedText(state: state)
-                        .font(.system(size: 20, weight: .heavy).monospacedDigit())
-                        .foregroundColor(.white)
-                        .multilineTextAlignment(.trailing)
+                    if isStale {
+                        Text("--:--")
+                            .font(.system(size: 20, weight: .heavy).monospacedDigit())
+                            .foregroundColor(riuMuted)
+                    } else {
+                        ElapsedText(state: state)
+                            .font(.system(size: 20, weight: .heavy).monospacedDigit())
+                            .foregroundColor(.white)
+                            .multilineTextAlignment(.trailing)
+                    }
                     Text(state.paceText + " PACE")
                         .font(.system(size: 12, weight: .bold))
                         .foregroundColor(riuMuted)
@@ -142,5 +152,6 @@ private struct LockScreenRunView: View {
             }
         }
         .padding(14)
+        .opacity(isStale ? 0.7 : 1)
     }
 }
