@@ -766,6 +766,7 @@ async function stopRun() {
     if (miles < 0.05 || seconds < 30) {
       const discard = await confirmNative('That was a short run — less than 0.05 mi / 30 seconds. Discard?', 'Discard Run', 'Keep Tracking');
       if (!discard) return;
+      RunTrackerEvents.emit('onRunAbandon');
       await _resetRun();
       closeRunTrackerUI();
       return;
@@ -1097,3 +1098,69 @@ try {
 window.addEventListener('online', () => { retryPendingRunSave(); });
 // One shot after launch, once auth has had a chance to hydrate.
 setTimeout(() => { retryPendingRunSave(); checkLiveRunRecovery(); }, 8000);
+
+// ===== LIVE ACTIVITY (lock screen + Dynamic Island) =====
+// Mirrors the run onto the Live Activity via RunEngine. The elapsed clock
+// ticks natively in the widget, so updates only need to carry distance/pace
+// and state flips — throttled to every 3s or 0.01 mi.
+(() => {
+  if (!window.Capacitor?.isNativePlatform()) return;
+
+  function callEngine(method, arg) {
+    const engine = window.Capacitor?.Plugins?.RunEngine;
+    if (!engine || typeof engine[method] !== 'function') return;
+    try {
+      const p = engine[method](arg);
+      if (p && typeof p.catch === 'function') p.catch(() => {});
+    } catch {}
+  }
+
+  function contentState() {
+    const running = RUN_STATE.status === 'tracking';
+    const { miles, paceSecPerMile } = RUN_STATE.lastUI;
+    return {
+      miles: +(miles || 0).toFixed(2),
+      paceText: _formatPace(paceSecPerMile),
+      statusText: RUN_STATE.status === 'autopaused' ? 'AUTO-PAUSED'
+                : RUN_STATE.status === 'paused' ? 'PAUSED' : 'LIVE',
+      goalMiles: RUN_STATE.goalMiles || null,
+      adjustedStartMs: Date.now() - _elapsedMs(),
+      frozenElapsed: running ? null : _formatDuration(_elapsedMs())
+    };
+  }
+
+  let lastUpdate = 0;
+  let lastMiles = -1;
+
+  RunTrackerEvents.listeners.push({
+    onRunStart() {
+      lastUpdate = 0;
+      lastMiles = -1;
+      callEngine('startActivity', contentState());
+    },
+    onSample(stats) {
+      const now = Date.now();
+      if (now - lastUpdate < 3000 && Math.abs(stats.miles - lastMiles) < 0.01) return;
+      lastUpdate = now;
+      lastMiles = stats.miles;
+      callEngine('updateActivity', contentState());
+    },
+    onStatusChange(status, ctx) {
+      if (status === 'finished') {
+        callEngine('endActivity', {
+          miles: +((ctx && ctx.miles) || 0).toFixed(2),
+          paceText: _formatPace(ctx && ctx.paceSecPerMile),
+          statusText: 'DONE',
+          goalMiles: (ctx && ctx.goalMiles) || null,
+          adjustedStartMs: Date.now(),
+          frozenElapsed: _formatDuration(((ctx && ctx.seconds) || 0) * 1000)
+        });
+        return;
+      }
+      callEngine('updateActivity', contentState());
+    },
+    onRunAbandon() {
+      callEngine('endActivity', {});
+    }
+  });
+})();

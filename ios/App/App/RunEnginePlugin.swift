@@ -25,6 +25,9 @@ public class RunEnginePlugin: CAPPlugin, CAPBridgedPlugin, CLLocationManagerDele
 
     public override func load() {
         synthesizer.delegate = self
+        if #available(iOS 16.2, *) {
+            LiveActivityBridge.shared.endStrays() // clear anything a killed run left on the lock screen
+        }
     }
 
     // MARK: - Background GPS
@@ -113,17 +116,40 @@ public class RunEnginePlugin: CAPPlugin, CAPBridgedPlugin, CLLocationManagerDele
         finishUtterance(utterance)
     }
 
-    // MARK: - Live Activity (implemented in the Live Activity task; stubs keep the JS surface stable)
+    // MARK: - Live Activity
+
+    @available(iOS 16.2, *)
+    private static func contentState(from call: CAPPluginCall) -> RunActivityAttributes.ContentState {
+        return RunActivityAttributes.ContentState(
+            miles: call.getDouble("miles") ?? 0,
+            paceText: call.getString("paceText") ?? "--'--\"",
+            statusText: call.getString("statusText") ?? "LIVE",
+            goalMiles: call.getDouble("goalMiles"),
+            adjustedStartMs: call.getDouble("adjustedStartMs") ?? Date().timeIntervalSince1970 * 1000.0,
+            frozenElapsed: call.getString("frozenElapsed")
+        )
+    }
 
     @objc func startActivity(_ call: CAPPluginCall) {
+        if #available(iOS 16.2, *) {
+            LiveActivityBridge.shared.start(state: Self.contentState(from: call))
+        }
         call.resolve()
     }
 
     @objc func updateActivity(_ call: CAPPluginCall) {
+        if #available(iOS 16.2, *) {
+            LiveActivityBridge.shared.update(state: Self.contentState(from: call))
+        }
         call.resolve()
     }
 
     @objc func endActivity(_ call: CAPPluginCall) {
+        if #available(iOS 16.2, *) {
+            // A call with real content shows a 4-second final card; empty = dismiss now.
+            let hasFinal = call.getDouble("miles") != nil
+            LiveActivityBridge.shared.end(finalState: hasFinal ? Self.contentState(from: call) : nil)
+        }
         call.resolve()
     }
 }
