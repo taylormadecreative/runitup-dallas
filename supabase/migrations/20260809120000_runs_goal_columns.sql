@@ -14,3 +14,9 @@ commit;
 
 -- applied 2026-08-09 via Management API; explicit anon EXECUTE revoked afterward to match the 7/11 hardening state
 revoke execute on function public.save_run_with_checkin(timestamp with time zone, timestamp with time zone, integer, numeric, integer, jsonb, text, numeric, boolean) from anon;
+
+-- 2026-08-09 follow-up (found by E2E): check_ins.event_type is enum public.event_type;
+-- comparing/inserting the text param raised 42883 and 'solo' was never a valid label.
+-- Recreated the function (same signature) to cast valid club labels explicitly and to
+-- save non-club runs ('solo') with NO check-in attached — see scratch rpc-fix.sql body,
+-- applied to prod via Management API. Grants unchanged (same-signature replace).

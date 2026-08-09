@@ -136,6 +136,30 @@ eq(RunLogic.phraseMiles(3.1), '3.1 miles', 'phraseMiles 3.1');
   eq(d.onFix({ speedMps: 1.2, accuracyM: 5, tMs: 34000, status: 'autopaused' }), 'resume', 'ap: resume again');
 }
 
+// ---------- auto-pause: noise spikes in the ambiguous band don't reset stillness ----------
+{
+  const d = RunLogic.createAutoPauseDetector();
+  d.onFix({ speedMps: 3.0, accuracyM: 5, tMs: 0, status: 'tracking' }); // clock + immunity anchor
+  d.onFix({ speedMps: 3.0, accuracyM: 5, tMs: 19000, status: 'tracking' });
+  // stationary GPS jitter: mostly < 0.6 with spikes at 0.85/0.7 (shuffle band, NOT movement)
+  const speeds = [0.4, 0.5, 0.85, 0.45, 0.7, 0.5, 0.48];
+  let fired = null;
+  speeds.forEach((s, i) => {
+    const a = d.onFix({ speedMps: s, accuracyM: 5, tMs: 20000 + i * 1000, status: 'tracking' });
+    if (a) fired = { a, t: 20000 + i * 1000 };
+  });
+  eq(fired && fired.a, 'pause', 'ap-noise: pause still fires through shuffle spikes');
+  eq(fired && fired.t, 26000, 'ap-noise: pause timing unchanged');
+  // real movement (>= 1.0) resets the window
+  const d2 = RunLogic.createAutoPauseDetector();
+  d2.onFix({ speedMps: 3.0, accuracyM: 5, tMs: 0, status: 'tracking' });
+  d2.onFix({ speedMps: 0.2, accuracyM: 5, tMs: 20000, status: 'tracking' });
+  d2.onFix({ speedMps: 2.5, accuracyM: 5, tMs: 23000, status: 'tracking' }); // reset
+  eq(d2.onFix({ speedMps: 0.2, accuracyM: 5, tMs: 26500, status: 'tracking' }), null, 'ap-noise: real movement resets');
+  eq(d2.onFix({ speedMps: 0.2, accuracyM: 5, tMs: 32000, status: 'tracking' }), null, 'ap-noise: not yet 6s from re-still');
+  eq(d2.onFix({ speedMps: 0.2, accuracyM: 5, tMs: 32600, status: 'tracking' }), 'pause', 'ap-noise: pause 6s after re-still');
+}
+
 // ---------- buildFinishSummary ----------
 {
   const s = RunLogic.buildFinishSummary({ miles: 2.05, seconds: 1210, paceSecPerMile: 590, goalMiles: 2 });

@@ -68,13 +68,18 @@ private struct MilesText: View {
 }
 
 // Ticks natively while running; frozen string while paused — no pushes needed.
+// Text(timerInterval:) renders the compact ticking clock ("15:12"), unlike
+// Text(_:style:.timer) which falls back to "15 minutes" in wide layouts.
 private struct ElapsedText: View {
     let state: RunActivityAttributes.ContentState
     var body: some View {
         if let frozen = state.frozenElapsed {
             Text(frozen)
         } else {
-            Text(Date(timeIntervalSince1970: state.adjustedStartMs / 1000), style: .timer)
+            Text(
+                timerInterval: Date(timeIntervalSince1970: state.adjustedStartMs / 1000)...Date.distantFuture,
+                countsDown: false
+            )
         }
     }
 }

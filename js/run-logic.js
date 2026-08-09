@@ -127,9 +127,11 @@ const RunLogic = (() => {
         if (speedMps < AP.STILL_MPS) {
           if (stillSince === null) stillSince = tMs;
           if (tMs - stillSince >= AP.STILL_MS) { stillSince = null; return 'pause'; }
-        } else {
-          stillSince = null;
+        } else if (speedMps >= AP.MOVE_MPS) {
+          stillSince = null; // real movement resets the window
         }
+        // 0.6–1.0 m/s is jitter/shuffle — neutral, so noise spikes while
+        // standing at a stoplight can't keep deferring the pause forever
         return null;
       }
 

@@ -102,6 +102,11 @@ function _computeStats() {
   return { miles, seconds, paceSecPerMile };
 }
 
+function _runTick() {
+  _updateTrackerUI();
+  _snapshotLiveRun(false);
+}
+
 function _updateTrackerUI() {
   const { miles, seconds, paceSecPerMile } = _computeStats();
   RUN_STATE.lastUI = { miles, seconds, paceSecPerMile };
@@ -150,14 +155,26 @@ function _onPosition(coords, timestamp) {
 }
 
 // Native fixes from RunEngine: auto-pause decisions first, then the shared pipeline.
+let _lastEngineFix = null;
 function _onEngineFix(fix) {
-  if (RUN_STATE.status === 'idle') return;
+  if (RUN_STATE.status === 'idle') { _lastEngineFix = null; return; }
+  const tMs = fix.timestamp || Date.now();
+  // iOS reports speed -1 when it can't estimate — derive from consecutive
+  // fixes so auto-pause still works (and so the simulator can exercise it).
+  let speedMps = fix.speedMps ?? -1;
+  if (speedMps < 0 && _lastEngineFix) {
+    const dtSec = (tMs - _lastEngineFix.tMs) / 1000;
+    if (dtSec >= 0.3 && dtSec <= 10) {
+      speedMps = _haversineMeters(_lastEngineFix, { lat: fix.lat, lng: fix.lng }) / dtSec;
+    }
+  }
+  _lastEngineFix = { lat: fix.lat, lng: fix.lng, tMs };
   if (RUN_STATE.autoPause && riuSetting('riu_auto_pause') === 'on' &&
       (RUN_STATE.status === 'tracking' || RUN_STATE.status === 'autopaused')) {
     const action = RUN_STATE.autoPause.onFix({
-      speedMps: fix.speedMps ?? -1,
+      speedMps,
       accuracyM: fix.accuracy ?? 999,
-      tMs: fix.timestamp || Date.now(),
+      tMs,
       status: RUN_STATE.status
     });
     if (action === 'pause') _autoPause();
@@ -319,7 +336,7 @@ async function checkLiveRunRecovery() {
   RUN_STATE.milestone = window.RunLogic ? RunLogic.createMilestoneEngine(RUN_STATE.goalMiles) : null;
   if (RUN_STATE.milestone && snap.milestoneState) RUN_STATE.milestone.restore(snap.milestoneState);
   RUN_STATE.autoPause = window.RunLogic ? RunLogic.createAutoPauseDetector() : null;
-  RUN_STATE.timerInterval = setInterval(_updateTrackerUI, 1000);
+  RUN_STATE.timerInterval = setInterval(_runTick, 1000);
   await _requestWakeLock();
   try { await _startWatchPosition(); } catch (err) {
     showToast('Could not restart GPS — check location permission.', 'error');
@@ -614,7 +631,7 @@ async function beginRun() {
     RUN_STATE.points = [];
     RUN_STATE.milestone = window.RunLogic ? RunLogic.createMilestoneEngine(RUN_STATE.goalMiles) : null;
     RUN_STATE.autoPause = window.RunLogic ? RunLogic.createAutoPauseDetector() : null;
-    RUN_STATE.timerInterval = setInterval(_updateTrackerUI, 1000);
+    RUN_STATE.timerInterval = setInterval(_runTick, 1000);
     haptic('heavy');
     await _requestWakeLock();
     await _startWatchPosition();
