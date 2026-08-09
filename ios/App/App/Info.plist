@@ -56,7 +56,10 @@
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>
+		<string>audio</string>
 	</array>
+	<key>NSSupportsLiveActivities</key>
+	<true/>
 	<key>NSCameraUsageDescription</key>
 	<string>Run It UP! needs camera access to take your profile photo.</string>
 	<key>NSPhotoLibraryUsageDescription</key>
