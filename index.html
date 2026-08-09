@@ -3,22 +3,23 @@
 <head>
   <meta charset="UTF-8">
   <style>html,body{background:#0A0A0A;}</style>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#0A0A0A">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="description" content="Run It UP! Dallas — Built By the Community, Powered by Purpose">
   <meta property="og:title" content="Run It UP! Dallas">
-  <meta property="og:description" content="Run It UP! Dallas — Check in. Connect. Run together. The crew app for Dallas's biggest run club.">
+  <meta property="og:description" content="Run It UP! Dallas — Check in. Connect. Run together. The crew app for Dallas's biggest run club (90K followers on Instagram).">
   <meta property="og:image" content="https://taylormadecreative.github.io/runitup-app-site/assets/og-image.jpg">
   <meta property="og:url" content="https://taylormadecreative.github.io/runitup-app-site/">
   <title>Run It UP! | Dallas Run Club</title>
+  <link rel="preload" as="image" href="assets/photos/low-angle-urban.webp" fetchpriority="high">
   <link rel="manifest" href="manifest.json">
   <link rel="icon" href="assets/logo-192.png">
   <link rel="apple-touch-icon" href="assets/logo-192.png">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" crossorigin="anonymous">
   <link rel="stylesheet" href="css/variables.css">
   <link rel="stylesheet" href="css/base.css">
   <link rel="stylesheet" href="css/components.css">
@@ -91,7 +92,7 @@
         <svg class="tab-icon" viewBox="0 0 24 24"><path d="M19 3h-1V1h-2v2H8V1H6v2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11z"/></svg>
         <span class="tab-label">Events</span>
       </button>
-      <button class="tab" data-screen="community" aria-label="Community">
+      <button class="tab" data-screen="community" aria-label="Chat">
         <svg class="tab-icon" viewBox="0 0 24 24"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"/></svg>
         <span class="tab-label">Chat</span>
         <span id="community-badge" class="badge hidden">0</span>
@@ -109,18 +110,18 @@
 
   <!-- Scripts -->
   <!-- Bundled locally (v2.110.2) so the app boots without a CDN round-trip -->
-  <script src="assets/vendor/supabase.min.js"></script>
-  <script src="js/supabase.js"></script>
-  <script src="js/auth.js"></script>
-  <script src="js/checkin.js"></script>
-  <script src="js/run-tracker.js"></script>
-  <script src="js/home.js"></script>
-  <script src="js/events.js"></script>
-  <script src="js/buddy.js"></script>
-  <script src="js/community.js"></script>
-  <script src="js/dms.js"></script>
-  <script src="js/stats.js"></script>
-  <script src="js/profile.js"></script>
-  <script src="js/app.js"></script>
+  <script src="assets/vendor/supabase.min.js" defer></script>
+  <script src="js/supabase.js" defer></script>
+  <script src="js/auth.js" defer></script>
+  <script src="js/checkin.js" defer></script>
+  <script src="js/run-tracker.js" defer></script>
+  <script src="js/home.js" defer></script>
+  <script src="js/events.js" defer></script>
+  <script src="js/buddy.js" defer></script>
+  <script src="js/community.js" defer></script>
+  <script src="js/dms.js" defer></script>
+  <script src="js/stats.js" defer></script>
+  <script src="js/profile.js" defer></script>
+  <script src="js/app.js" defer></script>
 </body>
 </html>

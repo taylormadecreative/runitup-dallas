@@ -156,20 +156,27 @@ async function refreshHome() {
     checkInBtnDisabled = 'disabled';
   } else if (!windowOpen) {
     checkInBtnDisabled = 'disabled';
+    checkInBtnText = `CHECK-IN OPENS ${checkInOpensLabel(nextRunDate)}`;
   }
 
   container.innerHTML = `
     <!-- Hero Banner -->
-    <div class="home-hero" style="background-image: url('./assets/photos/crew-hero.jpg');">
+    <div class="home-hero" style="background-image: url('./assets/photos/crew-hero.webp');">
+      <div class="next-run-ticker${window._tickerPaused ? ' paused' : ''}" role="button" tabindex="0" title="Tap to pause"
+        aria-pressed="${window._tickerPaused ? 'true' : 'false'}"
+        onclick="window._tickerPaused = this.classList.toggle('paused'); this.setAttribute('aria-pressed', window._tickerPaused)">
+        <span class="sr-only">Next run: ${nextRun.label} at ${nextRun.location}, ${nextRun.time}. Tap to pause the scrolling banner.</span>
+        <div class="next-run-ticker-track" aria-hidden="true">
+          ${`<span class="next-run-ticker-item">NEXT RUN&ensp;\u2022&ensp;${nextRun.label} \u2014 ${nextRun.location}&ensp;\u2022&ensp;${nextRun.time}&ensp;\u2022&ensp;</span>`.repeat(8)}
+        </div>
+      </div>
       <div class="home-hero-overlay">
-        <div class="next-run-label">Next Run</div>
-        <div class="next-run-title">${nextRun.label} \u2014 <span>${nextRun.location}</span></div>
         <div class="countdown" id="home-countdown"></div>
         ${windowOpen ? `
           <div class="next-run-meta">${nextRun.time} \u00B7 ${nextRun.distance}</div>
           <div class="rollcall-strip" id="home-rollcall">${renderRollCallStrip(_rollCallRows)}</div>
         ` : `
-          <div class="next-run-meta">${nextRun.time} \u00B7 ${nextRun.distance} \u00B7 ${lastCount} showed up last week</div>
+          <div class="next-run-meta">${nextRun.time} \u00B7 ${nextRun.distance}${lastCount > 0 ? ` \u00B7 ${lastCount} showed up last week` : ''}</div>
         `}
         <div class="next-run-address">
           ${nextRun.address} \u00B7 <a href="${nextRun.mapsUrl}" target="_blank">Directions</a>
@@ -199,7 +206,7 @@ async function refreshHome() {
             : 'Sunday · Levy Plaza';
           const matched = !!r.matched_with;
           return `
-            <div class="buddy-active-card" onclick="openBuddyBoard('${r.run_day}', '${r.run_date}')">
+            <div class="buddy-active-card" role="button" tabindex="0" aria-label="Open buddy board" onclick="openBuddyBoard('${r.run_day}', '${r.run_date}')">
               <div class="buddy-active-icon">${matched ? '✅' : '👀'}</div>
               <div style="flex: 1;">
                 <div class="buddy-active-title">${matched ? 'Matched with a buddy' : 'Looking for a buddy'}</div>
@@ -226,7 +233,7 @@ async function refreshHome() {
     ${renderStreakSaverBanner(stats)}
 
     <!-- Streak Bar -->
-    <div class="streak-bar" onclick="navigateTo('stats')">
+    <div class="streak-bar" role="button" tabindex="0" aria-label="View your stats" onclick="navigateTo('stats')">
       <div class="streak-info">
         <span class="streak-flame" style="color: var(--color-secondary); font-family: var(--font-display); font-weight: 800;">&#9650;</span>
         <span class="streak-count">${stats.streak}</span>
@@ -264,24 +271,24 @@ async function refreshHome() {
     <!-- Community Highlights -->
     ${highlights.length > 0 ? `
     <div class="highlights-section">
-      <h3>Community</h3>
+      <h3>Crew Highlights</h3>
       <div class="highlights-scroll">
         ${highlights.map((h, i) => {
           const covers = [
-            './assets/photos/night-sprint.jpg',
-            './assets/photos/solo-skyline.jpg',
-            './assets/photos/low-angle-alley.jpg',
-            './assets/photos/solo-neon.jpg',
-            './assets/photos/above-night.jpg',
-            './assets/photos/motion-brick.jpg',
-            './assets/photos/pack-street.jpg',
-            './assets/photos/duo-women.jpg',
-            './assets/photos/hero.jpg',
-            './assets/photos/low-angle-urban.jpg',
-            './assets/photos/above-crowd.jpg',
-            './assets/photos/motion-blur.jpg',
-            './assets/photos/motion-night.jpg',
-            './assets/photos/low-angle-film.jpg'
+            './assets/photos/night-sprint.webp',
+            './assets/photos/solo-skyline.webp',
+            './assets/photos/low-angle-alley.webp',
+            './assets/photos/solo-neon.webp',
+            './assets/photos/above-night.webp',
+            './assets/photos/motion-brick.webp',
+            './assets/photos/pack-street.webp',
+            './assets/photos/duo-women.webp',
+            './assets/photos/hero.webp',
+            './assets/photos/low-angle-urban.webp',
+            './assets/photos/above-crowd.webp',
+            './assets/photos/motion-blur.webp',
+            './assets/photos/motion-night.webp',
+            './assets/photos/low-angle-film.webp'
           ];
           const cover = covers[i % covers.length];
           return `
@@ -299,7 +306,7 @@ async function refreshHome() {
 
     <!-- Upcoming Special Event -->
     ${upcomingEvent ? `
-    <div class="upcoming-event-card" onclick="viewEventDetail('${upcomingEvent.id}')">
+    <div class="upcoming-event-card" role="button" tabindex="0" aria-label="View event details" onclick="viewEventDetail('${upcomingEvent.id}')">
       ${upcomingEvent.cover_image_url ? `<img src="${upcomingEvent.cover_image_url}" alt="${escapeHtml(upcomingEvent.title)}">` : ''}
       <div class="upcoming-event-info">
         <h4>${escapeHtml(upcomingEvent.title)}</h4>

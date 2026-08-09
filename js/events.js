@@ -126,10 +126,10 @@ async function refreshEvents() {
 
 // Photo map for weekly run cards
 const WEEKLY_RUN_PHOTOS = {
-  'monday': './assets/photos/motion-blur.jpg',
-  'tuesday': './assets/photos/night-sprint.jpg',
-  'saturday': './assets/photos/solo-skyline.jpg',
-  'sunday': './assets/photos/low-angle-film.jpg'
+  'monday': './assets/photos/motion-blur.webp',
+  'tuesday': './assets/photos/night-sprint.webp',
+  'saturday': './assets/photos/solo-skyline.webp',
+  'sunday': './assets/photos/low-angle-film.webp'
 };
 
 function renderWeeklyRunCard(run, lastCount, buddyCount, checkedIn, nextDate) {
@@ -143,7 +143,7 @@ function renderWeeklyRunCard(run, lastCount, buddyCount, checkedIn, nextDate) {
   } else if (windowOpen) {
     btnHtml = `<button class="btn-primary btn-sm" onclick="handleCheckIn('${run.eventType}')">Check In</button>`;
   } else {
-    btnHtml = `<button class="btn-primary btn-sm" disabled>Check In</button>`;
+    btnHtml = `<button class="btn-primary btn-sm" disabled>Opens ${checkInOpensLabel(nextRunDate)}</button>`;
   }
 
   return `
@@ -156,7 +156,7 @@ function renderWeeklyRunCard(run, lastCount, buddyCount, checkedIn, nextDate) {
       <div class="weekly-run-details">
         ${run.location} &middot; ${run.distance} &middot; <a href="${run.mapsUrl}" target="_blank">Directions</a>
       </div>
-      <div class="weekly-run-stats">${lastCount} showed up last week</div>
+      ${lastCount > 0 ? `<div class="weekly-run-stats">${lastCount} showed up last week</div>` : `<div class="weekly-run-stats">The crew pulls up every week — every pace welcome</div>`}
       <div class="weekly-run-actions">
         ${btnHtml}
         <button class="btn-buddy" onclick="openBuddyBoard('${run.day}', '${nextDate}')">
@@ -173,7 +173,7 @@ function renderWeeklyRunCard(run, lastCount, buddyCount, checkedIn, nextDate) {
 
 function renderSpecialEventCard(event, rsvpCount, isPast) {
   return `
-    <div class="special-event-card" onclick="viewEventDetail(${jsArg(event.id)})">
+    <div class="special-event-card" role="button" tabindex="0" aria-label="View event: ${escapeAttr(event.title)}" onclick="viewEventDetail(${jsArg(event.id)})">
       ${safeImageUrl(event.cover_image_url) ? `<img src="${safeImageUrl(event.cover_image_url)}" alt="${escapeAttr(event.title)}">` : `<div class="event-no-cover">RIU</div>`}
       <div class="special-event-body">
         <h3>${escapeHtml(event.title)}</h3>

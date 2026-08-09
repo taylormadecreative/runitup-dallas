@@ -632,7 +632,7 @@ async function shareRunSummary(miles, seconds, paceSecPerMile) {
     const [, logoImg, bgImg] = await Promise.all([
       loadBigShouldersFont(),
       loadImageSafe('./assets/logo.png'),
-      loadImageSafe('./assets/photos/low-angle-urban.jpg')
+      loadImageSafe('./assets/photos/low-angle-urban.webp')
     ]);
     const displayFont = '"Big Shoulders Display", "Arial Black", Impact, sans-serif';
     const stats = await getUserStats(currentProfile.id);

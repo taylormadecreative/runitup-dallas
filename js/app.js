@@ -90,9 +90,20 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Offline banner — listeners registered once here
   initOfflineBanner();
 
+  // Toast live region must exist BEFORE the first toast is appended, or
+  // screen readers miss the first announcement.
+  if (!document.getElementById('toast-container')) {
+    const tc = document.createElement('div');
+    tc.id = 'toast-container';
+    tc.setAttribute('role', 'status');
+    tc.setAttribute('aria-live', 'polite');
+    document.body.appendChild(tc);
+  }
+
   // Desktop web extras (no-ops in the native app)
   initSidebarNextRun();
   initDesktopShortcuts();
+  initKeyboardActivation();
 });
 
 // Mark the web build so CSS can hide iPhone-only features (GPS run tracking).
@@ -101,7 +112,8 @@ if (!window.Capacitor?.isNativePlatform()) {
   document.documentElement.classList.add('web');
 }
 
-// ===== DESKTOP EXTRAS (web only; CSS hides them below 940px) =====
+// ===== DESKTOP EXTRAS (web only; components.css hides #sidebar-nextrun
+// below 940px, desktop.css shows it in the sidebar at ≥940px) =====
 // Live next-run card pinned to the bottom of the sidebar.
 let _snrInterval = null;
 function initSidebarNextRun() {
@@ -153,6 +165,21 @@ function initDesktopShortcuts() {
   });
 }
 
+// Enter/Space activate any role="button" div (divs don't synthesize click
+// from the keyboard the way real buttons do).
+function initKeyboardActivation() {
+  document.addEventListener('keydown', (e) => {
+    if (e.key !== 'Enter' && e.key !== ' ') return;
+    const el = e.target;
+    if (!(el instanceof HTMLElement)) return;
+    if (el.matches('button, a, input, textarea, select, [contenteditable]')) return;
+    if (el.getAttribute('role') === 'button') {
+      e.preventDefault();
+      el.click();
+    }
+  });
+}
+
 // ===== OFFLINE BANNER =====
 // Slim fixed banner under the app header, toggled by connectivity events.
 function initOfflineBanner() {
@@ -160,6 +187,7 @@ function initOfflineBanner() {
   if (!banner) {
     banner = document.createElement('div');
     banner.id = 'offline-banner';
+    banner.setAttribute('role', 'status');
     banner.textContent = "You're offline — some things won't load.";
     document.body.appendChild(banner);
   }

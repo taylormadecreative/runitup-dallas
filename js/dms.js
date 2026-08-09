@@ -39,7 +39,7 @@ async function openDmInbox() {
     ` : `
       <div class="dm-inbox-list">
         ${rows.map(r => `
-          <div class="dm-inbox-row" onclick="openDmThread('${r.thread.id}', '${r.otherUser?.id || ''}')">
+          <div class="dm-inbox-row" role="button" tabindex="0" aria-label="Open conversation with ${escapeAttr(r.otherUser?.display_name || 'member')}" onclick="openDmThread('${r.thread.id}', '${r.otherUser?.id || ''}')">
             <img src="${safeAvatarUrl(r.otherUser?.avatar_url)}" class="avatar-md" alt="">
             <div class="dm-inbox-row-main">
               <div class="dm-inbox-row-top">
@@ -85,7 +85,7 @@ async function openDmThread(threadId, otherUserId) {
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
         Back
       </button>
-      <div class="dm-thread-header" onclick="viewMemberProfile('${otherUserId}')">
+      <div class="dm-thread-header" role="button" tabindex="0" aria-label="View profile" onclick="viewMemberProfile('${otherUserId}')">
         <img src="${safeAvatarUrl(otherUser?.avatar_url)}" class="avatar-sm" alt="">
         <div>
           <strong>${escapeHtml(otherUser?.display_name || 'Member')}</strong>

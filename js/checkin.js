@@ -302,7 +302,7 @@ async function shareCheckInCard() {
     const [, logoImg, bgImg] = await Promise.all([
       loadBigShouldersFont(),
       loadImageSafe('./assets/logo.png'),
-      loadImageSafe('./assets/photos/low-angle-urban.jpg')
+      loadImageSafe('./assets/photos/low-angle-urban.webp')
     ]);
 
     // Font family strings — fall back gracefully if FontFace failed
@@ -477,7 +477,7 @@ async function shareStatsCard() {
     const [, logoImg, bgImg] = await Promise.all([
       loadBigShouldersFont(),
       loadImageSafe('./assets/logo.png'),
-      loadImageSafe('./assets/photos/above-crowd.jpg')
+      loadImageSafe('./assets/photos/above-crowd.webp')
     ]);
     const displayFont = '"Big Shoulders Display", "Arial Black", Impact, sans-serif';
     const stats = await getUserStats(currentProfile.id);
@@ -861,7 +861,7 @@ async function shareBadgeCard(badgeType) {
     const [, logoImg, bgImg] = await Promise.all([
       loadBigShouldersFont(),
       loadImageSafe('./assets/logo.png'),
-      loadImageSafe('./assets/photos/low-angle-urban.jpg')
+      loadImageSafe('./assets/photos/low-angle-urban.webp')
     ]);
 
     const displayFont = '"Big Shoulders Display", "Arial Black", Impact, sans-serif';

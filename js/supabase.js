@@ -2,7 +2,9 @@
 const DEMO_MODE = false;
 
 // Default avatar for users without a profile photo
-const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23252525'/%3E%3Ctext x='50' y='55' text-anchor='middle' dominant-baseline='middle' font-family='Inter,sans-serif' font-size='40' font-weight='600' fill='%239A9A9A'%3E%3F%3C/text%3E%3C/svg%3E";
+// Person silhouette, not a "?" — a circled question mark reads as a Help
+// button in the header, not a profile.
+const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%23252525'/%3E%3Ccircle cx='50' cy='40' r='16' fill='%239A9A9A'/%3E%3Cpath d='M50 60c-16 0-27 9-29 22a50 50 0 0 0 58 0C77 69 66 60 50 60z' fill='%239A9A9A'/%3E%3C/svg%3E";
 
 // Replace these with your Supabase project credentials
 const SUPABASE_URL = 'https://rouvbfejsyfcmswlsezd.supabase.co';
@@ -465,6 +467,8 @@ function showToast(message, type = 'info') {
   if (!container) {
     container = document.createElement('div');
     container.id = 'toast-container';
+    container.setAttribute('role', 'status');
+    container.setAttribute('aria-live', 'polite');
     document.body.appendChild(container);
   }
   const toast = document.createElement('div');
@@ -606,6 +610,17 @@ function formatDate(dateStr) {
   return new Date(dateStr).toLocaleDateString('en-US', {
     weekday: 'short', month: 'short', day: 'numeric'
   });
+}
+
+// When does check-in open for a run? (window opens 4h before start —
+// keep in sync with isCheckInWindow above). Returns e.g. "TUE 3 PM".
+function checkInOpensLabel(targetDate) {
+  const opens = new Date(targetDate.getTime() - 4 * 60 * 60 * 1000);
+  const day = opens.toLocaleDateString('en-US', { weekday: 'short', timeZone: 'America/Chicago' });
+  const time = opens.toLocaleTimeString('en-US', {
+    hour: 'numeric', minute: '2-digit', timeZone: 'America/Chicago'
+  }).replace(':00', '');
+  return `${day} ${time}`.toUpperCase();
 }
 
 function formatTime(dateStr) {

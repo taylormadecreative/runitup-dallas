@@ -25,15 +25,16 @@ function appleBtnHTML() {
 // ===== RENDER SPLASH =====
 function renderSplash() {
   document.getElementById('screen-splash').innerHTML = `
-    <div class="splash-hero" style="background-image: url('./assets/photos/low-angle-urban.jpg');">
+    <div class="splash-hero" style="background-image: url('./assets/photos/low-angle-urban.webp');">
       <div class="splash-hero-overlay">
         <img src="./assets/logo.png" alt="Run It UP!" class="splash-logo">
         <p class="splash-tagline">Built By the Community, Powered by Purpose</p>
-        <p style="font-size: 0.75rem; color: var(--color-primary); font-weight: 600; margin-bottom: var(--space-md);">Dallas's biggest run club.</p>
+        <p style="font-size: 0.75rem; color: var(--color-primary); font-weight: 600; margin-bottom: var(--space-md);">Dallas's biggest run club &middot; 90K followers on Instagram</p>
         <div class="splash-buttons">
           <button class="btn-primary" onclick="showScreen('signup')">JOIN THE CREW</button>
           <button class="btn-secondary btn-sm" onclick="loginAsGuest()" style="margin-top: var(--space-xs);">EXPLORE AS GUEST</button>
           <p class="splash-login-link">Already have an account? <a href="#" onclick="showScreen('login'); return false;">Log In</a></p>
+          ${window.Capacitor?.isNativePlatform() ? '' : `<p class="splash-login-link" style="margin-top: 2px;">New here? <a href="./about.html">See the schedule &amp; club info</a></p>`}
         </div>
       </div>
     </div>
@@ -101,7 +102,7 @@ function renderSignup() {
       <li>Lock in your check-ins and build your streak</li>
       <li>Find a running buddy — never run alone</li>
       <li>Earn badges. Climb the leaderboard.</li>
-      <li>Connect with 12 community channels</li>
+      <li>Connect with the crew in community channels</li>
     </ul>
     <form class="auth-form" onsubmit="handleSignup(event)">
       <div class="form-group">
@@ -134,7 +135,7 @@ function renderOnboarding() {
   onboardingData = { display_name: '', avatar_url: null, pace_group: null, run_days: [] };
 
   document.getElementById('screen-onboarding').innerHTML = `
-    <div class="onboarding-bg" id="onboarding-bg" style="background-image: url('./assets/photos/hero.jpg');"></div>
+    <div class="onboarding-bg" id="onboarding-bg" style="background-image: url('./assets/photos/hero.webp');"></div>
 
     <div class="onboarding-progress">
       <div class="progress-dot active" id="progress-1"></div>
@@ -143,7 +144,7 @@ function renderOnboarding() {
     </div>
 
     <!-- Step 1: Name + Avatar -->
-    <div class="onboarding-step active" id="onboarding-step-1" data-bg="./assets/photos/hero.jpg">
+    <div class="onboarding-step active" id="onboarding-step-1" data-bg="./assets/photos/hero.webp">
       <div class="onboarding-headline">WELCOME TO THE CREW</div>
       <h2>Who Are You?</h2>
       <p>Let the crew know who's pulling up</p>
@@ -164,7 +165,7 @@ function renderOnboarding() {
     </div>
 
     <!-- Step 2: Pace Group -->
-    <div class="onboarding-step" id="onboarding-step-2" data-bg="./assets/photos/low-angle-urban.jpg">
+    <div class="onboarding-step" id="onboarding-step-2" data-bg="./assets/photos/low-angle-urban.webp">
       <button class="auth-back" onclick="prevOnboardingStep()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
         Back
@@ -204,7 +205,7 @@ function renderOnboarding() {
     </div>
 
     <!-- Step 3: Run Days -->
-    <div class="onboarding-step" id="onboarding-step-3" data-bg="./assets/photos/above-crowd.jpg">
+    <div class="onboarding-step" id="onboarding-step-3" data-bg="./assets/photos/above-crowd.webp">
       <button class="auth-back" onclick="prevOnboardingStep()">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/></svg>
         Back

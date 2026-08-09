@@ -196,7 +196,7 @@
 .badge-detail-icon.locked ~ .badge-detail-name { color: rgba(255,255,255,0.6); }
 .badge-item.locked .badge-detail-status,
 .badge-detail-overlay:has(.badge-detail-icon.locked) .badge-detail-status {
-  color: rgba(255,255,255,0.4);
+  color: rgba(255,255,255,0.62);
 }
 .badge-detail-desc {
   font-size: 0.9rem;
@@ -206,7 +206,7 @@
 }
 .badge-detail-date {
   font-size: 0.75rem;
-  color: rgba(255,255,255,0.4);
+  color: rgba(255,255,255,0.62);
   letter-spacing: 0.05em;
   text-transform: uppercase;
   margin-bottom: var(--space-md);

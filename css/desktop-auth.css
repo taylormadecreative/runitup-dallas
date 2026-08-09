@@ -150,7 +150,7 @@
         rgba(10, 10, 10, 0.92) 0%,
         rgba(10, 10, 10, 0.3) 42%,
         rgba(10, 10, 10, 0.35) 100%),
-      url('../assets/photos/pack-street.jpg') center 30% / cover no-repeat;
+      url('../assets/photos/pack-street.webp') center 30% / cover no-repeat;
   }
   #screen-signup.active::before {
     background:
@@ -162,7 +162,7 @@
         rgba(10, 10, 10, 0.92) 0%,
         rgba(10, 10, 10, 0.3) 42%,
         rgba(10, 10, 10, 0.35) 100%),
-      url('../assets/photos/hero.jpg') center 30% / cover no-repeat;
+      url('../assets/photos/hero.webp') center 30% / cover no-repeat;
   }
 
   /* Big display quote over the photo, bottom-left */

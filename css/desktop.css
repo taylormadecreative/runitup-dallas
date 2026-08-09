@@ -83,6 +83,7 @@
 
   /* ---- Sidebar footer: live next-run card (injected on web by app.js) ---- */
   #sidebar-nextrun {
+    display: block;
     margin-top: auto;
     padding: 16px;
     border: 1px solid rgba(191, 255, 0, 0.25);
@@ -191,8 +192,6 @@
   }
   ::-webkit-scrollbar-thumb:hover { background: #3A3A3A; }
 
-  /* ---- Keyboard focus that actually shows ---- */
-  :focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; border-radius: 4px; }
 }
 
 /* ===== WEB-ONLY: no GPS run tracking in the browser =====
@@ -204,3 +203,13 @@ html.web .btn-start-run {
 }
 /* Check In then takes the full hero action row */
 html.web .hero-action-row .hero-action-primary { flex: 1; }
+
+/* ===== SHORT DESKTOP VIEWPORTS (e.g. iPhone Pro Max landscape, 956x440) =====
+   The desktop layout is the right base here — just compress the chrome. */
+@media (min-width: 940px) and (max-height: 600px) {
+  #tab-bar { padding-bottom: 12px; }
+  #tab-bar::before { height: 56px; margin-bottom: 8px; }
+  #tab-bar .tab { padding: 8px 16px; }
+  #sidebar-nextrun { padding: 10px 12px; }
+  #sidebar-nextrun .snr-run { font-size: 0.875rem; }
+}

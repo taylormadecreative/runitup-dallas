@@ -367,7 +367,7 @@
 
 .message-hidden {
   font-size: 0.75rem;
-  color: rgba(255,255,255,0.35);
+  color: rgba(255,255,255,0.62);
   padding: var(--space-xs) var(--space-md);
   font-style: italic;
 }
@@ -465,6 +465,12 @@
 }
 
 .chat-input::placeholder { color: var(--color-text-muted); }
+
+/* outline:none above kills the global focus ring — replace it at all widths */
+.chat-input:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-primary);
+}
 
 .chat-send-btn {
   width: 44px;

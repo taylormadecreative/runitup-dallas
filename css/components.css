@@ -126,6 +126,10 @@ html, body { background: var(--color-bg); margin: 0; padding: 0; overscroll-beha
 .tab.active .tab-icon { fill: var(--color-primary); }
 .tab.active .tab-label { color: var(--color-primary); }
 
+/* Desktop sidebar next-run card (injected on web by app.js) is styled only
+   inside desktop.css's ≥940px block — keep it out of the phone tab bar. */
+#sidebar-nextrun { display: none; }
+
 /* ===== BADGES (notification dots) ===== */
 .badge {
   position: absolute;
@@ -163,7 +167,23 @@ html, body { background: var(--color-bg); margin: 0; padding: 0; overscroll-beha
 }
 
 .btn-primary:active { transform: scale(0.98); opacity: 0.9; }
-.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+/* Disabled = solid surface + readable white text (dimmed neon fails contrast
+   over photos), so the "opens later" label stays legible. */
+.btn-primary:disabled {
+  background: var(--color-surface);
+  color: rgba(255, 255, 255, 0.75);
+  border: 1px solid var(--color-surface-hover);
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* "✓ Checked In" is disabled too, but it's a SUCCESS state — green with
+   dark text, never the gray "opens later" look. */
+.btn-primary.checked:disabled {
+  background: var(--color-success);
+  color: var(--color-bg);
+  border: none;
+}
 
 .btn-secondary {
   display: flex;

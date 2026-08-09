@@ -21,19 +21,19 @@ const CHANNEL_ICONS = {
 };
 
 const CHANNEL_COVERS = {
-  'monday-trinity-groves': './assets/photos/motion-blur.jpg',
-  'tuesday-deep-ellum': './assets/photos/night-sprint.jpg',
-  'saturday-fair-oaks': './assets/photos/solo-skyline.jpg',
-  'sunday-levy-plaza': './assets/photos/low-angle-film.jpg',
-  'trail-runs': './assets/photos/solo-neon.jpg',
-  'walk-it-up': './assets/photos/duo-women.jpg',
-  'jog-it-up': './assets/photos/pack-street.jpg',
-  'run-it-up': './assets/photos/low-angle-alley.jpg',
-  'sprint-it-up': './assets/photos/motion-brick.jpg',
-  'general': './assets/photos/above-crowd.jpg',
-  'newbies': './assets/photos/low-angle-urban.jpg',
-  'post-run-pics': './assets/photos/above-night.jpg',
-  'fit-check': './assets/photos/hero.jpg'
+  'monday-trinity-groves': './assets/photos/motion-blur.webp',
+  'tuesday-deep-ellum': './assets/photos/night-sprint.webp',
+  'saturday-fair-oaks': './assets/photos/solo-skyline.webp',
+  'sunday-levy-plaza': './assets/photos/low-angle-film.webp',
+  'trail-runs': './assets/photos/solo-neon.webp',
+  'walk-it-up': './assets/photos/duo-women.webp',
+  'jog-it-up': './assets/photos/pack-street.webp',
+  'run-it-up': './assets/photos/low-angle-alley.webp',
+  'sprint-it-up': './assets/photos/motion-brick.webp',
+  'general': './assets/photos/above-crowd.webp',
+  'newbies': './assets/photos/low-angle-urban.webp',
+  'post-run-pics': './assets/photos/above-night.webp',
+  'fit-check': './assets/photos/hero.webp'
 };
 
 // Channel category drives the colored strip on the left of each row
@@ -158,9 +158,9 @@ async function refreshCommunity() {
 
   container.innerHTML = `
     <div class="channel-list-header">
-      <h2>Community</h2>
+      <h2>Chat</h2>
     </div>
-    <div class="dm-entry-card" onclick="openDmInbox()">
+    <div class="dm-entry-card" role="button" tabindex="0" aria-label="Open direct messages" onclick="openDmInbox()">
       <div class="dm-entry-icon">
         <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-1.99.9-1.99 2L2 22l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm-2 12H6v-2h12v2zm0-3H6V9h12v2zm0-3H6V6h12v2z"/></svg>
       </div>
@@ -175,7 +175,7 @@ async function refreshCommunity() {
         const category = getChannelCategory(ch.name);
         const cover = CHANNEL_COVERS[ch.name];
         return `
-        <div class="channel-item channel-item--${category}" onclick="openChat('${ch.id}', '${ch.name}')">
+        <div class="channel-item channel-item--${category}" role="button" tabindex="0" aria-label="Open ${escapeAttr(ch.name)} channel" onclick="openChat('${ch.id}', '${ch.name}')">
           <div class="channel-strip" aria-hidden="true"></div>
           <div class="channel-icon">${CHANNEL_ICONS[ch.name] || 'CH'}</div>
           <div class="channel-info">
@@ -316,7 +316,7 @@ function renderMessage(msg) {
     <div class="message-row ${isMine ? 'mine' : ''}" data-message-id="${msg.id}">
       <img src="${safeAvatarUrl(msg.users?.avatar_url)}" class="avatar-sm message-avatar" alt="" onclick="viewMemberProfile('${msg.user_id}')" style="cursor: pointer;">
       <div>
-        <div class="message-sender" ${!isMine ? `onclick="viewMemberProfile('${msg.user_id}')" style="cursor: pointer;"` : ''}>
+        <div class="message-sender" ${!isMine ? `role="button" tabindex="0" aria-label="View ${escapeAttr(msg.users?.display_name || 'member')}'s profile" onclick="viewMemberProfile('${msg.user_id}')" style="cursor: pointer;"` : ''}>
           ${escapeHtml(msg.users?.display_name || 'Member')}
           ${paceGroupBadgeHTML(msg.users?.pace_group)}
         </div>

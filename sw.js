@@ -1,4 +1,4 @@
-const CACHE_NAME = 'runitup-v17';
+const CACHE_NAME = 'runitup-v18';
 const STATIC_ASSETS = [
   './',
   './index.html',
@@ -32,23 +32,10 @@ const STATIC_ASSETS = [
   './js/profile.js',
   './js/checkin.js',
   './assets/logo.png',
-  './assets/logo-192.png',
-  './assets/logo-512.png',
-  './assets/photos/hero.jpg',
-  './assets/photos/night-sprint.jpg',
-  './assets/photos/solo-neon.jpg',
-  './assets/photos/solo-skyline.jpg',
-  './assets/photos/pack-street.jpg',
-  './assets/photos/duo-women.jpg',
-  './assets/photos/low-angle-alley.jpg',
-  './assets/photos/low-angle-urban.jpg',
-  './assets/photos/low-angle-film.jpg',
-  './assets/photos/above-night.jpg',
-  './assets/photos/above-crowd.jpg',
-  './assets/photos/motion-night.jpg',
-  './assets/photos/motion-brick.jpg',
-  './assets/photos/motion-blur.jpg'
+  './assets/logo-192.png'
 ];
+// Photos are NOT precached — the stale-while-revalidate fetch handler caches
+// them on first natural use, so first-time visitors don't pay ~6MB up front.
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -67,8 +54,13 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('fetch', (event) => {
-  const url = event.request.url;
-  if (url.includes('supabase') || url.includes('open-meteo')) return;
+  // Bypass by origin, not substring — a substring check on 'supabase' would
+  // also match our own ./js/supabase.js and vendored supabase.min.js, which
+  // must be served from cache for offline boot to work. Cross-origin is
+  // bypassed except Google Fonts, which we still want cached for offline.
+  const url = new URL(event.request.url);
+  const isFont = url.hostname === 'fonts.googleapis.com' || url.hostname === 'fonts.gstatic.com';
+  if (url.origin !== location.origin && !isFont) return;
 
   // Stale-while-revalidate for fonts and same-origin GETs: serve cache fast,
   // refresh it in the background so updates still land.

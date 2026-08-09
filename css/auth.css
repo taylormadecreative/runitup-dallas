@@ -540,3 +540,28 @@
   color: var(--color-text-muted);
   margin: 0;
 }
+
+/* ===== PHONE LANDSCAPE (short viewports below the desktop breakpoint) =====
+   A standard iPhone turned sideways is ~390-430px tall — compress the splash
+   so the logo, tagline, and both CTAs all fit on the first screen. */
+@media (max-width: 939px) and (max-height: 560px) {
+  .splash-logo { width: 76px; height: 76px; margin-bottom: var(--space-sm); }
+  .splash-hero-overlay {
+    gap: var(--space-xs);
+    padding: var(--space-md);
+    padding-top: calc(var(--space-md) + env(safe-area-inset-top));
+    padding-bottom: calc(var(--space-md) + env(safe-area-inset-bottom));
+  }
+  .splash-hero-overlay .splash-logo { margin-top: 0; }
+  .splash-tagline { margin-bottom: var(--space-xs); }
+  .splash-buttons {
+    flex-flow: row wrap;
+    max-width: 620px;
+    column-gap: var(--space-md);
+    row-gap: var(--space-xs);
+    justify-content: center;
+  }
+  .splash-buttons .btn-primary,
+  .splash-buttons .btn-secondary { flex: 1 1 240px; margin-top: 0 !important; }
+  .splash-buttons .splash-login-link { flex-basis: 100%; margin-top: 2px; }
+}

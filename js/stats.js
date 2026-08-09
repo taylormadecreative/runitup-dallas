@@ -41,7 +41,8 @@ async function refreshStats() {
 
 function renderStatsShell(stats) {
   const hasCheckIns = stats.totalCheckIns > 0;
-  const memberSinceShort = formatDate(currentProfile.created_at).split(',')[0];
+  const memberSinceShort = new Date(currentProfile.created_at)
+    .toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
   // 8-week history bars
   const maxHeight = 8; // visual cap for normalized bars (all cells full when attended)
   const historyBars = (stats.weekHistory || []).map((attended, i) => `
@@ -139,7 +140,7 @@ function renderBadgesGrid(earnedTypes) {
   return BADGE_DEFINITIONS.map(def => {
     const earned = earnedTypes.has(def.type);
     return `
-      <div class="badge-item ${earned ? '' : 'locked'}" onclick="showBadgeDetail('${def.type}')" role="button" aria-label="${def.label}">
+      <div class="badge-item ${earned ? '' : 'locked'}" onclick="showBadgeDetail('${def.type}')" role="button" tabindex="0" aria-label="${def.label}">
         <div class="badge-icon">${def.icon}</div>
         <div class="badge-label">${def.label}</div>
       </div>
@@ -153,9 +154,17 @@ async function showBadgeDetail(badgeType) {
   const earned = (window._earnedBadgeTypes || new Set()).has(badgeType);
   const earnedDate = earned ? await _getBadgeEarnedDate(badgeType) : null;
 
+  const opener = document.activeElement;
   const overlay = document.createElement('div');
   overlay.className = 'badge-detail-overlay';
+  overlay.setAttribute('role', 'dialog');
+  overlay.setAttribute('aria-modal', 'true');
+  overlay.setAttribute('aria-label', def.label);
+  // Restore focus to the badge that opened the dialog, whichever way it closes
+  const origRemove = overlay.remove.bind(overlay);
+  overlay.remove = () => { origRemove(); opener?.focus?.(); };
   overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
+  overlay.addEventListener('keydown', (e) => { if (e.key === 'Escape') overlay.remove(); });
   overlay.innerHTML = `
     <div class="badge-detail-modal">
       <button class="badge-detail-close" onclick="this.closest('.badge-detail-overlay').remove()" aria-label="Close">×</button>
@@ -174,7 +183,10 @@ async function showBadgeDetail(badgeType) {
     </div>
   `;
   document.body.appendChild(overlay);
-  requestAnimationFrame(() => overlay.classList.add('active'));
+  requestAnimationFrame(() => {
+    overlay.classList.add('active');
+    overlay.querySelector('.badge-detail-close')?.focus();
+  });
   haptic('light');
 }
 
@@ -197,7 +209,7 @@ async function shareBadge(badgeType) {
     const [, logoImg, bgImg] = await Promise.all([
       loadBigShouldersFont(),
       loadImageSafe('./assets/logo.png'),
-      loadImageSafe('./assets/photos/low-angle-urban.jpg')
+      loadImageSafe('./assets/photos/low-angle-urban.webp')
     ]);
     const displayFont = '"Big Shoulders Display", "Arial Black", Impact, sans-serif';
     const canvas = document.createElement('canvas');
@@ -289,6 +301,7 @@ function _leaderboardRowHTML(entry, rank, pinned) {
   const isMe = currentProfile && entry.id === currentProfile.id;
   return `
     <div class="leaderboard-item ${isMe ? 'me' : ''}${pinned ? ' lb-pinned' : ''}"
+      role="button" tabindex="0" aria-label="View ${escapeAttr(entry.display_name)}'s profile"
       onclick="viewMemberProfile(${jsArg(entry.id)})">
       <span class="lb-rank">${rank}</span>
       <img src="${safeAvatarUrl(entry.avatar_url)}" class="avatar-sm" alt="">
