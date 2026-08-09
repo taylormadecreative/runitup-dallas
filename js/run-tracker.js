@@ -111,6 +111,14 @@ function _updateTrackerUI() {
   if (distEl) distEl.textContent = miles.toFixed(2);
   if (timeEl) timeEl.textContent = _formatDuration(seconds * 1000);
   if (paceEl) paceEl.textContent = _formatPace(paceSecPerMile);
+  const ring = document.getElementById('rt-ring-fill');
+  if (ring && RUN_STATE.goalMiles) {
+    const RING_C = 565.49;
+    const progress = Math.min(1, miles / RUN_STATE.goalMiles);
+    ring.style.strokeDashoffset = String(RING_C * (1 - progress));
+  }
+  const badge = document.getElementById('rt-autopause-badge');
+  if (badge) badge.hidden = RUN_STATE.status !== 'autopaused';
 }
 
 function _onPosition(coords, timestamp) {
@@ -354,6 +362,17 @@ async function openRunTrackerPrep() {
       <div class="rt-gps-dot" id="rt-gps-dot"></div>
       <span id="rt-gps-text">Locking in GPS...</span>
     </div>
+    <div class="rt-goal-label">GOAL</div>
+    <div class="rt-goal-chips" id="rt-goal-chips">
+      <button class="rt-goal-chip" data-goal="">JUST RUN</button>
+      <button class="rt-goal-chip" data-goal="1">1 MI</button>
+      <button class="rt-goal-chip" data-goal="2">2 MI</button>
+      <button class="rt-goal-chip" data-goal="3">3 MI</button>
+      <button class="rt-goal-chip" data-goal="5">5 MI</button>
+      <button class="rt-goal-chip" data-goal="custom">CUSTOM</button>
+    </div>
+    <input type="number" inputmode="decimal" min="0.25" max="100" step="0.25"
+      class="rt-goal-custom" id="rt-goal-custom" placeholder="Miles" hidden>
     <div class="rt-prep-hero">
       <div class="rt-metric-primary">
         <div class="rt-value">0.00</div>
@@ -371,6 +390,7 @@ async function openRunTrackerPrep() {
     </div>
   `;
   document.body.appendChild(overlay);
+  _initGoalChips(overlay);
 
   // If warmer already has a fresh fix, show ready state instantly
   if (hasWarmGpsFix()) {
@@ -403,6 +423,43 @@ async function openRunTrackerPrep() {
       : 'Still searching for signal — you can start anyway';
     if (btn) btn.disabled = false; // allow start even without warm-up
   }
+}
+
+// Goal chips on the prep screen. Last-used goal is remembered and preselected.
+function _initGoalChips(overlay) {
+  const chips = overlay.querySelector('#rt-goal-chips');
+  const customInput = overlay.querySelector('#rt-goal-custom');
+  if (!chips || !customInput) return;
+
+  const last = localStorage.getItem('riu_last_goal') || '';
+  const preset = ['1', '2', '3', '5'];
+  let activeValue = '';
+  if (last && preset.includes(last)) activeValue = last;
+  else if (last) activeValue = 'custom';
+
+  function activate(chip, fromTap) {
+    chips.querySelectorAll('.rt-goal-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    const v = chip.dataset.goal;
+    if (v === 'custom') {
+      customInput.hidden = false;
+      if (!customInput.value && last && !preset.includes(last)) customInput.value = last;
+      setRunGoal(customInput.value);
+      if (fromTap) customInput.focus();
+    } else {
+      customInput.hidden = true;
+      setRunGoal(v);
+    }
+  }
+
+  chips.querySelectorAll('.rt-goal-chip').forEach(chip => {
+    chip.addEventListener('click', () => activate(chip, true));
+  });
+  customInput.addEventListener('input', () => setRunGoal(customInput.value));
+
+  const initial = chips.querySelector(`.rt-goal-chip[data-goal="${activeValue}"]`) ||
+                  chips.querySelector('.rt-goal-chip[data-goal=""]');
+  activate(initial);
 }
 
 // Start a low-power watch that keeps GPS warm while the app is in the foreground.
@@ -796,14 +853,30 @@ function showRunTrackerUI() {
   overlay = document.createElement('div');
   overlay.id = 'run-tracker-overlay';
   overlay.className = 'run-tracker-overlay';
+  const RING_C = 565.49; // 2 * pi * r90 — keep in sync with the SVG below
+  const goal = RUN_STATE.goalMiles;
   overlay.innerHTML = `
     <div class="rt-header">
       <div class="rt-live-dot"></div>
       <span class="rt-live-text">LIVE</span>
     </div>
+    <div class="rt-autopaused-badge" id="rt-autopause-badge" hidden>AUTO-PAUSED</div>
     <div class="rt-metric rt-metric-primary">
+      ${goal ? `
+      <div class="rt-goal-ring-wrap">
+        <svg class="rt-goal-ring" viewBox="0 0 200 200" aria-hidden="true">
+          <circle class="rt-ring-track" cx="100" cy="100" r="90"/>
+          <circle class="rt-ring-fill" id="rt-ring-fill" cx="100" cy="100" r="90"
+            stroke-dasharray="${RING_C}" stroke-dashoffset="${RING_C}"/>
+        </svg>
+        <div class="rt-ring-inner">
+          <div class="rt-value rt-value-ring" id="rt-distance">0.00</div>
+          <div class="rt-label">Miles</div>
+        </div>
+      </div>
+      <div class="rt-goal-sub">OF ${goal} MI GOAL</div>` : `
       <div class="rt-value" id="rt-distance">0.00</div>
-      <div class="rt-label">Miles</div>
+      <div class="rt-label">Miles</div>`}
     </div>
     <div class="rt-metric-row">
       <div class="rt-metric">
@@ -835,8 +908,9 @@ function toggleRunPause() {
 }
 
 // ===== POST-RUN SUMMARY CARD =====
-async function showRunSummaryCard({ miles, seconds, paceSecPerMile }) {
+async function showRunSummaryCard({ miles, seconds, paceSecPerMile, goalMiles }) {
   closeRunTrackerUI();
+  const goalHit = !!(goalMiles && miles >= goalMiles);
   const overlay = document.createElement('div');
   overlay.className = 'checkin-card-overlay';
   overlay.onclick = (e) => { if (e.target === overlay) overlay.remove(); };
@@ -851,6 +925,7 @@ async function showRunSummaryCard({ miles, seconds, paceSecPerMile }) {
         <div class="checkin-card-content">
           <img src="./assets/logo.png" class="checkin-card-logo" alt="RIU">
           <div class="checkin-card-locked">RUN LOGGED</div>
+          ${goalHit ? `<div class="checkin-card-goalhit">GOAL HIT — ${goalMiles} MI</div>` : ''}
           <div class="checkin-card-day">${miles.toFixed(2)} MILES</div>
           <div class="checkin-card-location">${_formatDuration(seconds * 1000)} · ${_formatPace(paceSecPerMile)} pace</div>
           <div class="checkin-card-date">${new Date().toLocaleDateString('en-US',{ weekday:'short', month:'short', day:'numeric' })}</div>
@@ -873,7 +948,7 @@ async function showRunSummaryCard({ miles, seconds, paceSecPerMile }) {
         </div>
       </div>
       <div class="checkin-card-actions">
-        <button class="btn-primary" onclick="shareRunSummary(${miles.toFixed(2)}, ${Math.round(seconds)}, ${paceSecPerMile || 0})">
+        <button class="btn-primary" onclick="shareRunSummary(${miles.toFixed(2)}, ${Math.round(seconds)}, ${paceSecPerMile || 0}, ${goalHit ? goalMiles : 0})">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px;"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>
           Share This Run
         </button>
@@ -884,7 +959,7 @@ async function showRunSummaryCard({ miles, seconds, paceSecPerMile }) {
   document.body.appendChild(overlay);
 }
 
-async function shareRunSummary(miles, seconds, paceSecPerMile) {
+async function shareRunSummary(miles, seconds, paceSecPerMile, goalMilesHit) {
   try {
     const [, logoImg, bgImg] = await Promise.all([
       loadBigShouldersFont(),
@@ -918,6 +993,12 @@ async function shareRunSummary(miles, seconds, paceSecPerMile) {
     ctx.fillStyle = '#BFFF00';
     ctx.font = `900 120px ${displayFont}`;
     ctx.fillText('RUN LOGGED', 540, 500);
+
+    if (goalMilesHit) {
+      ctx.fillStyle = '#FFFFFF';
+      ctx.font = `800 44px ${displayFont}`;
+      ctx.fillText(`GOAL HIT — ${goalMilesHit} MI`, 540, 566);
+    }
 
     // Big miles hero
     ctx.fillStyle = '#BFFF00';
