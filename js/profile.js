@@ -79,6 +79,20 @@ async function refreshProfile() {
       <a href="#" onclick="window.open('./terms.html', '_blank'); return false;" style="font-size: 0.75rem; color: var(--color-text-muted); padding: var(--space-sm) 0;">Terms of Service</a>
     </div>
 
+    <div class="profile-settings">
+      <h3 class="profile-settings-title">RUN SETTINGS</h3>
+      <label class="settings-toggle">
+        <span>Voice Coach</span>
+        <input type="checkbox" ${riuSetting('riu_voice_coach') === 'on' ? 'checked' : ''}
+          onchange="localStorage.setItem('riu_voice_coach', this.checked ? 'on' : 'off')">
+      </label>
+      <label class="settings-toggle">
+        <span>Auto-Pause</span>
+        <input type="checkbox" ${riuSetting('riu_auto_pause') === 'on' ? 'checked' : ''}
+          onchange="localStorage.setItem('riu_auto_pause', this.checked ? 'on' : 'off')">
+      </label>
+    </div>
+
     <div class="profile-actions">
       <button class="btn-primary" onclick="shareCrewInvite()">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px; vertical-align: middle;"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81 1.66 0 3-1.34 3-3s-1.34-3-3-3-3 1.34-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9c-1.66 0-3 1.34-3 3s1.34 3 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.16c-.05.21-.08.43-.08.65 0 1.61 1.31 2.92 2.92 2.92 1.61 0 2.92-1.31 2.92-2.92s-1.31-2.92-2.92-2.92z"/></svg>

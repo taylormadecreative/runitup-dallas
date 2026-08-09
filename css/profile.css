@@ -251,3 +251,71 @@
   border-radius: var(--radius-md);
   background: var(--color-surface);
 }
+
+/* ===== RUN SETTINGS ===== */
+.profile-settings {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-xs);
+  background: #1A1A1A;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: var(--radius-lg, 16px);
+  padding: var(--space-md);
+}
+
+.profile-settings-title {
+  font-family: var(--font-display);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.2em;
+  color: var(--color-text-muted, #9A9A9A);
+}
+
+.settings-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.9375rem;
+  color: #fff;
+  padding: 6px 0;
+  cursor: pointer;
+}
+
+.settings-toggle input[type="checkbox"] {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 46px;
+  height: 27px;
+  border-radius: 999px;
+  background: #252525;
+  border: 1px solid rgba(255,255,255,0.14);
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease;
+}
+
+.settings-toggle input[type="checkbox"]::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 21px;
+  height: 21px;
+  border-radius: 50%;
+  background: #9A9A9A;
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.settings-toggle input[type="checkbox"]:checked {
+  background: rgba(191,255,0,0.18);
+  border-color: var(--color-primary);
+}
+
+.settings-toggle input[type="checkbox"]:checked::after {
+  transform: translateX(19px);
+  background: var(--color-primary);
+}
+
+/* Run settings only matter in the iPhone app */
+html.web .profile-settings { display: none; }
