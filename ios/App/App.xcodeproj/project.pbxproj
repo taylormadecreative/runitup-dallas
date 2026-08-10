@@ -27,6 +27,7 @@
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
+		55A89FD65F7C9792C57220E8 /* WorkoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868A3FCE43FD65529FD19A99 /* WorkoutManager.swift */; };
 		69FBAD2972C3BDC6EEE85D67 /* RunActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DCD35C3A43828F625F0519C /* RunActivityAttributes.swift */; };
 		713DFA9B8A0456773CB8F31E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 522D9FEB7E8EACDE54DEDD48 /* Assets.xcassets */; };
 		73FB6B380243C2D7CB6A0439 /* RunItUpWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 639F7940E39A1C701D669055 /* RunItUpWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -108,6 +109,7 @@
 		639F7940E39A1C701D669055 /* RunItUpWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RunItUpWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		6A8BA4B8A3C43A0C90995109 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		716AD359E9278BCB34E564C4 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		868A3FCE43FD65529FD19A99 /* WorkoutManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutManager.swift; sourceTree = "<group>"; };
 		91351EEFDC0BEC45EB5131CB /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
 		A0BA84B7AEE9862AD0BA121D /* RunItUpWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RunItUpWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -162,6 +164,7 @@
 				522D9FEB7E8EACDE54DEDD48 /* Assets.xcassets */,
 				A4E73D6637995C40F928219A /* RunMilestones.swift */,
 				29199DF71D587975A9AF062F /* AutoPause.swift */,
+				868A3FCE43FD65529FD19A99 /* WorkoutManager.swift */,
 			);
 			name = RunItUpWatch;
 			path = RunItUpWatch;
@@ -442,6 +445,7 @@
 				A54270EF9550E71D914733A9 /* RunItUpWatchApp.swift in Sources */,
 				08B6664740B1147C473BDE91 /* RunMilestones.swift in Sources */,
 				7CDD24F56EFE5E629969D742 /* AutoPause.swift in Sources */,
+				55A89FD65F7C9792C57220E8 /* WorkoutManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
