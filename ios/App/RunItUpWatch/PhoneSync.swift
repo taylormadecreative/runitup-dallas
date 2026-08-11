@@ -35,13 +35,32 @@ final class PhoneSync: NSObject, WCSessionDelegate {
         if let g = run.goalMiles { info["goalMiles"] = g }
         if let h = run.goalHit { info["goalHit"] = h }
         if let hr = run.avgHeartRate { info["avgHeartRate"] = hr }
-        WCSession.default.transferUserInfo(info)
+        let s = WCSession.default
+        // Two independent delivery paths. transferUserInfo is the queue that
+        // holds a backlog of runs; applicationContext always carries the most
+        // recent one and is replayable from `receivedApplicationContext` on the
+        // phone's next launch. Saves dedupe on clientRunId, so a run arriving
+        // by both routes is harmless — and neither route alone can lose it.
+        s.transferUserInfo(info)
+        lastRunInfo = info
+        pushContext(workoutActive: false)
     }
 
+    private var lastRunInfo: [String: Any]?
+
     func setWorkoutActive(_ active: Bool) {
+        pushContext(workoutActive: active)
+    }
+
+    private func pushContext(workoutActive: Bool) {
         guard WCSession.isSupported(),
               WCSession.default.activationState == .activated else { return }
-        try? WCSession.default.updateApplicationContext(["watchWorkoutActive": active])
+        var ctx: [String: Any] = ["watchWorkoutActive": workoutActive]
+        if let run = lastRunInfo { ctx["lastRun"] = run }
+        // A repeated identical context is dropped by WatchConnectivity; the
+        // stamp guarantees every push is seen as new.
+        ctx["stamp"] = Date().timeIntervalSince1970
+        try? WCSession.default.updateApplicationContext(ctx)
     }
 
     func session(_ session: WCSession,

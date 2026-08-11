@@ -15,6 +15,7 @@
 		2E9006C23DF46740970CE1CA /* RunActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20D28B33A89C8A3388B74E5C /* RunActivityWidget.swift */; };
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
 		31B44921E729E47A81A93006 /* RunMilestones.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4E73D6637995C40F928219A /* RunMilestones.swift */; };
+		3653075FEA13BF9A99F67E49 /* WatchBridgePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8D73F8BF2E310A155054B8 /* WatchBridgePlugin.swift */; };
 		3842F6DB8FDE01732A46E223 /* RunActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DCD35C3A43828F625F0519C /* RunActivityAttributes.swift */; };
 		4063FFC261DCB96EECE9C3CE /* RunEnginesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 534913FB708CED28F8EA9F86 /* RunEnginesTests.swift */; };
 		408B324E0D789F468BE3718B /* AutoPause.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29199DF71D587975A9AF062F /* AutoPause.swift */; };
@@ -119,6 +120,7 @@
 		868A3FCE43FD65529FD19A99 /* WorkoutManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutManager.swift; sourceTree = "<group>"; };
 		91351EEFDC0BEC45EB5131CB /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
+		9D8D73F8BF2E310A155054B8 /* WatchBridgePlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchBridgePlugin.swift; sourceTree = "<group>"; };
 		A0BA84B7AEE9862AD0BA121D /* RunItUpWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RunItUpWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A4E73D6637995C40F928219A /* RunMilestones.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RunMilestones.swift; sourceTree = "<group>"; };
 		ADCD7F41EFC58EDCC6D2651F /* SummaryView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SummaryView.swift; sourceTree = "<group>"; };
@@ -224,6 +226,7 @@
 				11D02CE06B225D78605CBA76 /* RIUViewController.swift */,
 				0DCD35C3A43828F625F0519C /* RunActivityAttributes.swift */,
 				1764D301C1E247AA9B610001 /* LiveActivityBridge.swift */,
+				9D8D73F8BF2E310A155054B8 /* WatchBridgePlugin.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -450,6 +453,7 @@
 				CB9CA8525E3E7B394DCA2EAE /* RIUViewController.swift in Sources */,
 				3842F6DB8FDE01732A46E223 /* RunActivityAttributes.swift in Sources */,
 				21A988D59C633D06C4C7F298 /* LiveActivityBridge.swift in Sources */,
+				3653075FEA13BF9A99F67E49 /* WatchBridgePlugin.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
