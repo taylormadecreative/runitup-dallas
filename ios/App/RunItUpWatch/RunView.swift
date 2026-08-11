@@ -1,4 +1,5 @@
 import SwiftUI
+import WatchKit
 
 struct RunView: View {
     @EnvironmentObject var workout: WorkoutManager
@@ -23,7 +24,7 @@ struct RunView: View {
                 }
                 VStack(spacing: 0) {
                     Text(String(format: "%.2f", workout.miles))
-                        .font(.system(size: 34, weight: .black).monospacedDigit())
+                        .font(.system(size: Self.compactWatch ? 28 : 34, weight: .black).monospacedDigit())
                         .foregroundStyle(RIU.lime)
                     Text("MILES")
                         .font(.system(size: 11, weight: .heavy))
@@ -31,7 +32,8 @@ struct RunView: View {
                         .foregroundStyle(RIU.muted)
                 }
             }
-            .frame(height: 92)
+            // Smaller ring on 40/41mm so the stats and controls still fit.
+            .frame(height: Self.compactWatch ? 70 : 92)
 
             HStack {
                 stat(Self.clock(workout.elapsed), "TIME")
@@ -39,24 +41,32 @@ struct RunView: View {
                 stat(workout.heartRate.map(String.init) ?? "--", "BPM")
             }
 
-            HStack(spacing: 14) { // wider gap: STOP is irreversible
-                Button {
-                    workout.togglePause()
-                } label: {
-                    Text(workout.state == .running ? "PAUSE" : "RESUME")
-                        .font(.system(size: 13, weight: .heavy))
-                        .foregroundStyle(.white) // .bordered dims its label to near-invisible on black
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(RIU.card)
-                Button("STOP") { workout.end() }
-                    .font(.system(size: 13, weight: .heavy))
-                    .buttonStyle(.borderedProminent)
-                    .tint(.red)
-            }
+            controls
         }
         .padding(.horizontal, 4)
         .containerBackground(RIU.black, for: .navigation)
+    }
+
+    // 40mm is 162pt wide, 41mm 176pt; 45/46mm are 198/208pt.
+    static var compactWatch: Bool { WKInterfaceDevice.current().screenBounds.width <= 180 }
+
+    private var controls: some View {
+        HStack(spacing: 14) { // wider gap: STOP is irreversible
+            Button {
+                workout.togglePause()
+            } label: {
+                Text(workout.state == .running ? "PAUSE" : "RESUME")
+                    .font(.system(size: 13, weight: .heavy))
+                    .foregroundStyle(.white) // .bordered dims its label to near-invisible on black
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(RIU.card)
+            Button("STOP") { workout.end() }
+                .font(.system(size: 13, weight: .heavy))
+                .buttonStyle(.borderedProminent)
+                .tint(.red)
+        }
+        .padding(.top, 2)
     }
 
     @ViewBuilder
