@@ -7,26 +7,50 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		08B6664740B1147C473BDE91 /* RunMilestones.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4E73D6637995C40F928219A /* RunMilestones.swift */; };
+		0C3C69BD89199E98B1362F23 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 462183681E57A66AD1971259 /* Foundation.framework */; };
+		1DCBF90EBF05F08050BB8C60 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 462183681E57A66AD1971259 /* Foundation.framework */; };
 		21A988D59C633D06C4C7F298 /* LiveActivityBridge.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1764D301C1E247AA9B610001 /* LiveActivityBridge.swift */; };
 		25615CE6FDBD12BA5B6D4EBD /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 6A8BA4B8A3C43A0C90995109 /* Foundation.framework */; };
 		2E9006C23DF46740970CE1CA /* RunActivityWidget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 20D28B33A89C8A3388B74E5C /* RunActivityWidget.swift */; };
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
+		31B44921E729E47A81A93006 /* RunMilestones.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4E73D6637995C40F928219A /* RunMilestones.swift */; };
+		3653075FEA13BF9A99F67E49 /* WatchBridgePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9D8D73F8BF2E310A155054B8 /* WatchBridgePlugin.swift */; };
 		3842F6DB8FDE01732A46E223 /* RunActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DCD35C3A43828F625F0519C /* RunActivityAttributes.swift */; };
+		4063FFC261DCB96EECE9C3CE /* RunEnginesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 534913FB708CED28F8EA9F86 /* RunEnginesTests.swift */; };
+		408B324E0D789F468BE3718B /* AutoPause.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29199DF71D587975A9AF062F /* AutoPause.swift */; };
 		465A2F1761D7179DCEAB76D3 /* RunItUpWidgetsBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AE9F0CF7DA00A46A505A51F /* RunItUpWidgetsBundle.swift */; };
 		4D22ABE92AF431CB00220026 /* CapApp-SPM in Frameworks */ = {isa = PBXBuildFile; productRef = 4D22ABE82AF431CB00220026 /* CapApp-SPM */; };
+		4F9CCDB8BEA3B4156B6501F9 /* RunItUpWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = A0BA84B7AEE9862AD0BA121D /* RunItUpWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		50379B232058CBB4000EE86E /* capacitor.config.json in Resources */ = {isa = PBXBuildFile; fileRef = 50379B222058CBB4000EE86E /* capacitor.config.json */; };
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
 		504EC30D1FED79650016851F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30B1FED79650016851F /* Main.storyboard */; };
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
+		55A89FD65F7C9792C57220E8 /* WorkoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868A3FCE43FD65529FD19A99 /* WorkoutManager.swift */; };
+		60608E81E2A520A64DCEE143 /* CoachFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = D242D1ECCFB758C726B9E78C /* CoachFeedback.swift */; };
 		69FBAD2972C3BDC6EEE85D67 /* RunActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DCD35C3A43828F625F0519C /* RunActivityAttributes.swift */; };
+		713DFA9B8A0456773CB8F31E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 522D9FEB7E8EACDE54DEDD48 /* Assets.xcassets */; };
 		73FB6B380243C2D7CB6A0439 /* RunItUpWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 639F7940E39A1C701D669055 /* RunItUpWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		7CDD24F56EFE5E629969D742 /* AutoPause.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29199DF71D587975A9AF062F /* AutoPause.swift */; };
+		8522D5DB2224397DF28308C0 /* SummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADCD7F41EFC58EDCC6D2651F /* SummaryView.swift */; };
+		853B526ED71C0D03EA7A33E9 /* StartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C5BE9324E5FAF4464318E13 /* StartView.swift */; };
 		8E1DAA50346747BBFEEA5474 /* RunEnginePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EB6A66DF1087A64F94E870 /* RunEnginePlugin.swift */; };
+		9D72937C24BD48A5AD0DAD20 /* RunView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44F0A2174D4D8DDD8B62CDDF /* RunView.swift */; };
+		A54270EF9550E71D914733A9 /* RunItUpWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B707E591B32722F02D1D1DD5 /* RunItUpWatchApp.swift */; };
+		C710133B6147F6D7D91C60DD /* PhoneSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = E39DC127094AD4FCB302E181 /* PhoneSync.swift */; };
 		CB9CA8525E3E7B394DCA2EAE /* RIUViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D02CE06B225D78605CBA76 /* RIUViewController.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
+		5BCCBE2EDEFBD1D532AE455D /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C0A08BAFBFDC84E3174C22DA;
+			remoteInfo = RunItUpWatch;
+		};
 		7A3769AB5C2BF487BFE06226 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
@@ -34,9 +58,27 @@
 			remoteGlobalIDString = B54BF4D2933297D0ECE8BC16;
 			remoteInfo = RunItUpWidgets;
 		};
+		E42EA9080BA5789780209343 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 504EC2FC1FED79650016851F /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = C0A08BAFBFDC84E3174C22DA;
+			remoteInfo = RunItUpWatch;
+		};
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXCopyFilesBuildPhase section */
+		1DB525F931DB6128A90B53FD /* Embed Watch Content */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "$(CONTENTS_FOLDER_PATH)/Watch";
+			dstSubfolderSpec = 16;
+			files = (
+				4F9CCDB8BEA3B4156B6501F9 /* RunItUpWatch.app in Embed Watch Content */,
+			);
+			name = "Embed Watch Content";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		449A0E23AF1F3EB94D0A273D /* Embed Foundation Extensions */ = {
 			isa = PBXCopyFilesBuildPhase;
 			buildActionMask = 2147483647;
@@ -55,8 +97,12 @@
 		11D02CE06B225D78605CBA76 /* RIUViewController.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RIUViewController.swift; sourceTree = "<group>"; };
 		1764D301C1E247AA9B610001 /* LiveActivityBridge.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LiveActivityBridge.swift; sourceTree = "<group>"; };
 		20D28B33A89C8A3388B74E5C /* RunActivityWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RunActivityWidget.swift; sourceTree = "<group>"; };
+		29199DF71D587975A9AF062F /* AutoPause.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AutoPause.swift; sourceTree = "<group>"; };
 		2AE9F0CF7DA00A46A505A51F /* RunItUpWidgetsBundle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RunItUpWidgetsBundle.swift; sourceTree = "<group>"; };
+		2C5BE9324E5FAF4464318E13 /* StartView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StartView.swift; sourceTree = "<group>"; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
+		44F0A2174D4D8DDD8B62CDDF /* RunView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RunView.swift; sourceTree = "<group>"; };
+		462183681E57A66AD1971259 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS11.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
 		504EC3041FED79650016851F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		504EC3071FED79650016851F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -65,11 +111,24 @@
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
+		522D9FEB7E8EACDE54DEDD48 /* Assets.xcassets */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		534913FB708CED28F8EA9F86 /* RunEnginesTests.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RunEnginesTests.swift; sourceTree = "<group>"; };
+		5B630AE43E905D20A8C7377D /* RunItUpWatch.entitlements */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.entitlements; path = RunItUpWatch.entitlements; sourceTree = "<group>"; };
 		639F7940E39A1C701D669055 /* RunItUpWidgets.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = RunItUpWidgets.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		6A8BA4B8A3C43A0C90995109 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS18.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		716AD359E9278BCB34E564C4 /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		868A3FCE43FD65529FD19A99 /* WorkoutManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WorkoutManager.swift; sourceTree = "<group>"; };
 		91351EEFDC0BEC45EB5131CB /* Info.plist */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
+		9D8D73F8BF2E310A155054B8 /* WatchBridgePlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WatchBridgePlugin.swift; sourceTree = "<group>"; };
+		A0BA84B7AEE9862AD0BA121D /* RunItUpWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RunItUpWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		A4E73D6637995C40F928219A /* RunMilestones.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RunMilestones.swift; sourceTree = "<group>"; };
+		ADCD7F41EFC58EDCC6D2651F /* SummaryView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SummaryView.swift; sourceTree = "<group>"; };
+		AF7BB94CEB027EFD9721FC73 /* RunItUpWatchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RunItUpWatchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		B707E591B32722F02D1D1DD5 /* RunItUpWatchApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RunItUpWatchApp.swift; sourceTree = "<group>"; };
 		C0EB6A66DF1087A64F94E870 /* RunEnginePlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RunEnginePlugin.swift; sourceTree = "<group>"; };
+		D242D1ECCFB758C726B9E78C /* CoachFeedback.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoachFeedback.swift; sourceTree = "<group>"; };
+		E39DC127094AD4FCB302E181 /* PhoneSync.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PhoneSync.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -89,9 +148,45 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		AAF74208B654139B0DDD6ABF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				1DCBF90EBF05F08050BB8C60 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D0EE7FB44DE89076B45A5CCF /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				0C3C69BD89199E98B1362F23 /* Foundation.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		11F89739F02DE8E7AC421F73 /* RunItUpWatch */ = {
+			isa = PBXGroup;
+			children = (
+				B707E591B32722F02D1D1DD5 /* RunItUpWatchApp.swift */,
+				716AD359E9278BCB34E564C4 /* Info.plist */,
+				5B630AE43E905D20A8C7377D /* RunItUpWatch.entitlements */,
+				522D9FEB7E8EACDE54DEDD48 /* Assets.xcassets */,
+				A4E73D6637995C40F928219A /* RunMilestones.swift */,
+				29199DF71D587975A9AF062F /* AutoPause.swift */,
+				868A3FCE43FD65529FD19A99 /* WorkoutManager.swift */,
+				2C5BE9324E5FAF4464318E13 /* StartView.swift */,
+				44F0A2174D4D8DDD8B62CDDF /* RunView.swift */,
+				ADCD7F41EFC58EDCC6D2651F /* SummaryView.swift */,
+				D242D1ECCFB758C726B9E78C /* CoachFeedback.swift */,
+				E39DC127094AD4FCB302E181 /* PhoneSync.swift */,
+			);
+			name = RunItUpWatch;
+			path = RunItUpWatch;
+			sourceTree = "<group>";
+		};
 		504EC2FB1FED79650016851F = {
 			isa = PBXGroup;
 			children = (
@@ -100,6 +195,8 @@
 				504EC3051FED79650016851F /* Products */,
 				A5C3159FF791361D01048C47 /* Frameworks */,
 				BA53E4A28458595A497D9D98 /* RunItUpWidgets */,
+				11F89739F02DE8E7AC421F73 /* RunItUpWatch */,
+				B01751C03485960226E29716 /* RunItUpWatchTests */,
 			);
 			sourceTree = "<group>";
 		};
@@ -108,6 +205,8 @@
 			children = (
 				504EC3041FED79650016851F /* App.app */,
 				639F7940E39A1C701D669055 /* RunItUpWidgets.appex */,
+				A0BA84B7AEE9862AD0BA121D /* RunItUpWatch.app */,
+				AF7BB94CEB027EFD9721FC73 /* RunItUpWatchTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -127,6 +226,7 @@
 				11D02CE06B225D78605CBA76 /* RIUViewController.swift */,
 				0DCD35C3A43828F625F0519C /* RunActivityAttributes.swift */,
 				1764D301C1E247AA9B610001 /* LiveActivityBridge.swift */,
+				9D8D73F8BF2E310A155054B8 /* WatchBridgePlugin.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -143,8 +243,18 @@
 			isa = PBXGroup;
 			children = (
 				512CE8125C90BB35D7B4A5B1 /* iOS */,
+				CDCE114D2CBA57C8786F09D0 /* watchOS */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		B01751C03485960226E29716 /* RunItUpWatchTests */ = {
+			isa = PBXGroup;
+			children = (
+				534913FB708CED28F8EA9F86 /* RunEnginesTests.swift */,
+			);
+			name = RunItUpWatchTests;
+			path = RunItUpWatchTests;
 			sourceTree = "<group>";
 		};
 		BA53E4A28458595A497D9D98 /* RunItUpWidgets */ = {
@@ -158,9 +268,35 @@
 			path = RunItUpWidgets;
 			sourceTree = "<group>";
 		};
+		CDCE114D2CBA57C8786F09D0 /* watchOS */ = {
+			isa = PBXGroup;
+			children = (
+				462183681E57A66AD1971259 /* Foundation.framework */,
+			);
+			name = watchOS;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		27B0E12F9686721FD79280BE /* RunItUpWatchTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A7B1C4A2D4A351F68250060A /* Build configuration list for PBXNativeTarget "RunItUpWatchTests" */;
+			buildPhases = (
+				A7B80DB2D2E665462D1CB77A /* Sources */,
+				D0EE7FB44DE89076B45A5CCF /* Frameworks */,
+				D70445D2E75CBC963FF7CC00 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				B6F82614D22695AF60C4C82E /* PBXTargetDependency */,
+			);
+			name = RunItUpWatchTests;
+			productName = RunItUpWatchTests;
+			productReference = AF7BB94CEB027EFD9721FC73 /* RunItUpWatchTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		504EC3031FED79650016851F /* App */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 504EC3161FED79650016851F /* Build configuration list for PBXNativeTarget "App" */;
@@ -169,11 +305,13 @@
 				504EC3011FED79650016851F /* Frameworks */,
 				504EC3021FED79650016851F /* Resources */,
 				449A0E23AF1F3EB94D0A273D /* Embed Foundation Extensions */,
+				1DB525F931DB6128A90B53FD /* Embed Watch Content */,
 			);
 			buildRules = (
 			);
 			dependencies = (
 				31859B63FBFDC188C65C18C7 /* PBXTargetDependency */,
+				49A7FA863E0A4BF5C8C181E6 /* PBXTargetDependency */,
 			);
 			name = App;
 			packageProductDependencies = (
@@ -199,6 +337,23 @@
 			productName = RunItUpWidgets;
 			productReference = 639F7940E39A1C701D669055 /* RunItUpWidgets.appex */;
 			productType = "com.apple.product-type.app-extension";
+		};
+		C0A08BAFBFDC84E3174C22DA /* RunItUpWatch */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = BB7C0370259AE2A0EEA9FB3E /* Build configuration list for PBXNativeTarget "RunItUpWatch" */;
+			buildPhases = (
+				5C14B1CCFB875B58854259A6 /* Sources */,
+				AAF74208B654139B0DDD6ABF /* Frameworks */,
+				AA8A655D91D35C781D7D1151 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = RunItUpWatch;
+			productName = RunItUpWatch;
+			productReference = A0BA84B7AEE9862AD0BA121D /* RunItUpWatch.app */;
+			productType = "com.apple.product-type.application";
 		};
 /* End PBXNativeTarget section */
 
@@ -234,6 +389,8 @@
 			targets = (
 				504EC3031FED79650016851F /* App */,
 				B54BF4D2933297D0ECE8BC16 /* RunItUpWidgets */,
+				C0A08BAFBFDC84E3174C22DA /* RunItUpWatch */,
+				27B0E12F9686721FD79280BE /* RunItUpWatchTests */,
 			);
 		};
 /* End PBXProject section */
@@ -253,6 +410,21 @@
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 		5462EEC6766CB08F601524D6 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AA8A655D91D35C781D7D1151 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				713DFA9B8A0456773CB8F31E /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		D70445D2E75CBC963FF7CC00 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -281,6 +453,33 @@
 				CB9CA8525E3E7B394DCA2EAE /* RIUViewController.swift in Sources */,
 				3842F6DB8FDE01732A46E223 /* RunActivityAttributes.swift in Sources */,
 				21A988D59C633D06C4C7F298 /* LiveActivityBridge.swift in Sources */,
+				3653075FEA13BF9A99F67E49 /* WatchBridgePlugin.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		5C14B1CCFB875B58854259A6 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A54270EF9550E71D914733A9 /* RunItUpWatchApp.swift in Sources */,
+				08B6664740B1147C473BDE91 /* RunMilestones.swift in Sources */,
+				7CDD24F56EFE5E629969D742 /* AutoPause.swift in Sources */,
+				55A89FD65F7C9792C57220E8 /* WorkoutManager.swift in Sources */,
+				853B526ED71C0D03EA7A33E9 /* StartView.swift in Sources */,
+				9D72937C24BD48A5AD0DAD20 /* RunView.swift in Sources */,
+				8522D5DB2224397DF28308C0 /* SummaryView.swift in Sources */,
+				60608E81E2A520A64DCEE143 /* CoachFeedback.swift in Sources */,
+				C710133B6147F6D7D91C60DD /* PhoneSync.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A7B80DB2D2E665462D1CB77A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				4063FFC261DCB96EECE9C3CE /* RunEnginesTests.swift in Sources */,
+				31B44921E729E47A81A93006 /* RunMilestones.swift in Sources */,
+				408B324E0D789F468BE3718B /* AutoPause.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -292,6 +491,18 @@
 			name = RunItUpWidgets;
 			target = B54BF4D2933297D0ECE8BC16 /* RunItUpWidgets */;
 			targetProxy = 7A3769AB5C2BF487BFE06226 /* PBXContainerItemProxy */;
+		};
+		49A7FA863E0A4BF5C8C181E6 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = RunItUpWatch;
+			target = C0A08BAFBFDC84E3174C22DA /* RunItUpWatch */;
+			targetProxy = E42EA9080BA5789780209343 /* PBXContainerItemProxy */;
+		};
+		B6F82614D22695AF60C4C82E /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			name = RunItUpWatch;
+			target = C0A08BAFBFDC84E3174C22DA /* RunItUpWatch */;
+			targetProxy = 5BCCBE2EDEFBD1D532AE455D /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -315,6 +526,22 @@
 /* End PBXVariantGroup section */
 
 /* Begin XCBuildConfiguration section */
+		43F9FD1FD3D081898F222304 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = KR5KYG8W44;
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.runitupdallas.app.watchkitapp.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "";
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Debug;
+		};
 		504EC3141FED79650016851F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			baseConfigurationReference = 958DCC722DB07C7200EA8C5F /* debug.xcconfig */;
@@ -472,6 +699,48 @@
 			};
 			name = Release;
 		};
+		6FA03E2C697935200D5FDC03 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = KR5KYG8W44;
+				GENERATE_INFOPLIST_FILE = YES;
+				PRODUCT_BUNDLE_IDENTIFIER = com.runitupdallas.app.watchkitapp.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				TEST_HOST = "";
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
+		72570BF0E37D48E85A5FBFE8 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = RunItUpWatch/RunItUpWatch.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = KR5KYG8W44;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = RunItUpWatch/Info.plist;
+				MARKETING_VERSION = 1.3;
+				PRODUCT_BUNDLE_IDENTIFIER = com.runitupdallas.app.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchsimulator watchos";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				VALIDATE_PRODUCT = YES;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
+			};
+			name = Release;
+		};
 		8A2CA185A7F89B55C0A9F52F /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -490,6 +759,30 @@
 				SKIP_INSTALL = YES;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		C4035E56D90E1CC033E40FBA /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = RunItUpWatch/RunItUpWatch.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = KR5KYG8W44;
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = RunItUpWatch/Info.plist;
+				MARKETING_VERSION = 1.3;
+				PRODUCT_BUNDLE_IDENTIFIER = com.runitupdallas.app.watchkitapp;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = watchos;
+				SKIP_INSTALL = YES;
+				SUPPORTED_PLATFORMS = "watchsimulator watchos";
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 4;
+				WATCHOS_DEPLOYMENT_TARGET = 10.0;
 			};
 			name = Debug;
 		};
@@ -532,6 +825,24 @@
 			buildConfigurations = (
 				504EC3171FED79650016851F /* Debug */,
 				504EC3181FED79650016851F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A7B1C4A2D4A351F68250060A /* Build configuration list for PBXNativeTarget "RunItUpWatchTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				6FA03E2C697935200D5FDC03 /* Release */,
+				43F9FD1FD3D081898F222304 /* Debug */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		BB7C0370259AE2A0EEA9FB3E /* Build configuration list for PBXNativeTarget "RunItUpWatch" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				72570BF0E37D48E85A5FBFE8 /* Release */,
+				C4035E56D90E1CC033E40FBA /* Debug */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
