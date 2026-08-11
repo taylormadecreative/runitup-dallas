@@ -2,11 +2,40 @@ import SwiftUI
 
 @main
 struct RunItUpWatchApp: App {
+    @StateObject private var workout = WorkoutManager()
+    @State private var finished: FinishedRun?
+
     var body: some Scene {
         WindowGroup {
-            Text("RUN IT UP!")
-                .font(.system(size: 18, weight: .black))
-                .foregroundStyle(RIU.lime)
+            NavigationStack {
+                Group {
+                    if let run = finished {
+                        SummaryView(run: run) { finished = nil }
+                    } else if workout.state == .idle || workout.state == .ended {
+                        StartView()
+                    } else {
+                        RunView()
+                    }
+                }
+            }
+            .environmentObject(workout)
+            .onAppear {
+                PhoneSync.shared.activate()
+                workout.onMilestones = { [weak workout] fired in
+                    guard let workout else { return }
+                    for m in fired {
+                        CoachFeedback.shared.play(m, miles: workout.miles,
+                                                  elapsed: workout.elapsed,
+                                                  goal: workout.goalMiles)
+                    }
+                }
+                workout.onFinished = { run in
+                    CoachFeedback.shared.playFinish(run)
+                    PhoneSync.shared.send(run)
+                    PhoneSync.shared.setWorkoutActive(false)
+                    finished = run
+                }
+            }
         }
     }
 }

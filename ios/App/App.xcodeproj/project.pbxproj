@@ -28,12 +28,17 @@
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
 		55A89FD65F7C9792C57220E8 /* WorkoutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = 868A3FCE43FD65529FD19A99 /* WorkoutManager.swift */; };
+		60608E81E2A520A64DCEE143 /* CoachFeedback.swift in Sources */ = {isa = PBXBuildFile; fileRef = D242D1ECCFB758C726B9E78C /* CoachFeedback.swift */; };
 		69FBAD2972C3BDC6EEE85D67 /* RunActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DCD35C3A43828F625F0519C /* RunActivityAttributes.swift */; };
 		713DFA9B8A0456773CB8F31E /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 522D9FEB7E8EACDE54DEDD48 /* Assets.xcassets */; };
 		73FB6B380243C2D7CB6A0439 /* RunItUpWidgets.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 639F7940E39A1C701D669055 /* RunItUpWidgets.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		7CDD24F56EFE5E629969D742 /* AutoPause.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29199DF71D587975A9AF062F /* AutoPause.swift */; };
+		8522D5DB2224397DF28308C0 /* SummaryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADCD7F41EFC58EDCC6D2651F /* SummaryView.swift */; };
+		853B526ED71C0D03EA7A33E9 /* StartView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C5BE9324E5FAF4464318E13 /* StartView.swift */; };
 		8E1DAA50346747BBFEEA5474 /* RunEnginePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = C0EB6A66DF1087A64F94E870 /* RunEnginePlugin.swift */; };
+		9D72937C24BD48A5AD0DAD20 /* RunView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 44F0A2174D4D8DDD8B62CDDF /* RunView.swift */; };
 		A54270EF9550E71D914733A9 /* RunItUpWatchApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B707E591B32722F02D1D1DD5 /* RunItUpWatchApp.swift */; };
+		C710133B6147F6D7D91C60DD /* PhoneSync.swift in Sources */ = {isa = PBXBuildFile; fileRef = E39DC127094AD4FCB302E181 /* PhoneSync.swift */; };
 		CB9CA8525E3E7B394DCA2EAE /* RIUViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = 11D02CE06B225D78605CBA76 /* RIUViewController.swift */; };
 /* End PBXBuildFile section */
 
@@ -93,7 +98,9 @@
 		20D28B33A89C8A3388B74E5C /* RunActivityWidget.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RunActivityWidget.swift; sourceTree = "<group>"; };
 		29199DF71D587975A9AF062F /* AutoPause.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AutoPause.swift; sourceTree = "<group>"; };
 		2AE9F0CF7DA00A46A505A51F /* RunItUpWidgetsBundle.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RunItUpWidgetsBundle.swift; sourceTree = "<group>"; };
+		2C5BE9324E5FAF4464318E13 /* StartView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = StartView.swift; sourceTree = "<group>"; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
+		44F0A2174D4D8DDD8B62CDDF /* RunView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RunView.swift; sourceTree = "<group>"; };
 		462183681E57A66AD1971259 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/WatchOS.platform/Developer/SDKs/WatchOS11.0.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
 		504EC3041FED79650016851F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -114,9 +121,12 @@
 		958DCC722DB07C7200EA8C5F /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; name = debug.xcconfig; path = ../debug.xcconfig; sourceTree = SOURCE_ROOT; };
 		A0BA84B7AEE9862AD0BA121D /* RunItUpWatch.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = RunItUpWatch.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		A4E73D6637995C40F928219A /* RunMilestones.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RunMilestones.swift; sourceTree = "<group>"; };
+		ADCD7F41EFC58EDCC6D2651F /* SummaryView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = SummaryView.swift; sourceTree = "<group>"; };
 		AF7BB94CEB027EFD9721FC73 /* RunItUpWatchTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = RunItUpWatchTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		B707E591B32722F02D1D1DD5 /* RunItUpWatchApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RunItUpWatchApp.swift; sourceTree = "<group>"; };
 		C0EB6A66DF1087A64F94E870 /* RunEnginePlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RunEnginePlugin.swift; sourceTree = "<group>"; };
+		D242D1ECCFB758C726B9E78C /* CoachFeedback.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoachFeedback.swift; sourceTree = "<group>"; };
+		E39DC127094AD4FCB302E181 /* PhoneSync.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PhoneSync.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -165,6 +175,11 @@
 				A4E73D6637995C40F928219A /* RunMilestones.swift */,
 				29199DF71D587975A9AF062F /* AutoPause.swift */,
 				868A3FCE43FD65529FD19A99 /* WorkoutManager.swift */,
+				2C5BE9324E5FAF4464318E13 /* StartView.swift */,
+				44F0A2174D4D8DDD8B62CDDF /* RunView.swift */,
+				ADCD7F41EFC58EDCC6D2651F /* SummaryView.swift */,
+				D242D1ECCFB758C726B9E78C /* CoachFeedback.swift */,
+				E39DC127094AD4FCB302E181 /* PhoneSync.swift */,
 			);
 			name = RunItUpWatch;
 			path = RunItUpWatch;
@@ -446,6 +461,11 @@
 				08B6664740B1147C473BDE91 /* RunMilestones.swift in Sources */,
 				7CDD24F56EFE5E629969D742 /* AutoPause.swift in Sources */,
 				55A89FD65F7C9792C57220E8 /* WorkoutManager.swift in Sources */,
+				853B526ED71C0D03EA7A33E9 /* StartView.swift in Sources */,
+				9D72937C24BD48A5AD0DAD20 /* RunView.swift in Sources */,
+				8522D5DB2224397DF28308C0 /* SummaryView.swift in Sources */,
+				60608E81E2A520A64DCEE143 /* CoachFeedback.swift in Sources */,
+				C710133B6147F6D7D91C60DD /* PhoneSync.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
