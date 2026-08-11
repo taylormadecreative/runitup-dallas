@@ -11,7 +11,10 @@ struct RunItUpWatchApp: App {
                 Group {
                     if let run = finished {
                         SummaryView(run: run) { finished = nil }
-                    } else if workout.state == .idle || workout.state == .ended {
+                    } else if workout.state == .idle || workout.state == .ended
+                                || workout.state == .starting {
+                        // Stay on StartView while starting so the button can
+                        // show STARTING... instead of flashing a zeroed RunView.
                         StartView()
                     } else {
                         RunView()
@@ -21,6 +24,9 @@ struct RunItUpWatchApp: App {
             .environmentObject(workout)
             .onAppear {
                 PhoneSync.shared.activate()
+                if workout.state == .idle || workout.state == .ended {
+                    PhoneSync.shared.clearStaleWorkoutFlag()
+                }
                 workout.onMilestones = { [weak workout] fired in
                     guard let workout else { return }
                     for m in fired {

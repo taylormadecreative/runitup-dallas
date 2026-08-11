@@ -20,7 +20,7 @@ struct FinishedRun {
 // execution that keeps a run alive with the wrist down.
 @MainActor
 final class WorkoutManager: NSObject, ObservableObject {
-    enum State { case idle, running, paused, autopaused, ended }
+    enum State { case idle, starting, running, paused, autopaused, ended }
 
     @Published private(set) var state: State = .idle
     @Published private(set) var miles: Double = 0
@@ -53,6 +53,12 @@ final class WorkoutManager: NSObject, ObservableObject {
         locationManager.delegate = self
         locationManager.desiredAccuracy = kCLLocationAccuracyBest
         locationManager.activityType = .fitness
+        // Deliberately NOT setting allowsBackgroundLocationUpdates: on watchOS
+        // CoreLocation raises 'CLClientIsBackgroundable' and kills the app at
+        // launch, even with `location` in WKBackgroundModes. What keeps fixes
+        // flowing with the wrist down is the active HKWorkoutSession plus the
+        // workout-processing background mode — the same pattern Apple's own
+        // workout sample uses. Do not "fix" this by setting the flag.
     }
 
     func requestAuthorization() async {
@@ -74,6 +80,7 @@ final class WorkoutManager: NSObject, ObservableObject {
 
     func start() async {
         guard state == .idle || state == .ended else { return }
+        state = .starting // set BEFORE any await — a second START tap can't slip through
         clientRunId = UUID().uuidString
         milestones = RunMilestones(goalMiles: goalMiles)
         autoPause = AutoPause()
@@ -100,6 +107,14 @@ final class WorkoutManager: NSObject, ObservableObject {
             locationManager.startUpdatingLocation()
             startTicker()
         } catch {
+            // beginCollection can throw after startActivity already succeeded —
+            // end the session rather than leaving it running unreachable.
+            session?.end()
+            session = nil
+            builder = nil
+            routeBuilder = nil
+            locationManager.stopUpdatingLocation()
+            ticker?.invalidate(); ticker = nil
             state = .idle
             authorizationDenied = true
         }
@@ -153,6 +168,10 @@ final class WorkoutManager: NSObject, ObservableObject {
     }
 
     fileprivate func finishAndEmit() {
+        // A session can end without STOP being tapped (system end, failure),
+        // so release the sensors here rather than only in end().
+        locationManager.stopUpdatingLocation()
+        ticker?.invalidate(); ticker = nil
         guard let b = builder else { return }
         let end = Date()
         b.endCollection(withEnd: end) { [weak self] _, _ in
@@ -203,13 +222,18 @@ extension WorkoutManager: HKWorkoutSessionDelegate {
                                     didChangeTo toState: HKWorkoutSessionState,
                                     from fromState: HKWorkoutSessionState,
                                     date: Date) {
-        if toState == .ended {
-            Task { @MainActor in self.finishAndEmit() }
+        guard toState == .ended else { return }
+        Task { @MainActor in
+            guard workoutSession === self.session else { return } // ignore orphans
+            self.finishAndEmit()
         }
     }
 
     nonisolated func workoutSession(_ workoutSession: HKWorkoutSession, didFailWithError error: Error) {
-        Task { @MainActor in self.finishAndEmit() }
+        Task { @MainActor in
+            guard workoutSession === self.session else { return }
+            self.finishAndEmit()
+        }
     }
 }
 
@@ -250,13 +274,19 @@ extension WorkoutManager: CLLocationManagerDelegate {
         Task { @MainActor in
             let usable = locations.filter { $0.horizontalAccuracy > 0 && $0.horizontalAccuracy <= 50 }
             guard !usable.isEmpty else { return }
-            self.routeBuilder?.insertRouteData(usable) { _, _ in }
+            // Auto-pause still needs fixes, but a paused detour must not enter
+            // the saved route.
+            if self.state == .running {
+                self.routeBuilder?.insertRouteData(usable) { _, _ in }
+            }
             for loc in usable {
-                self.points.append([
+                if self.state == .running {
+                    self.points.append([
                     "lat": loc.coordinate.latitude,
                     "lng": loc.coordinate.longitude,
-                    "time": loc.timestamp.timeIntervalSince1970 * 1000
-                ])
+                        "time": loc.timestamp.timeIntervalSince1970 * 1000
+                    ])
+                }
                 if let action = self.autoPause.onFix(
                     speedMps: loc.speed,
                     accuracyM: loc.horizontalAccuracy,

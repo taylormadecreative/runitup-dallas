@@ -31,22 +31,37 @@ const WatchSync = (() => {
   }
 
   // A run can legitimately arrive twice (queued transfer + application
-  // context). The server dedupes on client id; this just avoids the round trip.
-  const handled = new Set();
+  // context) and across separate launches, so the guard has to be persistent.
+  // The server also dedupes on client id; this avoids the round trip and the
+  // repeated "saved" toast.
+  const HANDLED_KEY = 'riu_watch_handled';
+  function handledIds() {
+    try { return JSON.parse(localStorage.getItem(HANDLED_KEY) || '[]'); } catch { return []; }
+  }
+  function markHandled(id) {
+    const ids = handledIds().filter(x => x !== id);
+    ids.push(id);
+    try { localStorage.setItem(HANDLED_KEY, JSON.stringify(ids.slice(-50))); } catch {}
+  }
 
   async function onWatchRun(run) {
     if (!run || !run.clientRunId) return;
-    if (handled.has(run.clientRunId)) return;
-    handled.add(run.clientRunId);
+    if (handledIds().includes(run.clientRunId)) return;
     const miles = Number(run.distanceMiles || 0);
     if (miles < 0.05 || Number(run.durationSeconds || 0) < 30) return; // ignore accidental taps
+    // Never queue an unowned run: the pending queue is drained by whoever is
+    // signed in next, which would credit this run to the wrong member.
+    if (typeof currentProfile === 'undefined' || !currentProfile) {
+      console.warn('[watch-sync] no session yet — watch will resend on next launch');
+      return;
+    }
     const payload = buildPayload(run);
-    _addPendingRun(currentProfile?.id, payload); // queued first — never lose the run
-    if (typeof currentProfile === 'undefined' || !currentProfile) return; // saves after next login
+    _addPendingRun(currentProfile.id, payload); // queued first — never lose the run
     try {
       const error = await _saveRunPayload(payload);
       if (error) throw error;
       _removePendingRun(payload);
+      markHandled(run.clientRunId);
       showToast('Apple Watch run saved — nice work.', 'success');
       try { if (typeof checkAndAwardBadges === 'function') await checkAndAwardBadges(); } catch {}
       try { if (typeof refreshHome === 'function') refreshHome(); } catch {}

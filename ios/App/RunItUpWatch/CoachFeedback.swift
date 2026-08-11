@@ -5,9 +5,14 @@ import AVFoundation
 // Haptics always fire — they work with no headphones and never interrupt music.
 // Speech only plays when headphones are actually connected, so the watch
 // speaker never blares mid-run.
-final class CoachFeedback {
+final class CoachFeedback: NSObject {
     static let shared = CoachFeedback()
     private let synthesizer = AVSpeechSynthesizer()
+
+    private override init() {
+        super.init()
+        synthesizer.delegate = self
+    }
 
     private var headphonesConnected: Bool {
         AVAudioSession.sharedInstance().currentRoute.outputs.contains {
@@ -44,5 +49,22 @@ final class CoachFeedback {
         let utterance = AVSpeechUtterance(string: text)
         utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
         synthesizer.speak(utterance)
+    }
+}
+
+extension CoachFeedback: AVSpeechSynthesizerDelegate {
+    // .duckOthers keeps music quiet for as long as the session is ACTIVE, not
+    // just while speaking — so it has to be released after each cue.
+    func speechSynthesizer(_ s: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        releaseSession()
+    }
+    func speechSynthesizer(_ s: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
+        releaseSession()
+    }
+    private func releaseSession() {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) { [weak self] in
+            guard let self, !self.synthesizer.isSpeaking else { return }
+            try? AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
+        }
     }
 }

@@ -20,6 +20,12 @@ final class PhoneSync: NSObject, WCSessionDelegate {
         s.activate()
     }
 
+    // The watch app being alive and idle is proof no workout is running —
+    // clears a stale "active" left by a crash, force-quit, or dead battery.
+    func clearStaleWorkoutFlag() {
+        pushContext(workoutActive: false)
+    }
+
     func send(_ run: FinishedRun) {
         guard WCSession.isSupported() else { return }
         var info: [String: Any] = [
@@ -46,7 +52,15 @@ final class PhoneSync: NSObject, WCSessionDelegate {
         pushContext(workoutActive: false)
     }
 
-    private var lastRunInfo: [String: Any]?
+    // Persisted: an undelivered run must survive a relaunch and must not be
+    // erased by the next run's context push.
+    private var lastRunInfo: [String: Any]? {
+        get { UserDefaults.standard.dictionary(forKey: "riu_last_run") }
+        set {
+            if let v = newValue { UserDefaults.standard.set(v, forKey: "riu_last_run") }
+            else { UserDefaults.standard.removeObject(forKey: "riu_last_run") }
+        }
+    }
 
     func setWorkoutActive(_ active: Bool) {
         pushContext(workoutActive: active)

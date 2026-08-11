@@ -13,8 +13,17 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
         CAPPluginMethod(name: "flush", returnType: CAPPluginReturnPromise)
     ]
 
-    private var pending: [[String: Any]] = []
+    // Runs are persisted the moment they arrive: iOS can wake this app in the
+    // background purely to deliver one, with no webview and no JS listener, and
+    // WatchConnectivity never resends. An in-memory buffer would die with that
+    // process. Entries are cleared only once JS has been handed them.
+    private static let pendingKey = "riu_watch_pending_runs"
     private var listenerReady = false
+
+    private var pendingRuns: [[String: Any]] {
+        get { UserDefaults.standard.array(forKey: Self.pendingKey) as? [[String: Any]] ?? [] }
+        set { UserDefaults.standard.set(Array(newValue.suffix(20)), forKey: Self.pendingKey) }
+    }
 
     public override func load() {
         guard WCSession.isSupported() else { return }
@@ -31,8 +40,8 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
             if let ctx = WCSession.isSupported() ? WCSession.default.receivedApplicationContext : nil {
                 self.deliverContext(ctx)
             }
-            let runs = self.pending
-            self.pending = []
+            let runs = self.pendingRuns
+            self.pendingRuns = []
             for run in runs { self.notifyListeners("watchRun", data: run) }
             let s = WCSession.isSupported() ? WCSession.default : nil
             call.resolve([
@@ -44,12 +53,16 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
     }
 
     private func deliver(_ info: [String: Any]) {
-        guard info["type"] as? String == "run" else { return }
+        guard info["type"] as? String == "run",
+              let id = info["clientRunId"] as? String else { return }
         if listenerReady {
             notifyListeners("watchRun", data: info)
-        } else {
-            pending.append(info)
+            return
         }
+        var all = pendingRuns
+        all.removeAll { ($0["clientRunId"] as? String) == id }
+        all.append(info)
+        pendingRuns = all
     }
 
     public func session(_ session: WCSession, didReceiveUserInfo userInfo: [String: Any]) {
@@ -66,7 +79,16 @@ public class WatchBridgePlugin: CAPPlugin, CAPBridgedPlugin, WCSessionDelegate {
         if let active = ctx["watchWorkoutActive"] as? Bool {
             notifyListeners("watchWorkoutState", data: ["active": active])
         }
-        if let run = ctx["lastRun"] as? [String: Any] { deliver(run) }
+        // The context persists across launches, so the same run would otherwise
+        // be re-delivered forever. Forward each client id from this path once.
+        guard let run = ctx["lastRun"] as? [String: Any],
+              let id = run["clientRunId"] as? String else { return }
+        let seenKey = "riu_watch_context_seen"
+        var seen = UserDefaults.standard.stringArray(forKey: seenKey) ?? []
+        guard !seen.contains(id) else { return }
+        seen.append(id)
+        UserDefaults.standard.set(Array(seen.suffix(50)), forKey: seenKey)
+        deliver(run)
     }
 
     public func session(_ session: WCSession,

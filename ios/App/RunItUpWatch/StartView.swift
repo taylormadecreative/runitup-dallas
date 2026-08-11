@@ -2,6 +2,7 @@ import SwiftUI
 
 struct StartView: View {
     @EnvironmentObject var workout: WorkoutManager
+    @AppStorage("riu_last_goal") private var lastGoal: Double = -1
     @State private var selected: Double?      // nil = just run
     @State private var custom: Double = 2.0
     @State private var showCustom = false
@@ -21,6 +22,12 @@ struct StartView: View {
                     chip("\(Int(p)) MI", value: p)
                 }
                 chip("CUSTOM", value: -1)
+                    .onAppear {
+                        // Restore the last goal so repeat runners just hit START.
+                        guard lastGoal >= 0, selected == nil, !showCustom else { return }
+                        if [1.0, 2.0, 3.0, 5.0].contains(lastGoal) { selected = lastGoal }
+                        else if lastGoal > 0 { custom = lastGoal; showCustom = true }
+                    }
 
                 if showCustom {
                     Text(Self.format(custom) + " MI")
@@ -31,22 +38,6 @@ struct StartView: View {
                                               sensitivity: .medium, isContinuous: false)
                 }
 
-                Button {
-                    workout.goalMiles = showCustom ? custom : selected
-                    Task {
-                        await workout.start()
-                        PhoneSync.shared.setWorkoutActive(true)
-                    }
-                } label: {
-                    Text("START")
-                        .font(.system(size: 17, weight: .black))
-                        .frame(maxWidth: .infinity)
-                }
-                .buttonStyle(.borderedProminent)
-                .tint(RIU.lime)
-                .foregroundStyle(RIU.black)
-                .padding(.top, 4)
-
                 if workout.authorizationDenied {
                     Text("Allow Health and Location for Run It UP! to track your runs.")
                         .font(.system(size: 11))
@@ -55,6 +46,28 @@ struct StartView: View {
                 }
             }
             .padding(.horizontal, 4)
+        }
+        // START is pinned so a runner never has to scroll past six chips to
+        // begin — it stays on screen whatever the watch size.
+        .safeAreaInset(edge: .bottom) {
+            Button {
+                workout.goalMiles = showCustom ? custom : selected
+                Task {
+                    await workout.start()
+                    // Only tell the phone a workout is live if one actually is.
+                    if workout.state == .running { PhoneSync.shared.setWorkoutActive(true) }
+                }
+            } label: {
+                Text(workout.state == .starting ? "STARTING..." : "START")
+                    .font(.system(size: 17, weight: .black))
+                    .frame(maxWidth: .infinity)
+                    .foregroundStyle(RIU.black)
+            }
+            .buttonStyle(.borderedProminent)
+            .tint(RIU.lime)
+            .disabled(workout.state == .starting)
+            .padding(.horizontal, 4)
+            .padding(.bottom, 2)
         }
         .containerBackground(RIU.black, for: .navigation)
         .navigationTitle("RUN IT UP!")
@@ -77,6 +90,7 @@ struct StartView: View {
             } else {
                 showCustom = false
                 selected = value
+                lastGoal = value ?? 0
             }
         } label: {
             Text(label)

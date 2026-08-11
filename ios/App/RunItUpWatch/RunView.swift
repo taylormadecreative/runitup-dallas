@@ -26,7 +26,7 @@ struct RunView: View {
                         .font(.system(size: 34, weight: .black).monospacedDigit())
                         .foregroundStyle(RIU.lime)
                     Text("MILES")
-                        .font(.system(size: 9, weight: .heavy))
+                        .font(.system(size: 11, weight: .heavy))
                         .kerning(1.2)
                         .foregroundStyle(RIU.muted)
                 }
@@ -39,7 +39,7 @@ struct RunView: View {
                 stat(workout.heartRate.map(String.init) ?? "--", "BPM")
             }
 
-            HStack(spacing: 6) {
+            HStack(spacing: 14) { // wider gap: STOP is irreversible
                 Button {
                     workout.togglePause()
                 } label: {
@@ -66,7 +66,7 @@ struct RunView: View {
                 .font(.system(size: 15, weight: .heavy).monospacedDigit())
                 .foregroundStyle(.white)
             Text(label)
-                .font(.system(size: 8, weight: .bold))
+                .font(.system(size: 11, weight: .bold))
                 .foregroundStyle(RIU.muted)
         }
         .frame(maxWidth: .infinity)
