@@ -154,7 +154,7 @@ function _onPosition(coords, timestamp) {
   // Altitude powers elevation gain on the run detail screen. Only keep fixes with
   // decent vertical accuracy — bad baro/GPS altitude invents hills.
   if (typeof coords.altitude === 'number' && isFinite(coords.altitude)
-      && (coords.altitudeAccuracy == null || coords.altitudeAccuracy <= 20)) {
+      && (coords.altitudeAccuracy == null || (coords.altitudeAccuracy >= 0 && coords.altitudeAccuracy <= 20))) {
     point.alt = Math.round(coords.altitude * 10) / 10;
   }
 

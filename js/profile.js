@@ -94,7 +94,7 @@ async function refreshProfile() {
       </label>
       <label class="settings-toggle">
         <span>Weight (lbs)</span>
-        <input type="number" inputmode="decimal" min="50" max="500" placeholder="—" id="profile-weight-input"
+        <input type="number" inputmode="decimal" min="50" max="500" placeholder="—" id="profile-weight-input" class="settings-weight-input"
           onchange="saveWeightSetting(this.value)">
       </label>
     </div>` : ''}
@@ -468,6 +468,7 @@ async function saveWeightSetting(value) {
   }
 }
 window.getMyWeightLbs = getMyWeightLbs;
+window.resetWeightCache = () => { _myWeightLbs = undefined; };
 
 async function handleLogout() {
   if (await confirmNative('Log out of Run It UP!?', 'Log Out', 'Stay')) {
