@@ -28,6 +28,10 @@ public class MusicRemotePlugin: CAPPlugin, CAPBridgedPlugin {
     ]
 
     private var notificationsStarted = false
+    // Block-based addObserver(forName:object:queue:using:) returns an opaque
+    // token that is the ONLY handle NotificationCenter.removeObserver accepts
+    // for that registration — removeObserver(self) does not unregister these.
+    private var observerTokens: [NSObjectProtocol] = []
 
     // Computed so merely registering the plugin does zero Music-framework work;
     // the system player is first touched when the bar renders and calls getState.
@@ -38,13 +42,15 @@ public class MusicRemotePlugin: CAPPlugin, CAPBridgedPlugin {
         notificationsStarted = true
         player.beginGeneratingPlaybackNotifications()
         let center = NotificationCenter.default
-        center.addObserver(forName: .MPMusicPlayerControllerPlaybackStateDidChange,
-                           object: player, queue: .main) { [weak self] _ in self?.pushState() }
-        center.addObserver(forName: .MPMusicPlayerControllerNowPlayingItemDidChange,
-                           object: player, queue: .main) { [weak self] _ in self?.pushState() }
+        observerTokens.append(center.addObserver(forName: .MPMusicPlayerControllerPlaybackStateDidChange,
+                           object: player, queue: .main) { [weak self] _ in self?.pushState() })
+        observerTokens.append(center.addObserver(forName: .MPMusicPlayerControllerNowPlayingItemDidChange,
+                           object: player, queue: .main) { [weak self] _ in self?.pushState() })
     }
 
-    deinit { NotificationCenter.default.removeObserver(self) }
+    deinit {
+        for token in observerTokens { NotificationCenter.default.removeObserver(token) }
+    }
 
     // MARK: - State
 
