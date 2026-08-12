@@ -58,8 +58,8 @@ function makeMusicMock(state) {
     async getState() { return { ...this._state }; },
     async addListener(name, cb) { this._listeners.push(cb); return { remove() {} }; },
     _push() { const s = { ...this._state }; this._listeners.forEach(cb => cb(s)); },
-    async play() { this._state.playbackState = 'playing'; this._push(); },
-    async pause() { this._state.playbackState = 'paused'; this._push(); },
+    async play() { this._state.playbackState = 'playing'; this._state.otherAudioPlaying = true; this._push(); },
+    async pause() { this._state.playbackState = 'paused'; this._state.otherAudioPlaying = false; this._push(); },
     async next() { console.log('[mock] next'); },
     async previous() { console.log('[mock] previous'); },
     async requestAuthorization() {
@@ -71,6 +71,7 @@ function makeMusicMock(state) {
     async playCollection({ kind, id }) {
       console.log('[mock] playCollection', kind, id);
       this._state.playbackState = 'playing';
+      this._state.otherAudioPlaying = true;
       this._state.nowPlaying = { title: 'First Track', artist: 'Mock Artist' };
       this._push();
     },
