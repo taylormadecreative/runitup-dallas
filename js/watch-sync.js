@@ -58,7 +58,7 @@ const WatchSync = (() => {
     const payload = buildPayload(run);
     _addPendingRun(currentProfile.id, payload); // queued first — never lose the run
     try {
-      const error = await _saveRunPayload(payload);
+      const { error } = await _saveRunPayload(payload);
       if (error) throw error;
       _removePendingRun(payload);
       markHandled(run.clientRunId);

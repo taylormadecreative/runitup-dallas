@@ -1,0 +1,45 @@
+/* ===== My Runs (Stats tab) ===== */
+.my-runs-section { margin-top: var(--space-lg); }
+.mr-heading { font-family: var(--font-display); font-size: 18px; letter-spacing: 0.08em; color: var(--color-text); margin-bottom: var(--space-sm); }
+.mr-list { display: flex; flex-direction: column; }
+.mr-row { display: grid; grid-template-columns: 1fr auto; grid-template-areas: "date badges" "miles badges" "sub badges"; text-align: left; background: var(--color-surface); border: none; border-radius: var(--radius-md); padding: var(--space-md); margin-bottom: var(--space-sm); color: var(--color-text); }
+.mr-row:active { opacity: 0.7; }
+.mr-date { grid-area: date; font-size: 12px; color: var(--color-text-muted); }
+.mr-miles { grid-area: miles; font-family: var(--font-display); font-size: 32px; line-height: 1.1; }
+.mr-sub { grid-area: sub; font-size: 13px; color: var(--color-text-muted); }
+.mr-badges { grid-area: badges; display: flex; flex-direction: column; align-items: flex-end; gap: var(--space-xs); justify-content: center; }
+.mr-goal { border: 1px solid var(--color-primary); color: var(--color-primary); border-radius: var(--radius-full); font-size: 10px; letter-spacing: 0.08em; padding: 2px 8px; }
+.mr-watch { font-size: 14px; }
+.mr-more { width: 100%; margin-top: var(--space-xs); }
+.mr-empty { padding: var(--space-lg) 0; text-align: center; color: var(--color-text-muted); font-size: 14px; }
+
+/* ===== Run detail overlay ===== */
+.run-detail-overlay { position: fixed; inset: 0; z-index: 60; background: var(--color-bg); display: flex; flex-direction: column; }
+.rd-logged { background: var(--color-primary); color: var(--color-bg); font-family: var(--font-display); letter-spacing: 0.1em; text-align: center; padding: calc(10px + env(safe-area-inset-top, 0px)) 0 10px; font-size: 14px; }
+.rd-header { display: flex; align-items: center; gap: var(--space-sm); padding: calc(var(--space-md) + env(safe-area-inset-top, 0px)) var(--space-md) var(--space-sm); }
+.rd-logged + .rd-header { padding-top: var(--space-sm); }
+.rd-close { background: none; border: none; color: var(--color-text); font-size: 28px; line-height: 1; padding: 0 var(--space-xs); }
+.rd-when { font-size: 13px; color: var(--color-text-muted); }
+.rd-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 var(--space-md) calc(var(--space-2xl) + var(--safe-area-bottom)); }
+.rd-big-miles { font-family: var(--font-display); font-size: 88px; line-height: 1; color: var(--color-text); }
+.rd-big-label { color: var(--color-text-muted); font-size: 14px; margin-bottom: var(--space-md); }
+.rd-tiles { display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-sm); margin-bottom: var(--space-md); }
+.rd-tile { background: var(--color-surface); border-radius: var(--radius-md); padding: var(--space-sm) var(--space-sm); min-height: 64px; }
+.rd-tile-value { font-family: var(--font-display); font-size: 22px; color: var(--color-text); }
+.rd-tile-label { font-size: 11px; color: var(--color-text-muted); margin-top: 2px; }
+.rd-nudge { background: none; border: none; color: var(--color-primary); font-size: 12px; text-align: left; padding: 0; line-height: 1.3; }
+.rd-map-wrap { border-radius: var(--radius-md); overflow: hidden; margin-bottom: var(--space-md); }
+.rd-map { height: 280px; background: var(--color-surface); }
+.rd-no-route { height: 80px; display: flex; align-items: center; justify-content: center; color: var(--color-text-muted); background: var(--color-surface); border-radius: var(--radius-md); font-size: 14px; }
+.rd-splits-heading { font-family: var(--font-display); font-size: 18px; letter-spacing: 0.08em; margin-bottom: var(--space-xs); }
+.rd-splits-cols { display: grid; grid-template-columns: 44px 1fr 56px; font-size: 11px; color: var(--color-text-muted); margin-bottom: var(--space-xs); }
+.rd-split { display: grid; grid-template-columns: 44px 1fr 56px; align-items: center; margin-bottom: var(--space-xs); }
+.rd-split-mile { font-size: 14px; }
+.rd-split-bar-wrap { position: relative; background: var(--color-surface); border-radius: var(--radius-sm); height: 28px; }
+.rd-split-bar { position: absolute; inset: 0 auto 0 0; background: var(--color-surface-hover); border-radius: var(--radius-sm); }
+.rd-split-pace { position: absolute; left: var(--space-sm); top: 50%; transform: translateY(-50%); font-size: 13px; }
+.rd-split-elev { text-align: right; font-size: 12px; color: var(--color-text-muted); }
+.rd-share { width: 100%; margin-top: var(--space-md); }
+.rd-mile-marker { background: var(--color-bg); color: var(--color-text); border: 1px solid var(--color-primary); border-radius: var(--radius-full); font-size: 10px; font-weight: 700; display: flex; align-items: center; justify-content: center; }
+.rd-map .leaflet-control-attribution { background: rgba(10, 10, 10, 0.7); color: var(--color-text-muted); font-size: 9px; }
+.rd-map .leaflet-control-attribution a { color: var(--color-text-muted); }

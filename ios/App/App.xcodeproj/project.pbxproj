@@ -19,6 +19,7 @@
 		3842F6DB8FDE01732A46E223 /* RunActivityAttributes.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0DCD35C3A43828F625F0519C /* RunActivityAttributes.swift */; };
 		4063FFC261DCB96EECE9C3CE /* RunEnginesTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 534913FB708CED28F8EA9F86 /* RunEnginesTests.swift */; };
 		408B324E0D789F468BE3718B /* AutoPause.swift in Sources */ = {isa = PBXBuildFile; fileRef = 29199DF71D587975A9AF062F /* AutoPause.swift */; };
+		4268DF3E092AEF11AEF0F35A /* MusicRemotePlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = E7BE14380832FE567AD87D63 /* MusicRemotePlugin.swift */; };
 		465A2F1761D7179DCEAB76D3 /* RunItUpWidgetsBundle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2AE9F0CF7DA00A46A505A51F /* RunItUpWidgetsBundle.swift */; };
 		4D22ABE92AF431CB00220026 /* CapApp-SPM in Frameworks */ = {isa = PBXBuildFile; productRef = 4D22ABE82AF431CB00220026 /* CapApp-SPM */; };
 		4F9CCDB8BEA3B4156B6501F9 /* RunItUpWatch.app in Embed Watch Content */ = {isa = PBXBuildFile; fileRef = A0BA84B7AEE9862AD0BA121D /* RunItUpWatch.app */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
@@ -129,6 +130,7 @@
 		C0EB6A66DF1087A64F94E870 /* RunEnginePlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = RunEnginePlugin.swift; sourceTree = "<group>"; };
 		D242D1ECCFB758C726B9E78C /* CoachFeedback.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CoachFeedback.swift; sourceTree = "<group>"; };
 		E39DC127094AD4FCB302E181 /* PhoneSync.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = PhoneSync.swift; sourceTree = "<group>"; };
+		E7BE14380832FE567AD87D63 /* MusicRemotePlugin.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MusicRemotePlugin.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -227,6 +229,7 @@
 				0DCD35C3A43828F625F0519C /* RunActivityAttributes.swift */,
 				1764D301C1E247AA9B610001 /* LiveActivityBridge.swift */,
 				9D8D73F8BF2E310A155054B8 /* WatchBridgePlugin.swift */,
+				E7BE14380832FE567AD87D63 /* MusicRemotePlugin.swift */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -454,6 +457,7 @@
 				3842F6DB8FDE01732A46E223 /* RunActivityAttributes.swift in Sources */,
 				21A988D59C633D06C4C7F298 /* LiveActivityBridge.swift in Sources */,
 				3653075FEA13BF9A99F67E49 /* WatchBridgePlugin.swift in Sources */,
+				4268DF3E092AEF11AEF0F35A /* MusicRemotePlugin.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

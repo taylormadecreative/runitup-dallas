@@ -61,6 +61,7 @@ document.addEventListener('DOMContentLoaded', async () => {
       currentUser = null;
       currentProfile = null;
       _cachedGuestState = null; // don't gate the next login with stale guest state
+      window.resetWeightCache?.(); // don't prefill the next account's Weight field with this one's
       document.getElementById('app-shell').classList.add('hidden');
       document.querySelectorAll('#screen-splash, #screen-login, #screen-signup, #screen-onboarding')
         .forEach(s => { s.style.display = ''; });

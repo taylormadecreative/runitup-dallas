@@ -151,6 +151,13 @@ function _onPosition(coords, timestamp) {
   if (accuracy > MIN_ACCURACY_M) return; // drop noisy fixes
   const point = { lat: coords.latitude, lng: coords.longitude, time: timestamp || Date.now() };
 
+  // Altitude powers elevation gain on the run detail screen. Only keep fixes with
+  // decent vertical accuracy — bad baro/GPS altitude invents hills.
+  if (typeof coords.altitude === 'number' && isFinite(coords.altitude)
+      && (coords.altitudeAccuracy == null || (coords.altitudeAccuracy >= 0 && coords.altitudeAccuracy <= 20))) {
+    point.alt = Math.round(coords.altitude * 10) / 10;
+  }
+
   if (RUN_STATE.lastPoint && RUN_STATE.status === 'tracking') {
     const d = _haversineMeters(RUN_STATE.lastPoint, point);
     if (d >= MIN_POINT_DISTANCE_M) {
@@ -203,7 +210,13 @@ function _onEngineFix(fix) {
     if (action === 'pause') _autoPause();
     else if (action === 'resume') _autoResume();
   }
-  _onPosition({ latitude: fix.lat, longitude: fix.lng, accuracy: fix.accuracy }, fix.timestamp);
+  _onPosition({
+    latitude: fix.lat,
+    longitude: fix.lng,
+    accuracy: fix.accuracy,
+    altitude: typeof fix.altitude === 'number' ? fix.altitude : null,
+    altitudeAccuracy: typeof fix.verticalAccuracy === 'number' ? fix.verticalAccuracy : null,
+  }, fix.timestamp);
 }
 
 async function _startWatchPosition() {
@@ -450,6 +463,7 @@ async function openRunTrackerPrep() {
   `;
   document.body.appendChild(overlay);
   _initGoalChips(overlay);
+  window.MusicBar?.mount?.(overlay);
 
   // If warmer already has a fresh fix, show ready state instantly
   if (hasWarmGpsFix()) {
@@ -787,14 +801,16 @@ function _runEventTypeFor(startMs, endMs) {
 
 // Save via RPC. If the check-in half hits the one-per-day unique index
 // (23505 — user already checked in for that event), retry as a solo run so
-// the run itself isn't lost. Returns null on success, the error otherwise.
+// the run itself isn't lost. Returns { error, data }: data is the RPC's
+// { run_id, check_in_id } jsonb payload on success, null on failure.
 async function _saveRunPayload(payload) {
-  let { error } = await supabaseClient.rpc('save_run_with_checkin', payload);
+  let { data, error } = await supabaseClient.rpc('save_run_with_checkin', payload);
   if (error && error.code === '23505' && payload.p_event_type !== 'solo') {
     payload.p_event_type = 'solo';
-    ({ error } = await supabaseClient.rpc('save_run_with_checkin', payload));
+    ({ data, error } = await supabaseClient.rpc('save_run_with_checkin', payload));
   }
-  return error || null;
+  // data is the RPC's { run_id, check_in_id } jsonb payload on success.
+  return { error: error || null, data: data || null };
 }
 
 // Unsaved finished runs queue up in a list (never a single overwritable slot),
@@ -847,7 +863,7 @@ async function retryPendingRunSave() {
     let savedAny = false;
     for (const entry of list) {
       if (entry.userId && entry.userId !== currentProfile.id) continue;
-      const error = await _saveRunPayload(entry.payload);
+      const { error } = await _saveRunPayload(entry.payload);
       if (!error) { _removePendingRun(entry.payload); savedAny = true; }
       else if (error.code === '23505') { _removePendingRun(entry.payload); } // already saved server-side
     }
@@ -907,13 +923,15 @@ async function stopRun() {
       payload.p_goal_hit = miles >= RUN_STATE.goalMiles;
     }
     let saved = false;
+    let savedRun = null; // { run_id, check_in_id } from the RPC on success
     try {
       // Keep a local copy until the save is confirmed — a failed save must
       // never destroy the finished run.
       _addPendingRun(currentProfile?.id, payload);
-      const error = await _saveRunPayload(payload);
+      const { error, data } = await _saveRunPayload(payload);
       if (error) throw error;
       saved = true;
+      savedRun = data;
       _removePendingRun(payload);
     } catch (err) {
       console.error('[run-tracker] save failed', err);
@@ -930,7 +948,21 @@ async function stopRun() {
     RunTrackerEvents.emit('onStatusChange', 'finished', {
       miles, seconds, paceSecPerMile, goalMiles: RUN_STATE.goalMiles
     });
-    showRunSummaryCard({ miles, seconds, paceSecPerMile, goalMiles: RUN_STATE.goalMiles });
+    // The tracker UI (PAUSE/STOP, live stats) is dead once we're here — RUN_STATE
+    // is about to be reset below — so close it before showing either summary.
+    // Idempotent: a no-op if it's already gone.
+    closeRunTrackerUI();
+    // Rich run detail when the save returned a row id; the classic card remains
+    // the fallback (offline queue, web, run-detail unavailable, or a failed
+    // fetch of the just-saved row inside RunDetail.open itself).
+    if (savedRun?.run_id && window.RunDetail?.open) {
+      RunDetail.open(savedRun.run_id, {
+        justLogged: true,
+        onFail: () => showRunSummaryCard({ miles, seconds, paceSecPerMile, goalMiles: RUN_STATE.goalMiles })
+      });
+    } else {
+      showRunSummaryCard({ miles, seconds, paceSecPerMile, goalMiles: RUN_STATE.goalMiles });
+    }
     await _resetRun();
   } finally {
     _stopRunInFlight = false;
@@ -1007,6 +1039,7 @@ function showRunTrackerUI() {
     <p class="rt-hint">${hasRunEngine() ? "Lock your phone and run — we've got you." : "Keep the screen on and the app open while you run."}</p>
   `;
   document.body.appendChild(overlay);
+  window.MusicBar?.mount?.(overlay);
 }
 
 function closeRunTrackerUI() {

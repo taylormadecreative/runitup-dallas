@@ -92,6 +92,11 @@ async function refreshProfile() {
         <input type="checkbox" ${riuSetting('riu_auto_pause') === 'on' ? 'checked' : ''}
           onchange="localStorage.setItem('riu_auto_pause', this.checked ? 'on' : 'off')">
       </label>
+      <label class="settings-toggle">
+        <span>Weight (lbs)</span>
+        <input type="number" inputmode="decimal" min="50" max="500" placeholder="—" id="profile-weight-input" class="settings-weight-input"
+          onchange="saveWeightSetting(this.value)">
+      </label>
     </div>` : ''}
 
     <div class="profile-actions">
@@ -105,6 +110,13 @@ async function refreshProfile() {
       <button class="btn-logout" style="color: var(--color-error); opacity: 0.6; font-size: 0.75rem;" onclick="handleDeleteAccount()">Delete My Account</button>
     </div>
   `;
+
+  if (typeof hasRunEngine === 'function' && hasRunEngine() && typeof getMyWeightLbs === 'function') {
+    getMyWeightLbs().then(w => {
+      const el = document.getElementById('profile-weight-input');
+      if (el && w != null) el.value = w;
+    });
+  }
 }
 
 async function viewMemberProfile(userId) {
@@ -429,6 +441,34 @@ async function saveProfile() {
     showToast('That didn\'t save — give it another shot.', 'error');
   }
 }
+
+// Weight (lbs) — self-only in user_settings (public.users is world-readable).
+let _myWeightLbs; // undefined = not loaded, null = none set
+async function getMyWeightLbs() {
+  if (_myWeightLbs !== undefined) return _myWeightLbs;
+  try {
+    const { data } = await supabaseClient.from('user_settings')
+      .select('weight_lbs').eq('user_id', currentProfile.id).maybeSingle();
+    _myWeightLbs = data?.weight_lbs ?? null;
+  } catch (err) { console.warn('[profile] weight load', err); _myWeightLbs = null; }
+  return _myWeightLbs;
+}
+async function saveWeightSetting(value) {
+  const n = parseFloat(value);
+  const weight_lbs = (isFinite(n) && n >= 50 && n <= 500) ? n : null;
+  try {
+    const { error } = await supabaseClient.from('user_settings')
+      .upsert({ user_id: currentProfile.id, weight_lbs, updated_at: new Date().toISOString() });
+    if (error) throw error;
+    _myWeightLbs = weight_lbs;
+    showToast(weight_lbs ? 'Weight saved' : 'Weight cleared', 'success');
+  } catch (err) {
+    console.warn('[profile] weight save failed', err);
+    showToast("Couldn't save weight — try again.", 'error');
+  }
+}
+window.getMyWeightLbs = getMyWeightLbs;
+window.resetWeightCache = () => { _myWeightLbs = undefined; };
 
 async function handleLogout() {
   if (await confirmNative('Log out of Run It UP!?', 'Log Out', 'Stay')) {
