@@ -60,10 +60,11 @@ const MusicBar = (() => {
     if (s.mode === 'hidden') { el.hidden = true; el.innerHTML = ''; return; }
     el.hidden = false;
     if (s.mode === 'transport') {
+      const safeArt = s.artworkBase64 && /^[A-Za-z0-9+/=]+$/.test(s.artworkBase64) ? s.artworkBase64 : null;
       el.innerHTML = `
         <button class="mb-info" onclick="MusicBar.openPicker()" aria-label="Choose music">
-          <div class="mb-art">${s.artworkBase64
-            ? `<img src="data:image/jpeg;base64,${s.artworkBase64}" alt="">`
+          <div class="mb-art">${safeArt
+            ? `<img src="data:image/jpeg;base64,${safeArt}" alt="">`
             : ICONS.note}</div>
           <div class="mb-meta">
             <div class="mb-title">${escapeHtml(s.title)}</div>
