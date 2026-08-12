@@ -53,6 +53,12 @@
 	<string>Run It UP! continues tracking your run when your screen is locked so your miles don't stop mid-run.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
 	<string>Run It UP! continues tracking your run when your screen is locked so your miles don't stop mid-run.</string>
+	<key>NSAppleMusicUsageDescription</key>
+	<string>Run It UP shows what's playing and lets you switch albums or playlists mid-run.</string>
+	<key>LSApplicationQueriesSchemes</key>
+	<array>
+		<string>spotify</string>
+	</array>
 	<key>UIBackgroundModes</key>
 	<array>
 		<string>location</string>
