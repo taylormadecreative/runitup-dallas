@@ -20,6 +20,7 @@ async function refreshStats() {
     // Hero is highest priority — render as soon as user stats are known
     const stats = await getUserStats(currentProfile.id);
     container.innerHTML = renderStatsShell(stats);
+    window.RunDetail?.initHistory?.();
 
     // Badges + leaderboard load in background
     const [badges, leaderboard] = await Promise.all([
@@ -96,6 +97,8 @@ function renderStatsShell(stats) {
 
       ${shareBtn}
     </div>
+
+    <div id="my-runs-section" class="my-runs-section"></div>
 
     <!-- Challenge -->
     <div class="challenge-section">
