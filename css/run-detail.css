@@ -15,8 +15,9 @@
 
 /* ===== Run detail overlay ===== */
 .run-detail-overlay { position: fixed; inset: 0; z-index: 60; background: var(--color-bg); display: flex; flex-direction: column; }
-.rd-logged { background: var(--color-primary); color: var(--color-bg); font-family: var(--font-display); letter-spacing: 0.1em; text-align: center; padding: 10px 0 calc(10px); font-size: 14px; }
+.rd-logged { background: var(--color-primary); color: var(--color-bg); font-family: var(--font-display); letter-spacing: 0.1em; text-align: center; padding: calc(10px + env(safe-area-inset-top, 0px)) 0 10px; font-size: 14px; }
 .rd-header { display: flex; align-items: center; gap: var(--space-sm); padding: calc(var(--space-md) + env(safe-area-inset-top, 0px)) var(--space-md) var(--space-sm); }
+.rd-logged + .rd-header { padding-top: var(--space-sm); }
 .rd-close { background: none; border: none; color: var(--color-text); font-size: 28px; line-height: 1; padding: 0 var(--space-xs); }
 .rd-when { font-size: 13px; color: var(--color-text-muted); }
 .rd-scroll { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 0 var(--space-md) calc(var(--space-2xl) + var(--safe-area-bottom)); }

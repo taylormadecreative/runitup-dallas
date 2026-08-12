@@ -9,6 +9,7 @@ const RunDetail = (() => {
   const FULL_COLS = LIST_COLS + ', ended_at, goal_miles, avg_heart_rate, route_points';
 
   let history = { rows: [], done: false, loading: false };
+  let _opening = false;
 
   function _fmtPace(sec) {
     if (!isFinite(sec) || sec <= 0) return "--'--\"";
@@ -108,31 +109,41 @@ const RunDetail = (() => {
   // ---- Detail overlay ----
 
   async function open(runIdOrRow, { justLogged = false, onFail } = {}) {
-    if (document.getElementById('run-detail-overlay')) return;
-    let run = (runIdOrRow && typeof runIdOrRow === 'object') ? runIdOrRow : null;
-    if (!run) {
-      try {
-        const { data, error } = await supabaseClient.from('runs')
-          .select(FULL_COLS).eq('id', runIdOrRow).single();
-        if (error) throw error;
-        run = data;
-      } catch (err) {
-        console.warn('[run-detail]', err);
-        showToast("Couldn't open that run — try again.", 'error');
-        // Caller (e.g. the just-saved-run swap) can pass onFail to show its own
-        // fallback UI — otherwise a failed fetch here leaves the user with
-        // nothing but the toast.
-        onFail?.();
-        return;
+    // _opening covers the gap before the overlay exists in the DOM (two awaits below:
+    // row fetch, weight load) — without it, two quick taps on a My Runs row both pass
+    // the id guard and stack two overlays. Cleared in the finally, which runs after
+    // _renderOverlay has synchronously appended the overlay — from then on the id
+    // guard alone is enough.
+    if (_opening || document.getElementById('run-detail-overlay')) return;
+    _opening = true;
+    try {
+      let run = (runIdOrRow && typeof runIdOrRow === 'object') ? runIdOrRow : null;
+      if (!run) {
+        try {
+          const { data, error } = await supabaseClient.from('runs')
+            .select(FULL_COLS).eq('id', runIdOrRow).single();
+          if (error) throw error;
+          run = data;
+        } catch (err) {
+          console.warn('[run-detail]', err);
+          showToast("Couldn't open that run — try again.", 'error');
+          // Caller (e.g. the just-saved-run swap) can pass onFail to show its own
+          // fallback UI — otherwise a failed fetch here leaves the user with
+          // nothing but the toast.
+          onFail?.();
+          return;
+        }
       }
+      // Weight lives in a self-only table (user_settings), not currentProfile — see
+      // js/profile.js getMyWeightLbs() (cached, resolves to number|null).
+      const weightLbs = await (window.getMyWeightLbs?.() ?? null);
+      const metrics = RunMetrics.summarize(run, weightLbs);
+      _renderOverlay(run, metrics, justLogged, weightLbs);
+      _initMap(run, metrics);
+      _loadWeather(run);
+    } finally {
+      _opening = false;
     }
-    // Weight lives in a self-only table (user_settings), not currentProfile — see
-    // js/profile.js getMyWeightLbs() (cached, resolves to number|null).
-    const weightLbs = await (window.getMyWeightLbs?.() ?? null);
-    const metrics = RunMetrics.summarize(run, weightLbs);
-    _renderOverlay(run, metrics, justLogged, weightLbs);
-    _initMap(run, metrics);
-    _loadWeather(run);
   }
 
   function _tile(id, value, label, extraClass = '') {
@@ -186,7 +197,7 @@ const RunDetail = (() => {
         <div class="rd-tiles">
           ${_tile('rd-pace', _fmtPace(run.avg_pace_sec_per_mile), 'Avg Pace')}
           ${_tile('rd-time', _fmtDuration(run.duration_seconds), 'Time')}
-          ${_tile('rd-cal', cal, 'Calories')}
+          ${_tile('rd-cal', cal, 'Est. Calories')}
           ${_tile('rd-elev', elev, 'Elevation Gain')}
           ${_tile('rd-hr', hr, 'Avg Heart Rate')}
           ${_tile('rd-wx', '—', 'Weather')}

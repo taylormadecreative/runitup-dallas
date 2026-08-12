@@ -56,8 +56,10 @@ just-saved run with a "RUN LOGGED ✓" confirmation strip. One code path serves 
 
 ### Profile
 
-New "Weight (lbs)" field in Profile settings, synced via the existing `updateUserProfile`
-path (like `pace_group`).
+New "Weight (lbs)" field in Profile settings. **Production reality:** `public.users` is
+world-readable (pre-existing policy), so weight does not go through `updateUserProfile`/
+`pace_group` like the rest of profile settings — it's synced to a dedicated self-only
+`user_settings` table instead (see DB below).
 
 ## Architecture
 
@@ -96,7 +98,11 @@ Input: a run row (`route_points`, `duration_seconds`, `distance_miles`, `avg_pac
 
 ### DB (the only migration)
 
-- `users.weight_lbs` (numeric, nullable).
+- **Production reality (amended):** `users.weight_lbs` was added, then dropped in the same
+  branch once it was clear `public.users` carries a world-readable SELECT policy — body
+  weight can't live there. It now lives in its own `user_settings` table
+  (`user_id` PK/FK, `weight_lbs`, `updated_at`) with `RLS FOR ALL USING (user_id = auth.uid())`,
+  so only the owner can read or write their own row.
 - **RLS verify**: nothing has ever SELECTed `runs` from the client; the plan must verify a
   select-own policy exists (`user_id = auth.uid()`) and add it in the same migration if missing.
 - `save_run_with_checkin` unchanged. Watch payload unchanged.
