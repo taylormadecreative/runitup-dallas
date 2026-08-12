@@ -124,9 +124,10 @@ const MusicBar = (() => {
           _artObserver.unobserve(artEl);
           remote().getCollectionArtwork({ kind: artEl.dataset.kind, id: artEl.dataset.id })
             .then((res) => {
-              if (res?.artworkBase64) {
+              const safeArt = res?.artworkBase64 && /^[A-Za-z0-9+/=]+$/.test(res.artworkBase64) ? res.artworkBase64 : null;
+              if (safeArt) {
                 artEl.textContent = '';
-                artEl.style.backgroundImage = `url(data:image/jpeg;base64,${res.artworkBase64})`;
+                artEl.style.backgroundImage = `url(data:image/jpeg;base64,${safeArt})`;
               }
             })
             .catch(() => {});
@@ -148,7 +149,7 @@ const MusicBar = (() => {
 
   function _openSheet(authorized) {
     const host = document.getElementById('run-tracker-overlay') || document.getElementById('music-bar')?.parentElement;
-    if (!host) return;
+    if (!host || document.getElementById('music-picker')) return;
     const sheet = document.createElement('div');
     sheet.id = 'music-picker';
     sheet.className = 'music-picker';
@@ -177,6 +178,7 @@ const MusicBar = (() => {
 
   function closePicker() {
     _artObserver?.disconnect();
+    picker.filter = '';
     document.getElementById('music-picker')?.remove();
   }
 
