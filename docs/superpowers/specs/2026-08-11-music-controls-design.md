@@ -57,6 +57,7 @@ built-in Music app.
 | `playCollection({kind, id})` | `setQueue` with that collection, then `play()` |
 | `requestAuthorization()` | `MPMediaLibrary.requestAuthorization` |
 | `openSpotify()` | Opens `spotify:` URL |
+| `openSettings()` | Opens the app's iOS Settings page (denied-permission recovery) |
 
 **Event:** `musicStateChanged` → pushed via `notifyListeners` from the system playback
 notifications (`playbackStateDidChange`, `nowPlayingItemDidChange`, with
