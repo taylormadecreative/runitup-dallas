@@ -113,7 +113,9 @@ public class RunEnginePlugin: CAPPlugin, CAPBridgedPlugin, CLLocationManagerDele
                 "lng": loc.coordinate.longitude,
                 "accuracy": loc.horizontalAccuracy,
                 "speedMps": loc.speed,
-                "timestamp": loc.timestamp.timeIntervalSince1970 * 1000.0
+                "timestamp": loc.timestamp.timeIntervalSince1970 * 1000.0,
+                "altitude": loc.altitude,
+                "verticalAccuracy": loc.verticalAccuracy
             ])
         }
     }

@@ -151,6 +151,13 @@ function _onPosition(coords, timestamp) {
   if (accuracy > MIN_ACCURACY_M) return; // drop noisy fixes
   const point = { lat: coords.latitude, lng: coords.longitude, time: timestamp || Date.now() };
 
+  // Altitude powers elevation gain on the run detail screen. Only keep fixes with
+  // decent vertical accuracy — bad baro/GPS altitude invents hills.
+  if (typeof coords.altitude === 'number' && isFinite(coords.altitude)
+      && (coords.altitudeAccuracy == null || coords.altitudeAccuracy <= 20)) {
+    point.alt = Math.round(coords.altitude * 10) / 10;
+  }
+
   if (RUN_STATE.lastPoint && RUN_STATE.status === 'tracking') {
     const d = _haversineMeters(RUN_STATE.lastPoint, point);
     if (d >= MIN_POINT_DISTANCE_M) {
@@ -203,7 +210,13 @@ function _onEngineFix(fix) {
     if (action === 'pause') _autoPause();
     else if (action === 'resume') _autoResume();
   }
-  _onPosition({ latitude: fix.lat, longitude: fix.lng, accuracy: fix.accuracy }, fix.timestamp);
+  _onPosition({
+    latitude: fix.lat,
+    longitude: fix.lng,
+    accuracy: fix.accuracy,
+    altitude: typeof fix.altitude === 'number' ? fix.altitude : null,
+    altitudeAccuracy: typeof fix.verticalAccuracy === 'number' ? fix.verticalAccuracy : null,
+  }, fix.timestamp);
 }
 
 async function _startWatchPosition() {
