@@ -176,6 +176,7 @@ const MusicBar = (() => {
   }
 
   function closePicker() {
+    _artObserver?.disconnect();
     document.getElementById('music-picker')?.remove();
   }
 
@@ -201,6 +202,7 @@ const MusicBar = (() => {
     const all = picker.cache[picker.kind] || [];
     const f = picker.filter.trim().toLowerCase();
     const items = f ? all.filter((i) => `${i.title} ${i.subtitle}`.toLowerCase().includes(f)) : all;
+    _artObserver?.disconnect();
     list.textContent = '';
     if (!items.length) {
       const empty = document.createElement('div');
