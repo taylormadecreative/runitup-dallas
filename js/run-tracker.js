@@ -450,6 +450,7 @@ async function openRunTrackerPrep() {
   `;
   document.body.appendChild(overlay);
   _initGoalChips(overlay);
+  window.MusicBar?.mount?.(overlay);
 
   // If warmer already has a fresh fix, show ready state instantly
   if (hasWarmGpsFix()) {
@@ -1007,6 +1008,7 @@ function showRunTrackerUI() {
     <p class="rt-hint">${hasRunEngine() ? "Lock your phone and run — we've got you." : "Keep the screen on and the app open while you run."}</p>
   `;
   document.body.appendChild(overlay);
+  window.MusicBar?.mount?.(overlay);
 }
 
 function closeRunTrackerUI() {
