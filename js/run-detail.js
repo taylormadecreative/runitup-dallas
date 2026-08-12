@@ -131,8 +131,8 @@ const RunDetail = (() => {
     const weightLbs = await (window.getMyWeightLbs?.() ?? null);
     const metrics = RunMetrics.summarize(run, weightLbs);
     _renderOverlay(run, metrics, justLogged, weightLbs);
-    _initMap(run, metrics);   // Task 5
-    _loadWeather(run);        // Task 5
+    _initMap(run, metrics);
+    _loadWeather(run);
   }
 
   function _tile(id, value, label, extraClass = '') {
@@ -222,14 +222,124 @@ const RunDetail = (() => {
   }
 
   function close() {
-    _teardownMap(); // Task 5 (no-op stub here)
+    _teardownMap();
     document.getElementById('run-detail-overlay')?.remove();
   }
 
-  // ---- Map + weather (implemented in the next task) ----
-  function _initMap() {}
-  function _teardownMap() {}
-  function _loadWeather() {}
+  // ---- Leaflet (vendored, lazy) ----
+  let _leafletPromise = null;
+  let _map = null;
+
+  function _loadLeaflet() {
+    if (window.L) return Promise.resolve();
+    if (_leafletPromise) return _leafletPromise;
+    _leafletPromise = new Promise((resolve, reject) => {
+      const link = document.createElement('link');
+      link.rel = 'stylesheet';
+      link.href = 'assets/vendor/leaflet/leaflet.css';
+      document.head.appendChild(link);
+      const script = document.createElement('script');
+      script.src = 'assets/vendor/leaflet/leaflet.js';
+      script.onload = resolve;
+      script.onerror = () => { _leafletPromise = null; reject(new Error('leaflet load failed')); };
+      document.head.appendChild(script);
+    });
+    return _leafletPromise;
+  }
+
+  async function _initMap(run, metrics) {
+    const el = document.getElementById('rd-map');
+    if (!el || !Array.isArray(run.route_points) || run.route_points.length < 2) return;
+    try {
+      await _loadLeaflet();
+      if (!document.getElementById('rd-map')) return; // overlay closed while loading
+      _map = L.map(el, { zoomControl: false, attributionControl: true });
+      L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        maxZoom: 19,
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+      }).addTo(_map);
+      const bounds = [];
+      for (const seg of metrics.segments) {
+        L.polyline(seg.latlngs, { color: seg.color, weight: 5, opacity: 0.95, lineCap: 'round' }).addTo(_map);
+        for (const ll of seg.latlngs) bounds.push(ll);
+      }
+      const first = run.route_points[0];
+      const last = run.route_points[run.route_points.length - 1];
+      L.circleMarker([first.lat, first.lng], { radius: 7, color: '#0A0A0A', weight: 2, fillColor: '#BFFF00', fillOpacity: 1 }).addTo(_map);
+      L.circleMarker([last.lat, last.lng], { radius: 7, color: '#0A0A0A', weight: 2, fillColor: '#FF3B30', fillOpacity: 1 }).addTo(_map);
+      for (const s of metrics.splits) {
+        if (!s.crossing) continue;
+        L.marker([s.crossing.lat, s.crossing.lng], {
+          icon: L.divIcon({ className: 'rd-mile-marker', html: `${s.mile} mi`, iconSize: [40, 18], iconAnchor: [20, 9] }),
+          interactive: false
+        }).addTo(_map);
+      }
+      _map.fitBounds(bounds.length ? bounds : [[first.lat, first.lng]], { padding: [24, 24] });
+    } catch (err) {
+      console.warn('[run-detail] map', err); // route without streets beats nothing; tiles may still land later
+    }
+  }
+
+  function _teardownMap() {
+    try { _map?.remove(); } catch {}
+    _map = null;
+  }
+
+  // ---- Weather (Open-Meteo, cached per run) ----
+  const WX_CACHE_KEY = 'riu_run_wx';
+  const WX_CACHE_MAX = 100;
+
+  function _wxCache() {
+    try { return JSON.parse(localStorage.getItem(WX_CACHE_KEY)) || {}; } catch { return {}; }
+  }
+
+  async function _loadWeather(run) {
+    const tile = () => document.getElementById('rd-wx')?.querySelector('.rd-tile-value');
+    const label = () => document.getElementById('rd-wx')?.querySelector('.rd-tile-label');
+    const p0 = Array.isArray(run.route_points) ? run.route_points[0] : null;
+    if (!p0) return;
+    const cache = _wxCache();
+    const cached = cache[run.id];
+    const paint = (wx) => {
+      const v = tile(), l = label();
+      if (v) v.textContent = `${wx.icon} ${wx.temp}°`;
+      if (l) l.textContent = wx.summary || 'Weather';
+    };
+    if (cached) { paint(cached); return; }
+    try {
+      const started = new Date(run.started_at);
+      const dateStr = typeof chicagoDateStr === 'function'
+        ? chicagoDateStr(started)
+        : started.toISOString().slice(0, 10);
+      const ageDays = (Date.now() - started.getTime()) / 86400000;
+      const base = ageDays > 6
+        ? `https://archive-api.open-meteo.com/v1/archive?start_date=${dateStr}&end_date=${dateStr}`
+        : `https://api.open-meteo.com/v1/forecast?past_days=7&forecast_days=1`;
+      const url = `${base}&latitude=${p0.lat.toFixed(4)}&longitude=${p0.lng.toFixed(4)}` +
+        `&hourly=temperature_2m,weathercode&temperature_unit=fahrenheit&timezone=America%2FChicago`;
+      const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
+      if (!res.ok) throw new Error(`weather ${res.status}`);
+      const data = await res.json();
+      const times = data?.hourly?.time || [];
+      let best = -1, bestDiff = Infinity;
+      for (let i = 0; i < times.length; i++) {
+        const diff = Math.abs(new Date(times[i]).getTime() - started.getTime());
+        if (diff < bestDiff) { bestDiff = diff; best = i; }
+      }
+      if (best < 0) return;
+      const code = data.hourly.weathercode?.[best];
+      const meta = (typeof _wmoCode === 'function') ? _wmoCode(code) : { icon: '🌡️', summary: 'Weather' };
+      const wx = { temp: Math.round(data.hourly.temperature_2m?.[best]), icon: meta.icon, summary: meta.summary };
+      if (!isFinite(wx.temp)) return;
+      paint(wx);
+      const keys = Object.keys(cache);
+      if (keys.length >= WX_CACHE_MAX) delete cache[keys[0]];
+      cache[run.id] = wx;
+      try { localStorage.setItem(WX_CACHE_KEY, JSON.stringify(cache)); } catch {}
+    } catch (err) {
+      console.warn('[run-detail] weather', err); // tile stays "—", retries next open
+    }
+  }
 
   return { initHistory, loadMore, open, close, share };
 })();
