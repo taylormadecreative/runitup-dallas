@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Music Bar Harness</title>
+<link rel="stylesheet" href="../css/variables.css">
+<link rel="stylesheet" href="../css/home.css">
+<style>
+  body { background: var(--color-bg); color: var(--color-text); font-family: var(--font-body, sans-serif); padding: 24px; }
+  .state-btns { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 24px; }
+  .state-btns button { padding: 8px 12px; border-radius: 8px; border: 1px solid #444; background: #1A1A1A; color: #fff; }
+  /* Fake run overlay so MusicBar.mount finds its anchor */
+  #fake-overlay { position: relative; width: 360px; padding: 16px; border: 1px dashed #333; border-radius: 12px; }
+  .rt-actions { display: flex; gap: 8px; }
+  .rt-actions button { flex: 1; padding: 12px; border-radius: 8px; border: none; background: #252525; color: #888; }
+</style>
+</head>
+<body>
+<h1>Music Bar Harness</h1>
+<p>Every state the bar can render, driven by a mock plugin. No device needed.</p>
+<div class="state-btns">
+  <button onclick="setState('playing')">Playing (full)</button>
+  <button onclick="setState('paused')">Paused (full)</button>
+  <button onclick="setState('lite')">Playing, no permission</button>
+  <button onclick="setState('spotify')">Other app + Spotify</button>
+  <button onclick="setState('other')">Other app, no Spotify</button>
+  <button onclick="setState('empty')">Nothing playing</button>
+  <button onclick="setState('denied-empty')">Denied + nothing playing</button>
+</div>
+<div id="fake-overlay">
+  <div class="rt-actions"><button>PAUSE</button><button>STOP RUN</button></div>
+</div>
+
+<script src="../js/music-bar-logic.js"></script>
+<script>
+// escapeHtml normally comes from js/supabase.js; the harness supplies its own.
+function escapeHtml(str) {
+  return String(str ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[c]);
+}
+
+const MOCK_PLAYLISTS = [
+  { id: '1', title: 'Run It UP Radio', subtitle: '42 songs' },
+  { id: '2', title: 'Tempo 180', subtitle: '31 songs' },
+  { id: '3', title: '<script>alert(1)<\/script>', subtitle: 'XSS check — must render as text' }
+];
+const MOCK_ALBUMS = [
+  { id: '10', title: 'DAMN.', subtitle: 'Kendrick Lamar' },
+  { id: '11', title: 'Renaissance', subtitle: 'Beyoncé' }
+];
+
+function makeMusicMock(state) {
+  return {
+    _state: state,
+    _listeners: [],
+    async getState() { return { ...this._state }; },
+    async addListener(name, cb) { this._listeners.push(cb); return { remove() {} }; },
+    _push() { const s = { ...this._state }; this._listeners.forEach(cb => cb(s)); },
+    async play() { this._state.playbackState = 'playing'; this._push(); },
+    async pause() { this._state.playbackState = 'paused'; this._push(); },
+    async next() { console.log('[mock] next'); },
+    async previous() { console.log('[mock] previous'); },
+    async requestAuthorization() {
+      this._state.authStatus = 'authorized'; this._push();
+      return { authStatus: 'authorized' };
+    },
+    async getLibrary({ kind }) { return { items: kind === 'albums' ? MOCK_ALBUMS : MOCK_PLAYLISTS }; },
+    async getCollectionArtwork() { return { artworkBase64: null }; },
+    async playCollection({ kind, id }) {
+      console.log('[mock] playCollection', kind, id);
+      this._state.playbackState = 'playing';
+      this._state.nowPlaying = { title: 'First Track', artist: 'Mock Artist' };
+      this._push();
+    },
+    async openSpotify() { console.log('[mock] open spotify'); },
+    async openSettings() { console.log('[mock] open settings'); }
+  };
+}
+
+const STATES = {
+  playing: { native: true, authStatus: 'authorized', playbackState: 'playing', otherAudioPlaying: true,
+             spotifyInstalled: true, nowPlaying: { title: 'HUMBLE.', artist: 'Kendrick Lamar', artworkBase64: null } },
+  paused:  { native: true, authStatus: 'authorized', playbackState: 'paused', otherAudioPlaying: false,
+             spotifyInstalled: true, nowPlaying: { title: 'HUMBLE.', artist: 'Kendrick Lamar', artworkBase64: null } },
+  lite:    { native: true, authStatus: 'notDetermined', playbackState: 'playing', otherAudioPlaying: true,
+             spotifyInstalled: false, nowPlaying: null },
+  spotify: { native: true, authStatus: 'authorized', playbackState: 'stopped', otherAudioPlaying: true,
+             spotifyInstalled: true, nowPlaying: null },
+  other:   { native: true, authStatus: 'authorized', playbackState: 'stopped', otherAudioPlaying: true,
+             spotifyInstalled: false, nowPlaying: null },
+  empty:   { native: true, authStatus: 'authorized', playbackState: 'stopped', otherAudioPlaying: false,
+             spotifyInstalled: true, nowPlaying: null },
+  'denied-empty': { native: true, authStatus: 'denied', playbackState: 'stopped', otherAudioPlaying: false,
+             spotifyInstalled: false, nowPlaying: null }
+};
+
+window.__MUSIC_MOCK__ = makeMusicMock({ ...STATES.playing });
+function setState(name) {
+  window.__MUSIC_MOCK__._state = { ...STATES[name] };
+  MusicBar.refresh();
+}
+</script>
+<script src="../js/music-bar.js"></script>
+<script>
+  MusicBar.mount(document.getElementById('fake-overlay'));
+</script>
+</body>
+</html>
