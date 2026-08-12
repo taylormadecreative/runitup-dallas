@@ -252,7 +252,7 @@ const RunDetail = (() => {
     if (!el || !Array.isArray(run.route_points) || run.route_points.length < 2) return;
     try {
       await _loadLeaflet();
-      if (!document.getElementById('rd-map')) return; // overlay closed while loading
+      if (document.getElementById('rd-map') !== el) return; // overlay closed/reopened while loading
       _map = L.map(el, { zoomControl: false, attributionControl: true });
       L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
         maxZoom: 19,
@@ -301,6 +301,7 @@ const RunDetail = (() => {
     const cache = _wxCache();
     const cached = cache[run.id];
     const paint = (wx) => {
+      if (document.getElementById('run-detail-overlay')?._run !== run) return; // stale/closed overlay — don't paint someone else's weather
       const v = tile(), l = label();
       if (v) v.textContent = `${wx.icon} ${wx.temp}°`;
       if (l) l.textContent = wx.summary || 'Weather';
