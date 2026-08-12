@@ -72,6 +72,42 @@ function makeTrack(milesTotal, secPerMile, stepM = 100, withAlt = null) {
   ok(RunMetrics.computeSplits([{lat:32.7,lng:-96.8,time:1}], 600, 1).length === 1, 'single point -> synthetic split');
 }
 
+// ---------- splits: tail reconciliation caps a pause that only shows up in totalSeconds ----------
+// Points run a clean, continuous 500 s/mi pace covering miles 1 and 2 (no gap baked into
+// the point timestamps themselves) but stop partway into mile 3. totalSeconds reports far
+// more elapsed time than the points show for the tail — as if the runner paused for a long
+// stretch in the final mile with GPS point collection suspended (a real device behavior:
+// duration_seconds keeps counting while route_points recording pauses). Naively trusting
+// totalSeconds - splitStartT would let that pause leak into the tail split in full.
+{
+  const pts = makeTrack(2.1, 500); // crosses mile1 (500s) and mile2 (1000s) cleanly
+  const totalMiles = 3, totalSeconds = 4200; // rest of "mile 3" + a long pause folded in
+  const s = RunMetrics.computeSplits(pts, totalSeconds, totalMiles);
+  ok(s.length === 3, 'tail-clamp: 3 splits (2 full + reconciled tail)');
+  const tailMiles = totalMiles - 2;
+  const avgPace = totalSeconds / totalMiles;
+  const cap = tailMiles * avgPace * 2;
+  const rawUncappedTail = totalSeconds - (s[0].seconds + s[1].seconds); // what old code would've reported
+  ok(s[2].seconds <= cap + 1e-6, `tail split seconds (${s[2].seconds.toFixed(1)}) <= cap (${cap})`);
+  ok(s[2].seconds < rawUncappedTail - 100,
+     `tail split (${s[2].seconds.toFixed(1)}s) well under raw pause-inflated tail (${rawUncappedTail}s)`);
+}
+
+// ---------- splits: oversized reconciled tail -> synthetic full-mile splits, none over 1 mile ----------
+// Points only cover ~1 mile, but the run's recorded totals say 5 miles / 3000s (as if
+// route_points were heavily decimated/truncated well before the recorded finish). The
+// reconciled tail (4 miles) must not become one oversized split — every UI downstream
+// assumes splits are ≤ 1 mile.
+{
+  const pts = makeTrack(1, 600);
+  const s = RunMetrics.computeSplits(pts, 3000, 5);
+  ok(s.length === 5, 'oversized tail -> 5 splits');
+  ok(s.every(x => x.miles <= 1 + 1e-6), 'oversized tail: every split miles <= 1');
+  ok(s.every((x, i) => x.mile === i + 1), 'oversized tail: mile numbers monotonic 1..5');
+  const totalSec = s.reduce((sum, x) => sum + x.seconds, 0);
+  approx(totalSec, 3000, 1, 'oversized tail: split seconds sum to totalSeconds');
+}
+
 // ---------- elevation: steady 10 m climb ----------
 {
   const pts = makeTrack(1, 600, 100, (m) => 100 + (m / 1609.344) * 10);
@@ -91,6 +127,35 @@ ok(RunMetrics.computeElevationGainFt(makeTrack(1, 600)) === null, 'no alt -> nul
   const pts = makeTrack(1, 600, 100, null);
   pts[2].alt = 100; // <50% coverage
   ok(RunMetrics.computeElevationGainFt(pts) === null, 'sparse alt -> null');
+}
+
+// ---------- elevation at REAL point density (~5 m spacing, ~322 pts/mile) ----------
+// Deterministic seeded PRNG (mulberry32) so the noise test is repeatable, not flaky.
+function mulberry32(seed) {
+  let s = seed | 0;
+  return function () {
+    s = (s + 0x6D2B79F5) | 0;
+    let t = Math.imul(s ^ (s >>> 15), 1 | s);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+{
+  const pts = makeTrack(1, 600, 5, (m) => 100 + (m / 1609.344) * 10);
+  approx(RunMetrics.computeElevationGainFt(pts), 32.8, 4, '5m-spaced steady 10m climb ~32.8ft');
+}
+{
+  // alternating ±1.5 m at 5 m spacing
+  const pts = makeTrack(1, 600, 5, (m, i) => 100 + (i % 2 ? 1.5 : -1.5));
+  const g = RunMetrics.computeElevationGainFt(pts);
+  ok(g !== null && g < 10, `5m-spaced alternating ±1.5m jitter suppressed (${g})`);
+}
+{
+  // pseudo-random ±2 m at 5 m spacing (seeded, deterministic)
+  const rand = mulberry32(42);
+  const pts = makeTrack(1, 600, 5, () => 100 + (rand() - 0.5) * 4);
+  const g = RunMetrics.computeElevationGainFt(pts);
+  ok(g !== null && g < 10, `5m-spaced pseudo-random ±2m jitter suppressed (${g})`);
 }
 
 // ---------- calories ----------
