@@ -111,12 +111,136 @@ const MusicBar = (() => {
     try { await remote().openSettings(); } catch (err) { console.warn('[music-bar]', err); }
   }
 
-  // Picker — implemented in the next task.
-  function openPicker() {}
-  function closePicker() {}
-  function setPickerTab() {}
-  function setPickerFilter() {}
-  function pickCollection() {}
+  // ---- Picker sheet (Playlists | Albums) ----
+  const picker = { kind: 'playlists', filter: '', cache: { playlists: null, albums: null } };
+
+  // Row artwork loads lazily as rows scroll into view — a 400-album library
+  // must never stall the bridge with hundreds of image fetches up front.
+  const _artObserver = typeof IntersectionObserver !== 'undefined'
+    ? new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          if (!entry.isIntersecting) continue;
+          const artEl = entry.target;
+          _artObserver.unobserve(artEl);
+          remote().getCollectionArtwork({ kind: artEl.dataset.kind, id: artEl.dataset.id })
+            .then((res) => {
+              if (res?.artworkBase64) {
+                artEl.textContent = '';
+                artEl.style.backgroundImage = `url(data:image/jpeg;base64,${res.artworkBase64})`;
+              }
+            })
+            .catch(() => {});
+        }
+      })
+    : null;
+
+  async function openPicker() {
+    if (!available() || document.getElementById('music-picker')) return;
+    let auth = lastState?.authStatus;
+    if (auth !== 'authorized') {
+      try { auth = (await remote().requestAuthorization())?.authStatus; }
+      catch (err) { console.warn('[music-bar]', err); auth = 'denied'; }
+      refresh();
+    }
+    _openSheet(auth === 'authorized');
+    if (auth === 'authorized') setPickerTab(picker.kind);
+  }
+
+  function _openSheet(authorized) {
+    const host = document.getElementById('run-tracker-overlay') || document.getElementById('music-bar')?.parentElement;
+    if (!host) return;
+    const sheet = document.createElement('div');
+    sheet.id = 'music-picker';
+    sheet.className = 'music-picker';
+    if (authorized) {
+      sheet.innerHTML = `
+        <div class="mp-backdrop" onclick="MusicBar.closePicker()"></div>
+        <div class="mp-sheet">
+          <div class="mp-tabs">
+            <button id="mp-tab-playlists" class="mp-tab" onclick="MusicBar.setPickerTab('playlists')">PLAYLISTS</button>
+            <button id="mp-tab-albums" class="mp-tab" onclick="MusicBar.setPickerTab('albums')">ALBUMS</button>
+          </div>
+          <input id="mp-filter" class="mp-filter" type="search" placeholder="Filter"
+            oninput="MusicBar.setPickerFilter(this.value)">
+          <div id="mp-list" class="mp-list"></div>
+        </div>`;
+    } else {
+      sheet.innerHTML = `
+        <div class="mp-backdrop" onclick="MusicBar.closePicker()"></div>
+        <div class="mp-sheet mp-sheet-denied">
+          <div class="mp-denied-text">Music access is off — Run It UP can't show your playlists or albums.</div>
+          <button class="btn-secondary" onclick="MusicBar.openSettings()">OPEN SETTINGS</button>
+        </div>`;
+    }
+    host.appendChild(sheet);
+  }
+
+  function closePicker() {
+    document.getElementById('music-picker')?.remove();
+  }
+
+  async function setPickerTab(kind) {
+    picker.kind = kind;
+    document.getElementById('mp-tab-playlists')?.classList.toggle('active', kind === 'playlists');
+    document.getElementById('mp-tab-albums')?.classList.toggle('active', kind === 'albums');
+    if (!picker.cache[kind]) {
+      try { picker.cache[kind] = (await remote().getLibrary({ kind }))?.items || []; }
+      catch (err) { console.warn('[music-bar]', err); picker.cache[kind] = []; }
+    }
+    _renderPickerList();
+  }
+
+  function setPickerFilter(value) {
+    picker.filter = value || '';
+    _renderPickerList();
+  }
+
+  function _renderPickerList() {
+    const list = document.getElementById('mp-list');
+    if (!list) return;
+    const all = picker.cache[picker.kind] || [];
+    const f = picker.filter.trim().toLowerCase();
+    const items = f ? all.filter((i) => `${i.title} ${i.subtitle}`.toLowerCase().includes(f)) : all;
+    list.textContent = '';
+    if (!items.length) {
+      const empty = document.createElement('div');
+      empty.className = 'mp-empty';
+      empty.textContent = all.length
+        ? 'No matches.'
+        : 'Nothing in your library yet — add music in Apple Music.';
+      list.appendChild(empty);
+      return;
+    }
+    // DOM-built rows: library titles are untrusted text, textContent keeps them inert.
+    for (const item of items) {
+      const row = document.createElement('button');
+      row.className = 'mp-row';
+      row.onclick = () => pickCollection(picker.kind, item.id);
+      const art = document.createElement('div');
+      art.className = 'mp-art';
+      art.dataset.kind = picker.kind;
+      art.dataset.id = item.id;
+      const meta = document.createElement('div');
+      meta.className = 'mp-meta';
+      const t = document.createElement('div');
+      t.className = 'mp-title';
+      t.textContent = item.title;
+      const sub = document.createElement('div');
+      sub.className = 'mp-sub';
+      sub.textContent = item.subtitle;
+      meta.append(t, sub);
+      row.append(art, meta);
+      list.appendChild(row);
+      _artObserver?.observe(art);
+    }
+  }
+
+  async function pickCollection(kind, id) {
+    try { await remote().playCollection({ kind, id }); }
+    catch (err) { console.warn('[music-bar]', err); } // quiet by design: no toasts mid-run
+    closePicker();
+    refresh();
+  }
 
   return {
     mount, refresh, toggle,
