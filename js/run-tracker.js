@@ -948,10 +948,18 @@ async function stopRun() {
     RunTrackerEvents.emit('onStatusChange', 'finished', {
       miles, seconds, paceSecPerMile, goalMiles: RUN_STATE.goalMiles
     });
+    // The tracker UI (PAUSE/STOP, live stats) is dead once we're here — RUN_STATE
+    // is about to be reset below — so close it before showing either summary.
+    // Idempotent: a no-op if it's already gone.
+    closeRunTrackerUI();
     // Rich run detail when the save returned a row id; the classic card remains
-    // the fallback (offline queue, web, or run-detail unavailable).
+    // the fallback (offline queue, web, run-detail unavailable, or a failed
+    // fetch of the just-saved row inside RunDetail.open itself).
     if (savedRun?.run_id && window.RunDetail?.open) {
-      RunDetail.open(savedRun.run_id, { justLogged: true });
+      RunDetail.open(savedRun.run_id, {
+        justLogged: true,
+        onFail: () => showRunSummaryCard({ miles, seconds, paceSecPerMile, goalMiles: RUN_STATE.goalMiles })
+      });
     } else {
       showRunSummaryCard({ miles, seconds, paceSecPerMile, goalMiles: RUN_STATE.goalMiles });
     }

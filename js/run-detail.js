@@ -29,7 +29,13 @@ const RunDetail = (() => {
 
   async function initHistory() {
     const host = document.getElementById('my-runs-section');
-    if (!host || !window.currentProfile?.id || !window.supabaseClient) return;
+    // currentProfile/supabaseClient are top-level let/const in classic scripts
+    // (auth.js, supabase.js) — never window properties — so this must use the
+    // same typeof-guard pattern the rest of the codebase uses (e.g.
+    // retryPendingRunSave in run-tracker.js), not a window.-prefixed check.
+    // Guests get a real session + profile too (native runs are recordable as
+    // a guest), so no extra guest gate here — the empty state covers no-runs-yet.
+    if (!host || typeof currentProfile === 'undefined' || !currentProfile?.id || typeof supabaseClient === 'undefined') return;
     host.innerHTML = `
       <div class="mr-heading">MY RUNS</div>
       <div id="mr-list" class="mr-list"></div>
@@ -101,7 +107,7 @@ const RunDetail = (() => {
 
   // ---- Detail overlay ----
 
-  async function open(runIdOrRow, { justLogged = false } = {}) {
+  async function open(runIdOrRow, { justLogged = false, onFail } = {}) {
     if (document.getElementById('run-detail-overlay')) return;
     let run = (runIdOrRow && typeof runIdOrRow === 'object') ? runIdOrRow : null;
     if (!run) {
@@ -113,6 +119,10 @@ const RunDetail = (() => {
       } catch (err) {
         console.warn('[run-detail]', err);
         showToast("Couldn't open that run — try again.", 'error');
+        // Caller (e.g. the just-saved-run swap) can pass onFail to show its own
+        // fallback UI — otherwise a failed fetch here leaves the user with
+        // nothing but the toast.
+        onFail?.();
         return;
       }
     }
