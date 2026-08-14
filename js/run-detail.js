@@ -162,11 +162,12 @@ const RunDetail = (() => {
       cal = `${metrics.calories}`;
     } else if (weightLbs != null) {
       cal = '—';
-    } else if (window.Capacitor?.isNativePlatform()) {
-      // Profile's run-settings (weight) section is iOS-only — only nudge there.
-      cal = `<button class="rd-nudge" onclick="RunDetail.close(); navigateTo('profile')">Set weight<br>in Profile</button>`;
     } else {
-      cal = '—';
+      // No weight on file — take it inline right in this tile. The old nudge
+      // closed the overlay and bounced to Profile, with no way back to see the
+      // number it was collected for. Works on every platform (weight persists
+      // via profile.js saveWeightSetting → user_settings).
+      cal = `<button class="rd-nudge" onclick="RunDetail.promptWeight()">Add weight<br>for calories</button>`;
     }
     const elev = metrics.elevationGainFt != null ? `${Math.round(metrics.elevationGainFt)} ft` : '—';
     const hr = run.avg_heart_rate ? `${run.avg_heart_rate}` : '—';
@@ -212,6 +213,7 @@ const RunDetail = (() => {
       </div>`;
     document.body.appendChild(overlay);
     overlay._run = run; // for share()
+    overlay._metrics = metrics; // for share() (calories/elevation/segments) + saveWeight()
     if (!Array.isArray(run.route_points) || run.route_points.length < 2) {
       const wrap = overlay.querySelector('#rd-map-wrap');
       if (wrap) wrap.innerHTML = '<div class="rd-no-route">No route recorded</div>';
@@ -219,17 +221,62 @@ const RunDetail = (() => {
   }
 
   function share() {
-    const run = document.getElementById('run-detail-overlay')?._run;
+    const overlay = document.getElementById('run-detail-overlay');
+    const run = overlay?._run;
     if (!run || typeof shareRunSummary !== 'function') return;
-    // shareRunSummary(miles, seconds, paceSecPerMile, goalMilesHit) — positional,
-    // per its real definition in run-tracker.js. goalMilesHit is the goal-miles
-    // number when the goal was hit, else falsy (matches its only existing call site).
+    // shareRunSummary(miles, seconds, paceSecPerMile, goalMilesHit, extras) —
+    // positional per its definition in run-tracker.js. goalMilesHit is the
+    // goal-miles number when the goal was hit, else falsy. extras carries the
+    // rest of this screen's stats onto the card; weather comes from the same
+    // per-run cache _loadWeather writes (null on a cache miss — first open
+    // fetches it, so by share time it's nearly always there).
+    const metrics = overlay._metrics || {};
     shareRunSummary(
       Number(run.distance_miles || 0),
       run.duration_seconds || 0,
       run.avg_pace_sec_per_mile,
-      run.goal_hit ? run.goal_miles : 0
+      run.goal_hit ? run.goal_miles : 0,
+      {
+        calories: metrics.calories ?? null,
+        elevationGainFt: metrics.elevationGainFt ?? null,
+        avgHeartRate: run.avg_heart_rate || null,
+        weather: _wxCache()[run.id] || null,
+        segments: metrics.segments || null,
+        dateLabel: `${_fmtDate(run.started_at, { weekday: 'long', month: 'long', day: 'numeric' })} · ${new Date(run.started_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`
+      }
     );
+  }
+
+  // ---- Inline weight entry (calories tile) ----
+
+  function promptWeight() {
+    const tile = document.getElementById('rd-cal');
+    if (!tile) return;
+    tile.innerHTML = `
+      <form class="rd-weight-form" novalidate onsubmit="RunDetail.saveWeight(event)">
+        <input id="rd-weight-input" type="number" inputmode="decimal" min="50" max="500" step="any" placeholder="lbs" required>
+        <button type="submit" class="rd-weight-save">Save</button>
+      </form>
+      <div class="rd-tile-label">Weight (lbs)</div>`;
+    tile.querySelector('#rd-weight-input')?.focus();
+  }
+
+  async function saveWeight(e) {
+    e.preventDefault();
+    const n = parseFloat(document.getElementById('rd-weight-input')?.value);
+    if (!isFinite(n) || n < 50 || n > 500) {
+      showToast('Enter a weight between 50 and 500 lbs.', 'error');
+      return;
+    }
+    // profile.js — persists to user_settings, updates its cache, toasts result.
+    await (window.saveWeightSetting?.(String(n)));
+    const overlay = document.getElementById('run-detail-overlay');
+    const tile = document.getElementById('rd-cal');
+    if (!overlay?._run || !tile) return;
+    const calories = RunMetrics.computeCalories(n, overlay._run.distance_miles || 0);
+    if (overlay._metrics) overlay._metrics.calories = calories; // share() reads this
+    tile.innerHTML = `<div class="rd-tile-value">${calories != null ? calories : '—'}</div>
+      <div class="rd-tile-label">Est. Calories</div>`;
   }
 
   function close() {
@@ -353,7 +400,7 @@ const RunDetail = (() => {
     }
   }
 
-  return { initHistory, loadMore, open, close, share };
+  return { initHistory, loadMore, open, close, share, promptWeight, saveWeight };
 })();
 
 window.RunDetail = RunDetail;

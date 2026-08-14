@@ -1104,7 +1104,12 @@ async function showRunSummaryCard({ miles, seconds, paceSecPerMile, goalMiles })
   document.body.appendChild(overlay);
 }
 
-async function shareRunSummary(miles, seconds, paceSecPerMile, goalMilesHit) {
+// extras (all optional, from RunDetail.share): calories, elevationGainFt,
+// avgHeartRate, weather {icon,temp,summary}, segments (pace-colored route
+// polylines from RunMetrics.computePaceSegments), dateLabel. The positional
+// call in showRunSummaryCard's fallback markup still works — missing extras
+// just drop their tiles and the route trace.
+async function shareRunSummary(miles, seconds, paceSecPerMile, goalMilesHit, extras = {}) {
   try {
     const [, logoImg, bgImg] = await Promise.all([
       loadBigShouldersFont(),
@@ -1132,61 +1137,87 @@ async function shareRunSummary(miles, seconds, paceSecPerMile, goalMilesHit) {
     grad.addColorStop(0.45, 'rgba(10,10,10,0.85)');
     grad.addColorStop(1, 'rgba(10,10,10,0.95)');
     ctx.fillStyle = grad; ctx.fillRect(0, 0, 1080, 1920);
-    if (logoImg) ctx.drawImage(logoImg, 470, 220, 140, 140);
+    if (logoImg) ctx.drawImage(logoImg, 465, 96, 150, 150);
 
     ctx.textAlign = 'center';
     ctx.fillStyle = '#BFFF00';
-    ctx.font = `900 120px ${displayFont}`;
-    ctx.fillText('RUN LOGGED', 540, 500);
+    ctx.font = `900 96px ${displayFont}`;
+    ctx.fillText('RUN LOGGED', 540, 348);
 
+    let y = 348;
+    if (extras.dateLabel) {
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      ctx.font = '500 30px Inter, sans-serif';
+      ctx.fillText(extras.dateLabel, 540, y + 58);
+      y += 58;
+    }
     if (goalMilesHit) {
       ctx.fillStyle = '#FFFFFF';
-      ctx.font = `800 44px ${displayFont}`;
-      ctx.fillText(`GOAL HIT — ${goalMilesHit} MI`, 540, 566);
+      ctx.font = `800 40px ${displayFont}`;
+      ctx.fillText(`GOAL HIT — ${goalMilesHit} MI`, 540, y + 60);
+      y += 60;
     }
 
     // Big miles hero
     ctx.fillStyle = '#BFFF00';
-    ctx.font = `900 260px ${displayFont}`;
-    ctx.fillText(miles.toFixed(2), 540, 780);
+    ctx.font = `900 220px ${displayFont}`;
+    ctx.fillText(miles.toFixed(2), 540, y + 230);
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = `800 56px ${displayFont}`;
-    ctx.fillText('MILES', 540, 850);
+    ctx.font = `800 50px ${displayFont}`;
+    ctx.fillText('MILES', 540, y + 296);
+    y += 296;
 
     ctx.strokeStyle = '#BFFF00'; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.moveTo(340, 920); ctx.lineTo(740, 920); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(340, y + 48); ctx.lineTo(740, y + 48); ctx.stroke();
+    y += 48;
 
-    // Time + Pace
-    const stY = 1050;
-    ctx.fillStyle = '#FFFFFF';
-    ctx.font = `900 80px ${displayFont}`;
-    ctx.fillText(_formatDuration(seconds * 1000), 360, stY);
-    ctx.fillText(_formatPace(paceSecPerMile), 720, stY);
-    ctx.fillStyle = 'rgba(255,255,255,0.55)';
-    ctx.font = '500 28px Inter, sans-serif';
-    ctx.fillText('Time', 360, stY + 45);
-    ctx.fillText('Pace', 720, stY + 45);
+    // Stat grid — same tiles as the run detail screen, minus the ones with no
+    // data (a shared card with "—" placeholders reads broken, not sparse).
+    const wx = extras.weather;
+    const tiles = [
+      { v: _formatPace(paceSecPerMile), l: 'AVG PACE' },
+      { v: _formatDuration(seconds * 1000), l: 'TIME' },
+      (extras.calories != null) && { v: `${extras.calories}`, l: 'EST. CALORIES', accent: true },
+      (extras.elevationGainFt != null) && { v: `${Math.round(extras.elevationGainFt)} FT`, l: 'ELEV GAIN' },
+      extras.avgHeartRate && { v: `${extras.avgHeartRate}`, l: 'AVG HR' },
+      (wx && isFinite(wx.temp)) && { v: `${wx.icon || ''} ${wx.temp}°`.trim(), l: (wx.summary || 'WEATHER').toUpperCase() }
+    ].filter(Boolean);
+    for (let i = 0; i < tiles.length; i += 3) {
+      const row = tiles.slice(i, i + 3);
+      const xs = row.length === 3 ? [220, 540, 860] : row.length === 2 ? [360, 720] : [540];
+      row.forEach((t, j) => {
+        ctx.fillStyle = t.accent ? '#BFFF00' : '#FFFFFF';
+        ctx.font = `900 64px ${displayFont}`;
+        ctx.fillText(t.v, xs[j], y + 96, 330);
+        ctx.fillStyle = 'rgba(255,255,255,0.55)';
+        ctx.font = '500 26px Inter, sans-serif';
+        ctx.fillText(t.l, xs[j], y + 138, 330);
+      });
+      y += 150;
+    }
 
-    // Name
+    // Route trace — the pace-colored polyline, no map tiles (tile images would
+    // taint the canvas and kill toBlob; the bare trace is also just cleaner).
+    _drawRouteTrace(ctx, extras.segments, 540, y + 30, 1595 - (y + 30));
+
+    // Identity + branding block, anchored to the bottom
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = `800 56px ${displayFont}`;
-    ctx.fillText(currentProfile.display_name, 540, 1320, 960);
+    ctx.font = `800 54px ${displayFont}`;
+    ctx.fillText(currentProfile.display_name, 540, 1675, 960);
     ctx.fillStyle = '#BFFF00';
-    ctx.font = '600 32px Inter, sans-serif';
-    ctx.fillText(paceLabel, 540, 1375);
-
-    // Stats row
+    ctx.font = '600 30px Inter, sans-serif';
+    ctx.fillText(paceLabel, 540, 1725);
     ctx.fillStyle = 'rgba(255,255,255,0.35)';
-    ctx.font = '500 28px Inter, sans-serif';
-    ctx.fillText(`${stats.totalMiles.toFixed(1)} total miles · ${stats.streak}-week streak`, 540, 1470);
+    ctx.font = '500 26px Inter, sans-serif';
+    ctx.fillText(`${stats.totalMiles.toFixed(1)} total miles · ${stats.streak}-week streak`, 540, 1775);
 
-    ctx.fillStyle = '#BFFF00'; ctx.fillRect(440, 1680, 200, 3);
+    ctx.fillStyle = '#BFFF00'; ctx.fillRect(440, 1808, 200, 3);
     ctx.fillStyle = 'rgba(255,255,255,0.6)';
-    ctx.font = `700 32px ${displayFont}`;
-    ctx.fillText('RUN IT UP! DALLAS', 540, 1740);
+    ctx.font = `700 30px ${displayFont}`;
+    ctx.fillText('RUN IT UP! DALLAS', 540, 1858);
     ctx.fillStyle = 'rgba(255,255,255,0.4)';
     ctx.font = '400 24px Inter, sans-serif';
-    ctx.fillText('@runitupdallas', 540, 1790);
+    ctx.fillText('@runitupdallas', 540, 1898);
 
     canvas.toBlob(async (blob) => {
       if (!blob) { showToast('Could not generate image.', 'error'); return; }
@@ -1195,7 +1226,7 @@ async function shareRunSummary(miles, seconds, paceSecPerMile, goalMilesHit) {
         try {
           await navigator.share({
             title: 'Run It UP! Dallas',
-            text: `${miles.toFixed(2)} miles · ${_formatDuration(seconds * 1000)} · ${_formatPace(paceSecPerMile)} pace. Run It UP! Dallas. #RunItUpDallas`,
+            text: `${miles.toFixed(2)} miles · ${_formatDuration(seconds * 1000)} · ${_formatPace(paceSecPerMile)} pace${extras.calories != null ? ` · ${extras.calories} cal` : ''}. Run It UP! Dallas. #RunItUpDallas`,
             files: [file]
           });
         } catch (err) {
@@ -1213,6 +1244,50 @@ async function shareRunSummary(miles, seconds, paceSecPerMile, goalMilesHit) {
     console.error('shareRunSummary', err);
     showToast('Could not share — try again.', 'error');
   }
+}
+
+// Draw the run's pace-colored route polylines centered at (cx, top..top+maxH),
+// scaled to fit. Equirectangular projection (lng squeezed by cos(midLat)) is
+// plenty at run scale. No-op without at least a 2-point route.
+function _drawRouteTrace(ctx, segments, cx, top, maxH) {
+  if (!Array.isArray(segments) || !segments.length || maxH < 120) return;
+  const pts = segments.flatMap(s => s.latlngs);
+  if (pts.length < 2) return;
+  let minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
+  for (const [lat, lng] of pts) {
+    if (lat < minLat) minLat = lat; if (lat > maxLat) maxLat = lat;
+    if (lng < minLng) minLng = lng; if (lng > maxLng) maxLng = lng;
+  }
+  const cosLat = Math.cos(((minLat + maxLat) / 2) * Math.PI / 180);
+  const spanX = Math.max((maxLng - minLng) * cosLat, 1e-6);
+  const spanY = Math.max(maxLat - minLat, 1e-6);
+  const boxW = 660, boxH = maxH - 40; // padding keeps round caps inside the box
+  const scale = Math.min(boxW / spanX, boxH / spanY);
+  const w = spanX * scale, h = spanY * scale;
+  const px = ([lat, lng]) => [
+    cx - w / 2 + ((lng - minLng) * cosLat / spanX) * w,
+    top + (maxH - h) / 2 + ((maxLat - lat) / spanY) * h
+  ];
+  ctx.lineWidth = 9; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  for (const seg of segments) {
+    if (seg.latlngs.length < 2) continue;
+    ctx.strokeStyle = seg.color;
+    ctx.beginPath();
+    seg.latlngs.forEach((ll, i) => {
+      const [x, y] = px(ll);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+  }
+  const dot = (ll, fill) => {
+    const [x, y] = px(ll);
+    ctx.beginPath(); ctx.arc(x, y, 12, 0, Math.PI * 2);
+    ctx.fillStyle = fill; ctx.fill();
+    ctx.lineWidth = 4; ctx.strokeStyle = '#0A0A0A'; ctx.stroke();
+  };
+  dot(segments[0].latlngs[0], '#BFFF00');
+  const lastSeg = segments[segments.length - 1];
+  dot(lastSeg.latlngs[lastSeg.latlngs.length - 1], '#FF3B30');
 }
 
 // ===== RESILIENCE HOOKS =====

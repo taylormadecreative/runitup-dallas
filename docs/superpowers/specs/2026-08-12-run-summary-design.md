@@ -141,3 +141,18 @@ The screen displays; it never touches tracking or saving.
 
 Cadence, run-name editing, HR/elevation time-series charts ("More Details"), watch-run
 elevation, DB-stored weather backfill, share-card changes, route privacy zones.
+
+## Amendments (2026-08-14)
+
+- **Calories nudge is now inline.** "Set weight in Profile" closed the overlay and navigated
+  away with no route back to the number it was collected for. The nudge now reads "Add weight
+  for calories" and swaps the tile itself for an inline lbs input + Save
+  (`RunDetail.promptWeight`/`saveWeight`); on save it persists via profile.js
+  `saveWeightSetting`, paints calories in place, and updates `overlay._metrics.calories`.
+  No longer native-gated — works on web too.
+- **Share-card changes un-cut.** `shareRunSummary` gained an `extras` param (calories,
+  elevation, avg HR, weather from the run's wx cache, pace-colored segments, date label).
+  The card now mirrors the detail screen: logo, date, miles hero, stat grid (tiles with no
+  data are dropped, not dashed), and a tile-free route trace drawn straight on the canvas
+  (map tiles would taint it and break `toBlob`). Fixture render harness:
+  `tests/share-card-harness.html`.

@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Share card harness</title>
+<!-- Renders shareRunSummary's canvas cards with fixture data so the layout can
+     be eyeballed / screenshotted without a live run. Serve the repo root over
+     http (python3 -m http.server) and open /tests/share-card-harness.html.
+     Driven headlessly by scripts in CI-less spot checks — see git history. -->
+<style>
+  body { margin: 0; background: #333; display: flex; gap: 16px; padding: 16px; }
+  canvas { width: 405px; height: 720px; display: block; }
+</style>
+</head>
+<body>
+<script>
+  // ---- Stubs for the app globals shareRunSummary touches ----
+  const currentProfile = { id: 'harness', display_name: 'Nelson Taylor', pace_group: 'steady' };
+  const PACE_GROUPS = { steady: { label: 'Steady Pacer' } };
+  async function getUserStats() { return { totalMiles: 41.9, streak: 6, totalCheckIns: 12 }; }
+  function showToast() {}
+  function downloadCheckInCard() {}
+  function loadImageSafe(src) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => resolve(img);
+      img.onerror = () => resolve(null);
+      // App-relative paths resolve against /tests/ here — hop up one level.
+      img.src = src.replace('./assets/', '../assets/');
+    });
+  }
+  async function loadBigShouldersFont() {
+    try {
+      const font = new FontFace(
+        'Big Shoulders Display',
+        'url(https://fonts.gstatic.com/s/bigshouldersdisplay/v21/fC1MPZJEZG-e9gHhdI4-NBbfd2ys3SjJCx12wPgf9g-_3F0YdY86JF46SRP4yZQ.woff2)',
+        { weight: '900', style: 'normal' }
+      );
+      await font.load();
+      document.fonts.add(font);
+      return true;
+    } catch { return false; }
+  }
+  // Capture the finished card instead of sharing/downloading it.
+  HTMLCanvasElement.prototype.toBlob = function () {
+    this.dataset.card = '1';
+    document.body.appendChild(this);
+  };
+</script>
+<script src="../js/run-metrics.js"></script>
+<script src="../js/run-tracker.js"></script>
+<script>
+  // Synthetic ~2.2 mi park loop with a faster first half so the pace ramp shows.
+  function makeRoute() {
+    const pts = [];
+    const lat0 = 32.7, lng0 = -96.8;
+    const N = 240;
+    let t = 1700000000000;
+    for (let i = 0; i <= N; i++) {
+      const a = (i / N) * Math.PI * 2;
+      const lat = lat0 + 0.0055 * Math.sin(a) + 0.0012 * Math.sin(3 * a);
+      const lng = lng0 + 0.0085 * Math.cos(a) * (1 + 0.25 * Math.sin(2 * a));
+      const dt = 8000 + 6000 * (i / N); // slows down over the run
+      t += dt;
+      pts.push({ lat, lng, time: t });
+    }
+    return pts;
+  }
+
+  (async () => {
+    const segs = RunMetrics.computePaceSegments(makeRoute());
+    // Card 1: full run detail share (the Arbor Hills run from the screenshot)
+    await shareRunSummary(2.24, 2710, 1210, 0, {
+      calories: 319,
+      elevationGainFt: 135,
+      avgHeartRate: null,
+      weather: { icon: '☀️', temp: 97, summary: 'Clear' },
+      segments: segs,
+      dateLabel: 'Thursday, August 13 · 7:33 PM'
+    });
+    // Card 2: goal hit + heart rate, no weather
+    await shareRunSummary(3.12, 1860, 596, 3, {
+      calories: 445,
+      elevationGainFt: 42,
+      avgHeartRate: 162,
+      weather: null,
+      segments: segs,
+      dateLabel: 'Friday, August 14 · 6:05 AM'
+    });
+    // Card 3: legacy positional call (fallback path — no extras at all)
+    await shareRunSummary(3.1, 1860, 600, 0);
+    window.__done = document.querySelectorAll('canvas[data-card]').length >= 3;
+  })();
+</script>
+</body>
+</html>
