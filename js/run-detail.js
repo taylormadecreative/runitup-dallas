@@ -220,10 +220,15 @@ const RunDetail = (() => {
     }
   }
 
-  function share() {
+  async function share() {
     const overlay = document.getElementById('run-detail-overlay');
     const run = overlay?._run;
     if (!run || typeof shareRunSummary !== 'function') return;
+    // Card generation now awaits map tiles — show progress and block re-taps
+    // until the share sheet is dismissed (shareRunSummary also self-guards).
+    const btn = overlay.querySelector('.rd-share');
+    if (btn?.disabled) return;
+    if (btn) { btn.disabled = true; btn.textContent = 'Building card…'; }
     // shareRunSummary(miles, seconds, paceSecPerMile, goalMilesHit, extras) —
     // positional per its definition in run-tracker.js. goalMilesHit is the
     // goal-miles number when the goal was hit, else falsy. extras carries the
@@ -231,20 +236,27 @@ const RunDetail = (() => {
     // per-run cache _loadWeather writes (null on a cache miss — first open
     // fetches it, so by share time it's nearly always there).
     const metrics = overlay._metrics || {};
-    shareRunSummary(
-      Number(run.distance_miles || 0),
-      run.duration_seconds || 0,
-      run.avg_pace_sec_per_mile,
-      run.goal_hit ? run.goal_miles : 0,
-      {
-        calories: metrics.calories ?? null,
-        elevationGainFt: metrics.elevationGainFt ?? null,
-        avgHeartRate: run.avg_heart_rate || null,
-        weather: _wxCache()[run.id] || null,
-        segments: metrics.segments || null,
-        dateLabel: `${_fmtDate(run.started_at, { weekday: 'long', month: 'long', day: 'numeric' })} · ${new Date(run.started_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`
-      }
-    );
+    try {
+      await shareRunSummary(
+        Number(run.distance_miles || 0),
+        run.duration_seconds || 0,
+        run.avg_pace_sec_per_mile,
+        run.goal_hit ? run.goal_miles : 0,
+        {
+          calories: metrics.calories ?? null,
+          elevationGainFt: metrics.elevationGainFt ?? null,
+          avgHeartRate: run.avg_heart_rate || null,
+          weather: _wxCache()[run.id] || null,
+          segments: metrics.segments || null,
+          splits: metrics.splits || null,
+          dateLabel: `${_fmtDate(run.started_at, { weekday: 'long', month: 'long', day: 'numeric' })} · ${new Date(run.started_at).toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`
+        }
+      );
+    } finally {
+      // Re-query — the overlay may have been closed/reopened while sharing.
+      const b = document.getElementById('run-detail-overlay')?.querySelector('.rd-share');
+      if (b) { b.disabled = false; b.textContent = 'Share This Run'; }
+    }
   }
 
   // ---- Inline weight entry (calories tile) ----

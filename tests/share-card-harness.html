@@ -20,9 +20,10 @@
   async function getUserStats() { return { totalMiles: 41.9, streak: 6, totalCheckIns: 12 }; }
   function showToast() {}
   function downloadCheckInCard() {}
-  function loadImageSafe(src) {
+  function loadImageSafe(src, crossOrigin = null) {
     return new Promise((resolve) => {
       const img = new Image();
+      if (crossOrigin) img.crossOrigin = crossOrigin;
       img.onload = () => resolve(img);
       img.onerror = () => resolve(null);
       // App-relative paths resolve against /tests/ here — hop up one level.
@@ -41,25 +42,28 @@
       return true;
     } catch { return false; }
   }
-  // Capture the finished card instead of sharing/downloading it.
-  HTMLCanvasElement.prototype.toBlob = function () {
+  // Capture the finished card instead of sharing/downloading it. The callback
+  // must still fire (with null) — shareRunSummary awaits it.
+  HTMLCanvasElement.prototype.toBlob = function (cb) {
     this.dataset.card = '1';
     document.body.appendChild(this);
+    if (cb) cb(null);
   };
 </script>
 <script src="../js/run-metrics.js"></script>
 <script src="../js/run-tracker.js"></script>
 <script>
-  // Synthetic ~2.2 mi park loop with a faster first half so the pace ramp shows.
+  // Synthetic ~2.2 mi loop at Arbor Hills Nature Preserve (Plano) with a
+  // faster first half so the pace ramp shows against real streets.
   function makeRoute() {
     const pts = [];
-    const lat0 = 32.7, lng0 = -96.8;
+    const lat0 = 33.0555, lng0 = -96.8480;
     const N = 240;
     let t = 1700000000000;
     for (let i = 0; i <= N; i++) {
       const a = (i / N) * Math.PI * 2;
-      const lat = lat0 + 0.0055 * Math.sin(a) + 0.0012 * Math.sin(3 * a);
-      const lng = lng0 + 0.0085 * Math.cos(a) * (1 + 0.25 * Math.sin(2 * a));
+      const lat = lat0 + 0.0042 * Math.sin(a) + 0.0009 * Math.sin(3 * a);
+      const lng = lng0 + 0.0068 * Math.cos(a) * (1 + 0.25 * Math.sin(2 * a));
       const dt = 8000 + 6000 * (i / N); // slows down over the run
       t += dt;
       pts.push({ lat, lng, time: t });
@@ -68,7 +72,10 @@
   }
 
   (async () => {
-    const segs = RunMetrics.computePaceSegments(makeRoute());
+    const pts = makeRoute();
+    const segs = RunMetrics.computePaceSegments(pts);
+    const splits = RunMetrics.computeSplits(pts, 2710, 2.24);
+    splits.forEach((s, i) => { s.elevDeltaFt = [-10, 3, 15][i] ?? null; });
     // Card 1: full run detail share (the Arbor Hills run from the screenshot)
     await shareRunSummary(2.24, 2710, 1210, 0, {
       calories: 319,
@@ -76,6 +83,7 @@
       avgHeartRate: null,
       weather: { icon: '☀️', temp: 97, summary: 'Clear' },
       segments: segs,
+      splits,
       dateLabel: 'Thursday, August 13 · 7:33 PM'
     });
     // Card 2: goal hit + heart rate, no weather
@@ -85,11 +93,30 @@
       avgHeartRate: 162,
       weather: null,
       segments: segs,
+      splits,
       dateLabel: 'Friday, August 14 · 6:05 AM'
     });
     // Card 3: legacy positional call (fallback path — no extras at all)
     await shareRunSummary(3.1, 1860, 600, 0);
-    window.__done = document.querySelectorAll('canvas[data-card]').length >= 3;
+    // Card 4: long run — split rows must truncate before the map gets crushed,
+    // and mile pills must thin (crossings sampled off the real route so the
+    // many-pills-on-a-small-map path actually renders).
+    const longSplits = Array.from({ length: 10 }, (_, i) => ({
+      mile: i + 1, miles: 1, seconds: 540 + i * 14,
+      paceSecPerMile: 540 + i * 14, elevDeltaFt: (i % 3) * 12 - 10,
+      crossing: { lat: pts[(i * 24) % pts.length].lat, lng: pts[(i * 24) % pts.length].lng }
+    }));
+    longSplits.push({ mile: 11, miles: 0.55, seconds: 380, paceSecPerMile: 690, elevDeltaFt: 4, crossing: null });
+    await shareRunSummary(10.55, 6120, 580, 10, {
+      calories: 1503,
+      elevationGainFt: 410,
+      avgHeartRate: 158,
+      weather: { icon: '⛅', temp: 78, summary: 'Partly cloudy' },
+      segments: segs,
+      splits: longSplits,
+      dateLabel: 'Saturday, August 15 · 7:00 AM'
+    });
+    window.__done = document.querySelectorAll('canvas[data-card]').length >= 4;
   })();
 </script>
 </body>

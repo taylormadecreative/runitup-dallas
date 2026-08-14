@@ -1106,10 +1106,15 @@ async function showRunSummaryCard({ miles, seconds, paceSecPerMile, goalMiles })
 
 // extras (all optional, from RunDetail.share): calories, elevationGainFt,
 // avgHeartRate, weather {icon,temp,summary}, segments (pace-colored route
-// polylines from RunMetrics.computePaceSegments), dateLabel. The positional
-// call in showRunSummaryCard's fallback markup still works — missing extras
-// just drop their tiles and the route trace.
+// polylines from RunMetrics.computePaceSegments), splits, dateLabel. The
+// positional call in showRunSummaryCard's fallback markup still works —
+// missing extras just drop their tiles, splits, and the route map.
+let _shareCardInFlight = false;
 async function shareRunSummary(miles, seconds, paceSecPerMile, goalMilesHit, extras = {}) {
+  // Tile fetches make the pre-sheet window seconds long — without this guard a
+  // second tap stacks a whole parallel card build and a second share sheet.
+  if (_shareCardInFlight) return;
+  _shareCardInFlight = true;
   try {
     const [, logoImg, bgImg] = await Promise.all([
       loadBigShouldersFont(),
@@ -1160,16 +1165,16 @@ async function shareRunSummary(miles, seconds, paceSecPerMile, goalMilesHit, ext
 
     // Big miles hero
     ctx.fillStyle = '#BFFF00';
-    ctx.font = `900 220px ${displayFont}`;
-    ctx.fillText(miles.toFixed(2), 540, y + 230);
+    ctx.font = `900 180px ${displayFont}`;
+    ctx.fillText(miles.toFixed(2), 540, y + 188);
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = `800 50px ${displayFont}`;
-    ctx.fillText('MILES', 540, y + 296);
-    y += 296;
+    ctx.font = `800 46px ${displayFont}`;
+    ctx.fillText('MILES', 540, y + 244);
+    y += 244;
 
     ctx.strokeStyle = '#BFFF00'; ctx.lineWidth = 3;
-    ctx.beginPath(); ctx.moveTo(340, y + 48); ctx.lineTo(740, y + 48); ctx.stroke();
-    y += 48;
+    ctx.beginPath(); ctx.moveTo(340, y + 40); ctx.lineTo(740, y + 40); ctx.stroke();
+    y += 40;
 
     // Stat grid — same tiles as the run detail screen, minus the ones with no
     // data (a shared card with "—" placeholders reads broken, not sparse).
@@ -1187,107 +1192,300 @@ async function shareRunSummary(miles, seconds, paceSecPerMile, goalMilesHit, ext
       const xs = row.length === 3 ? [220, 540, 860] : row.length === 2 ? [360, 720] : [540];
       row.forEach((t, j) => {
         ctx.fillStyle = t.accent ? '#BFFF00' : '#FFFFFF';
-        ctx.font = `900 64px ${displayFont}`;
-        ctx.fillText(t.v, xs[j], y + 96, 330);
+        ctx.font = `900 60px ${displayFont}`;
+        ctx.fillText(t.v, xs[j], y + 88, 330);
         ctx.fillStyle = 'rgba(255,255,255,0.55)';
-        ctx.font = '500 26px Inter, sans-serif';
-        ctx.fillText(t.l, xs[j], y + 138, 330);
+        ctx.font = '500 25px Inter, sans-serif';
+        ctx.fillText(t.l, xs[j], y + 128, 330);
       });
-      y += 150;
+      y += 140;
     }
 
-    // Route trace — the pace-colored polyline, no map tiles (tile images would
-    // taint the canvas and kill toBlob; the bare trace is also just cleaner).
-    _drawRouteTrace(ctx, extras.segments, 540, y + 30, 1595 - (y + 30));
+    // Middle region: real-tile route map + per-mile splits, split across
+    // whatever vertical space is left above the fixed identity block. Splits
+    // give up rows (never below 3) before the map shrinks past readable.
+    const REGION_BOTTOM = 1700;
+    const splits = Array.isArray(extras.splits) ? extras.splits.filter(s => s && s.paceSecPerMile) : [];
+    const hasMap = Array.isArray(extras.segments) && extras.segments.length > 0;
+    let regionY = y + 28;
+    const avail = REGION_BOTTOM - regionY;
+    let rows = 0;
+    let splitsH = 0;
+    if (splits.length) {
+      rows = Math.min(splits.length, 8);
+      const hFor = (r) => 58 + r * 44 + (r < splits.length ? 34 : 0);
+      if (hasMap) { while (rows > 3 && avail - hFor(rows) - 24 < 320) rows--; }
+      splitsH = hFor(rows);
+    }
+    if (hasMap) {
+      const mapH = Math.min(560, avail - (splitsH ? splitsH + 24 : 0));
+      if (mapH >= 200) {
+        await _drawRouteMapPanel(ctx, extras.segments, splits, 80, regionY, 920, mapH);
+        regionY += mapH + 24;
+      }
+    }
+    if (rows) _drawSplitsSection(ctx, splits, displayFont, 90, regionY, 900, rows);
 
     // Identity + branding block, anchored to the bottom
+    ctx.textAlign = 'center';
     ctx.fillStyle = '#FFFFFF';
-    ctx.font = `800 54px ${displayFont}`;
-    ctx.fillText(currentProfile.display_name, 540, 1675, 960);
-    ctx.fillStyle = '#BFFF00';
-    ctx.font = '600 30px Inter, sans-serif';
-    ctx.fillText(paceLabel, 540, 1725);
-    ctx.fillStyle = 'rgba(255,255,255,0.35)';
+    ctx.font = `800 52px ${displayFont}`;
+    ctx.fillText(currentProfile.display_name, 540, 1764, 960);
+    ctx.fillStyle = 'rgba(255,255,255,0.45)';
     ctx.font = '500 26px Inter, sans-serif';
-    ctx.fillText(`${stats.totalMiles.toFixed(1)} total miles · ${stats.streak}-week streak`, 540, 1775);
+    ctx.fillText(`${paceLabel} · ${stats.totalMiles.toFixed(1)} total mi · ${stats.streak}-wk streak`, 540, 1806);
 
-    ctx.fillStyle = '#BFFF00'; ctx.fillRect(440, 1808, 200, 3);
+    ctx.fillStyle = '#BFFF00'; ctx.fillRect(440, 1830, 200, 3);
     ctx.fillStyle = 'rgba(255,255,255,0.6)';
     ctx.font = `700 30px ${displayFont}`;
-    ctx.fillText('RUN IT UP! DALLAS', 540, 1858);
+    ctx.fillText('RUN IT UP! DALLAS', 540, 1876);
     ctx.fillStyle = 'rgba(255,255,255,0.4)';
-    ctx.font = '400 24px Inter, sans-serif';
-    ctx.fillText('@runitupdallas', 540, 1898);
+    ctx.font = '400 22px Inter, sans-serif';
+    ctx.fillText('@runitupdallas', 540, 1908);
 
-    canvas.toBlob(async (blob) => {
-      if (!blob) { showToast('Could not generate image.', 'error'); return; }
-      const file = new File([blob], 'runitup-run.png', { type: 'image/png' });
-      if (navigator.share && navigator.canShare?.({ files: [file] })) {
-        try {
-          await navigator.share({
-            title: 'Run It UP! Dallas',
-            text: `${miles.toFixed(2)} miles · ${_formatDuration(seconds * 1000)} · ${_formatPace(paceSecPerMile)} pace${extras.calories != null ? ` · ${extras.calories} cal` : ''}. Run It UP! Dallas. #RunItUpDallas`,
-            files: [file]
-          });
-        } catch (err) {
-          if (err.name !== 'AbortError') downloadCheckInCard(canvas);
+    // Await the blob (not a bare toBlob callback) so the in-flight guard holds
+    // until the share sheet is actually dismissed.
+    const blob = await new Promise((resolve) => canvas.toBlob(resolve, 'image/png'));
+    if (!blob) { showToast('Could not generate image.', 'error'); return; }
+    const file = new File([blob], 'runitup-run.png', { type: 'image/png' });
+    if (navigator.share && navigator.canShare?.({ files: [file] })) {
+      try {
+        await navigator.share({
+          title: 'Run It UP! Dallas',
+          text: `${miles.toFixed(2)} miles · ${_formatDuration(seconds * 1000)} · ${_formatPace(paceSecPerMile)} pace${extras.calories != null ? ` · ${extras.calories} cal` : ''}. Run It UP! Dallas. #RunItUpDallas`,
+          files: [file]
+        });
+      } catch (err) {
+        // AbortError = user closed the sheet. Anything else: an <a download>
+        // click is inert in Capacitor's WKWebView (no download delegate), so
+        // the old fallback toasted "Card saved" while saving nothing — on
+        // native, tell the truth instead.
+        if (err.name !== 'AbortError') {
+          if (window.Capacitor?.isNativePlatform()) showToast("Couldn't open the share sheet — try again.", 'error');
+          else downloadCheckInCard(canvas);
         }
-      } else {
-        const link = document.createElement('a');
-        link.download = 'runitup-run.png';
-        link.href = canvas.toDataURL('image/png');
-        link.click();
-        showToast('Card saved — post it to your stories!', 'success');
       }
-    }, 'image/png');
+    } else if (window.Capacitor?.isNativePlatform()) {
+      showToast("Couldn't open the share sheet — try again.", 'error');
+    } else {
+      const link = document.createElement('a');
+      link.download = 'runitup-run.png';
+      link.href = canvas.toDataURL('image/png');
+      link.click();
+      showToast('Card saved — post it to your stories!', 'success');
+    }
   } catch (err) {
     console.error('shareRunSummary', err);
     showToast('Could not share — try again.', 'error');
+  } finally {
+    _shareCardInFlight = false;
   }
 }
 
-// Draw the run's pace-colored route polylines centered at (cx, top..top+maxH),
-// scaled to fit. Equirectangular projection (lng squeezed by cos(midLat)) is
-// plenty at run scale. No-op without at least a 2-point route.
-function _drawRouteTrace(ctx, segments, cx, top, maxH) {
-  if (!Array.isArray(segments) || !segments.length || maxH < 120) return;
+// Drop ~trimM meters of route from each end before drawing on street tiles,
+// so the shared card never pinpoints exactly where a runner started/stopped.
+// Runs shorter than 4x the trim are left whole (nothing meaningful to hide,
+// and trimming would erase the route). Segment colors are preserved.
+function _trimSegmentsEnds(segments, trimM) {
+  const flat = [];
+  segments.forEach((seg, si) => seg.latlngs.forEach((ll) => flat.push({ ll, si })));
+  if (flat.length < 2) return segments;
+  const dist = (a, b) => { // haversine, meters
+    const dLat = (b[0] - a[0]) * Math.PI / 180, dLng = (b[1] - a[1]) * Math.PI / 180;
+    const s = Math.sin(dLat / 2) ** 2 +
+      Math.cos(a[0] * Math.PI / 180) * Math.cos(b[0] * Math.PI / 180) * Math.sin(dLng / 2) ** 2;
+    return 2 * 6371000 * Math.asin(Math.sqrt(s));
+  };
+  let total = 0;
+  for (let i = 1; i < flat.length; i++) total += dist(flat[i - 1].ll, flat[i].ll);
+  if (total < trimM * 4) return segments;
+  let start = 0, acc = 0;
+  while (start < flat.length - 1 && acc < trimM) { acc += dist(flat[start].ll, flat[start + 1].ll); start++; }
+  let end = flat.length - 1; acc = 0;
+  while (end > start && acc < trimM) { acc += dist(flat[end - 1].ll, flat[end].ll); end--; }
+  const out = [];
+  for (const { ll, si } of flat.slice(start, end + 1)) {
+    const color = segments[si].color;
+    const last = out[out.length - 1];
+    if (last && last.color === color) last.latlngs.push(ll);
+    else out.push({ color, latlngs: [ll] });
+  }
+  return out.filter(s => s.latlngs.length >= 2);
+}
+
+function _roundRectPath(ctx, x, y, w, h, r) {
+  if (ctx.roundRect) { ctx.beginPath(); ctx.roundRect(x, y, w, h, r); return; }
+  ctx.beginPath();
+  ctx.moveTo(x + r, y);
+  ctx.arcTo(x + w, y, x + w, y + h, r);
+  ctx.arcTo(x + w, y + h, x, y + h, r);
+  ctx.arcTo(x, y + h, x, y, r);
+  ctx.arcTo(x, y, x + w, y, r);
+  ctx.closePath();
+}
+
+// The run's route on real OSM street tiles inside a rounded panel — the same
+// map the detail screen shows, with the pace-colored polyline, start/end dots,
+// and mile pills at split crossings. Tiles are fetched with
+// crossOrigin='anonymous' (tile.openstreetmap.org sends ACAO:*), which keeps
+// the canvas untainted so toBlob still works. A tile that fails to load just
+// leaves dark panel behind the route — offline degrades to the bare trace, it
+// never blocks the share. Attribution is drawn whenever any tile landed (ODbL).
+async function _drawRouteMapPanel(ctx, segments, splits, px, py, pw, ph) {
+  if (!Array.isArray(segments) || !segments.length) return;
+  // Privacy: on labeled street tiles the endpoints resolve to an address — for
+  // a from-home run, the runner's front door. Trim ~120m off each end of the
+  // shared route (Strava-style), detail screen unaffected.
+  segments = _trimSegmentsEnds(segments, 120);
+  if (!segments.length) return;
   const pts = segments.flatMap(s => s.latlngs);
   if (pts.length < 2) return;
-  let minLat = Infinity, maxLat = -Infinity, minLng = Infinity, maxLng = -Infinity;
-  for (const [lat, lng] of pts) {
-    if (lat < minLat) minLat = lat; if (lat > maxLat) maxLat = lat;
-    if (lng < minLng) minLng = lng; if (lng > maxLng) maxLng = lng;
+  const merc = ([lat, lng]) => { // Web Mercator, unit square
+    const s = Math.sin(lat * Math.PI / 180);
+    return [(lng + 180) / 360, 0.5 - Math.log((1 + s) / (1 - s)) / (4 * Math.PI)];
+  };
+  let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+  for (const p of pts) {
+    const [mx, my] = merc(p);
+    if (mx < x0) x0 = mx; if (mx > x1) x1 = mx;
+    if (my < y0) y0 = my; if (my > y1) y1 = my;
   }
-  const cosLat = Math.cos(((minLat + maxLat) / 2) * Math.PI / 180);
-  const spanX = Math.max((maxLng - minLng) * cosLat, 1e-6);
-  const spanY = Math.max(maxLat - minLat, 1e-6);
-  const boxW = 660, boxH = maxH - 40; // padding keeps round caps inside the box
-  const scale = Math.min(boxW / spanX, boxH / spanY);
-  const w = spanX * scale, h = spanY * scale;
-  const px = ([lat, lng]) => [
-    cx - w / 2 + ((lng - minLng) * cosLat / spanX) * w,
-    top + (maxH - h) / 2 + ((maxLat - lat) / spanY) * h
-  ];
-  ctx.lineWidth = 9; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+  // Largest zoom (≤17 — street-name scale) where the route + padding fits.
+  let z = 17;
+  while (z > 3 && ((x1 - x0) * 256 * 2 ** z > pw - 100 || (y1 - y0) * 256 * 2 ** z > ph - 100)) z--;
+  const world = 256 * 2 ** z;
+  const originX = ((x0 + x1) / 2) * world - pw / 2;
+  const originY = ((y0 + y1) / 2) * world - ph / 2;
+  const toPx = (ll) => {
+    const [mx, my] = merc(ll);
+    return [px + mx * world - originX, py + my * world - originY];
+  };
+
+  ctx.save();
+  _roundRectPath(ctx, px, py, pw, ph, 24);
+  ctx.clip();
+  ctx.fillStyle = '#1A1A1A';
+  ctx.fillRect(px, py, pw, ph);
+
+  // Each tile races a short deadline: on stalled cellular (the normal state
+  // right after an outdoor run) a WKWebView image request can pend ~60s — the
+  // card must degrade to the dark panel + route, never hang the share.
+  const jobs = [];
+  for (let tx = Math.floor(originX / 256); tx * 256 < originX + pw; tx++) {
+    for (let ty = Math.max(0, Math.floor(originY / 256)); ty * 256 < originY + ph && ty < 2 ** z; ty++) {
+      const wx = ((tx % 2 ** z) + 2 ** z) % 2 ** z; // wrap, matches Leaflet
+      jobs.push(Promise.race([
+        loadImageSafe(`https://tile.openstreetmap.org/${z}/${wx}/${ty}.png`, 'anonymous'),
+        new Promise((resolve) => setTimeout(resolve, 4000, null))
+      ]).then((img) => ({ img, dx: px + tx * 256 - originX, dy: py + ty * 256 - originY })));
+    }
+  }
+  let drewTile = false;
+  for (const t of await Promise.all(jobs)) {
+    if (!t.img) continue;
+    ctx.drawImage(t.img, t.dx, t.dy);
+    drewTile = true;
+  }
+
+  ctx.lineWidth = 8; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
   for (const seg of segments) {
     if (seg.latlngs.length < 2) continue;
     ctx.strokeStyle = seg.color;
     ctx.beginPath();
     seg.latlngs.forEach((ll, i) => {
-      const [x, y] = px(ll);
+      const [x, y] = toPx(ll);
       i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
     });
     ctx.stroke();
   }
   const dot = (ll, fill) => {
-    const [x, y] = px(ll);
-    ctx.beginPath(); ctx.arc(x, y, 12, 0, Math.PI * 2);
+    const [x, y] = toPx(ll);
+    ctx.beginPath(); ctx.arc(x, y, 11, 0, Math.PI * 2);
     ctx.fillStyle = fill; ctx.fill();
     ctx.lineWidth = 4; ctx.strokeStyle = '#0A0A0A'; ctx.stroke();
   };
   dot(segments[0].latlngs[0], '#BFFF00');
   const lastSeg = segments[segments.length - 1];
   dot(lastSeg.latlngs[lastSeg.latlngs.length - 1], '#FF3B30');
+
+  if (Array.isArray(splits)) {
+    // Long runs would blanket a small map in pills — thin to at most ~6,
+    // keeping round-number miles (every 2nd, 5th, ...).
+    const crossings = splits.filter(s => s.crossing);
+    const stride = Math.max(1, Math.ceil(crossings.length / 6));
+    ctx.font = '700 24px Inter, sans-serif';
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    for (const s of crossings) {
+      if (s.mile % stride) continue;
+      const [x, y] = toPx([s.crossing.lat, s.crossing.lng]);
+      const label = `${s.mile} mi`;
+      const tw = ctx.measureText(label).width;
+      ctx.fillStyle = 'rgba(10,10,10,0.85)';
+      _roundRectPath(ctx, x - tw / 2 - 12, y - 17, tw + 24, 34, 17);
+      ctx.fill();
+      ctx.fillStyle = '#FFFFFF';
+      ctx.fillText(label, x, y + 1);
+    }
+    ctx.textBaseline = 'alphabetic';
+  }
+
+  if (drewTile) {
+    ctx.font = '500 18px Inter, sans-serif';
+    ctx.textAlign = 'left';
+    const attr = '© OpenStreetMap contributors';
+    const aw = ctx.measureText(attr).width;
+    ctx.fillStyle = 'rgba(255,255,255,0.8)';
+    ctx.fillRect(px + pw - aw - 20, py + ph - 30, aw + 20, 30);
+    ctx.fillStyle = '#333333';
+    ctx.fillText(attr, px + pw - 10 - aw, py + ph - 9);
+  }
+  ctx.restore(); // also resets textAlign/baseline for the caller
+}
+
+// Per-mile split rows under the map — mile, pace, bar scaled to the fastest
+// split (like the detail screen), elevation delta at the right edge.
+function _drawSplitsSection(ctx, splits, displayFont, x, y, w, rows) {
+  ctx.textAlign = 'left';
+  ctx.fillStyle = '#FFFFFF';
+  ctx.font = `800 34px ${displayFont}`;
+  ctx.fillText('SPLITS', x, y + 34);
+  const top = y + 58;
+  const paced = splits.filter(s => s.paceSecPerMile);
+  const fastest = paced.length ? Math.min(...paced.map(s => s.paceSecPerMile)) : null;
+  const slowest = paced.length ? Math.max(...paced.map(s => s.paceSecPerMile)) : null;
+  // Same fast→slow ramp the route polyline uses, so bar color reads as pace.
+  const ramp = (typeof RunMetrics !== 'undefined' && RunMetrics.PACE_RAMP) || ['#BFFF00'];
+  for (let i = 0; i < rows; i++) {
+    const s = splits[i];
+    const rowY = top + i * 44;
+    ctx.fillStyle = '#FFFFFF';
+    ctx.font = `700 30px ${displayFont}`;
+    ctx.fillText(s.miles === 1 ? String(s.mile) : s.miles.toFixed(2), x, rowY + 30);
+    ctx.font = '600 27px Inter, sans-serif';
+    ctx.fillText(_formatPace(s.paceSecPerMile), x + 92, rowY + 30);
+    const bx = x + 250, bw = w - 250 - 110;
+    ctx.fillStyle = 'rgba(255,255,255,0.12)';
+    _roundRectPath(ctx, bx, rowY + 6, bw, 26, 13); ctx.fill();
+    if (fastest && s.paceSecPerMile) {
+      const frac = Math.max(0.2, Math.min(1, fastest / s.paceSecPerMile));
+      const t = slowest > fastest ? (s.paceSecPerMile - fastest) / (slowest - fastest) : 0;
+      ctx.fillStyle = ramp[Math.min(ramp.length - 1, Math.floor(t * ramp.length))];
+      _roundRectPath(ctx, bx, rowY + 6, bw * frac, 26, 13); ctx.fill();
+    }
+    if (s.elevDeltaFt != null) {
+      ctx.fillStyle = 'rgba(255,255,255,0.55)';
+      ctx.font = '500 24px Inter, sans-serif';
+      ctx.textAlign = 'right';
+      ctx.fillText(`${Math.round(s.elevDeltaFt)} ft`, x + w, rowY + 30);
+      ctx.textAlign = 'left';
+    }
+  }
+  if (rows < splits.length) {
+    ctx.fillStyle = 'rgba(255,255,255,0.45)';
+    ctx.font = '500 24px Inter, sans-serif';
+    ctx.fillText(`+ ${splits.length - rows} more miles`, x, top + rows * 44 + 28);
+  }
+  ctx.textAlign = 'center';
 }
 
 // ===== RESILIENCE HOOKS =====
