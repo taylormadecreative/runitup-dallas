@@ -151,8 +151,16 @@ elevation, DB-stored weather backfill, share-card changes, route privacy zones.
   `saveWeightSetting`, paints calories in place, and updates `overlay._metrics.calories`.
   No longer native-gated — works on web too.
 - **Share-card changes un-cut.** `shareRunSummary` gained an `extras` param (calories,
-  elevation, avg HR, weather from the run's wx cache, pace-colored segments, date label).
-  The card now mirrors the detail screen: logo, date, miles hero, stat grid (tiles with no
-  data are dropped, not dashed), and a tile-free route trace drawn straight on the canvas
-  (map tiles would taint it and break `toBlob`). Fixture render harness:
-  `tests/share-card-harness.html`.
+  elevation, avg HR, weather from the run's wx cache, pace-colored segments, splits, date
+  label). The card mirrors the detail screen: logo, date, miles hero, stat grid (tiles with
+  no data are dropped, not dashed), the route on REAL OSM street tiles (fetched
+  `crossOrigin='anonymous'` — OSM sends ACAO:*, so the canvas stays untainted and `toBlob`
+  works), mile pills (thinned to ≤~6 on long runs), ODbL attribution, and a SPLITS section
+  (per-mile pace, ramp-colored bars, elev deltas; rows truncate before the map drops below
+  320px). Hardening from the adversarial review: 4s deadline per tile (stalled cellular
+  degrades to dark-panel trace, never hangs), in-flight guard + awaited toBlob/share +
+  "Building card…" button state, honest error toast on native share failure (the
+  `<a download>` fallback is inert in WKWebView), and ~120m trimmed off each route end on
+  the card so a from-home run never pinpoints the door. privacy.html corrected to admit
+  precise-location collection during runs + OSM/Open-Meteo third parties. Fixture render
+  harness: `tests/share-card-harness.html`.
